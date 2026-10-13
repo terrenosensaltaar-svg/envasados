@@ -472,6 +472,37 @@
             animation: slideUp 0.3s ease;
         }
 
+        .auth-gate {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background: var(--bg-main);
+        }
+
+        .auth-card {
+            width: min(100%, 420px);
+            padding: 30px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .auth-card h1 { margin-bottom: 8px; color: var(--text-main); }
+        .auth-card p { margin-bottom: 20px; color: var(--text-muted); }
+        .auth-card label { display: block; margin: 14px 0 6px; font-weight: 700; color: var(--text-main); }
+        .auth-card input {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font: inherit;
+        }
+        .auth-card button { margin-top: 20px; width: 100%; justify-content: center; }
+        .auth-error { min-height: 1.4em; color: #b42318 !important; font-size: 0.9rem; }
+        [hidden] { display: none !important; }
+
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -480,8 +511,22 @@
 </head>
 <body>
 
+    <section class="auth-gate" id="auth-gate">
+        <form class="auth-card" id="auth-form">
+            <div class="panel-header-badge">🔐 Acceso de administración</div>
+            <h1>Ingresar al panel</h1>
+            <p>Ingresá con tu usuario o correo y la contraseña.</p>
+            <label for="auth-email">Usuario o correo electrónico</label>
+            <input id="auth-email" name="email" type="text" autocomplete="username" required>
+            <label for="auth-password">Contraseña</label>
+            <input id="auth-password" name="password" type="password" autocomplete="current-password" required>
+            <p class="auth-error" id="auth-error" role="alert"></p>
+            <button class="btn-panel-action primary" type="submit">Ingresar</button>
+        </form>
+    </section>
+
     <!-- Header idéntico a index.html -->
-    <header class="header">
+    <header class="header" id="panel-header" hidden>
         <div class="header-inner">
             <a href="index.html" class="brand-link">
                 <img src="logo.png" alt="Envasados al Vacío" class="brand-logo" width="160" height="44">
@@ -495,12 +540,13 @@
                     <span id="refresh-spinner">🔄</span>
                     <span>Actualizar</span>
                 </button>
+                <button class="btn-panel-action" onclick="cerrarSesion()">Salir</button>
             </div>
         </div>
     </header>
 
     <!-- Contenedor Principal del Panel -->
-    <main class="panel-container">
+    <main class="panel-container" id="panel-content" hidden>
 
         <!-- Encabezado del Dashboard -->
         <div class="panel-title-area">
@@ -594,11 +640,73 @@
         let todosLosPedidos = [];
         let filtroActual = 'todos';
 
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", async () => {
+            document.getElementById("auth-form").addEventListener("submit", ingresarAlPanel);
+            if (!window.supabaseClient) {
+                mostrarErrorAcceso("No se cargó Supabase. Revisá tu conexión y recargá la página.");
+                return;
+            }
+
+            const { data, error } = await window.supabaseClient.auth.getSession();
+            if (error) {
+                mostrarErrorAcceso("No se pudo verificar la sesión. Recargá la página.");
+                return;
+            }
+
+            if (data.session) await habilitarPanel(data.session);
+        });
+
+        async function ingresarAlPanel(event) {
+            event.preventDefault();
+            const identifier = document.getElementById("auth-email").value.trim();
+            const email = identifier.toLowerCase() === "luciana"
+                ? "envasados.salta@gmail.com"
+                : identifier;
+            const password = document.getElementById("auth-password").value;
+            mostrarErrorAcceso("");
+
+            const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                const emailPendiente = error.code === "email_not_confirmed"
+                    || /email not confirmed/i.test(error.message || "");
+                mostrarErrorAcceso(emailPendiente
+                    ? "Primero confirmá el correo desde el enlace que te enviamos."
+                    : "No se pudo iniciar sesión. Revisá el usuario y la contraseña.");
+                return;
+            }
+
+            await habilitarPanel(data.session);
+        }
+
+        async function habilitarPanel(session) {
+            const { data, error } = await window.supabaseClient
+                .from("panel_admins")
+                .select("user_id")
+                .eq("user_id", session.user.id)
+                .maybeSingle();
+
+            if (error || !data) {
+                await window.supabaseClient.auth.signOut();
+                mostrarErrorAcceso("Esta cuenta no tiene permiso para administrar pedidos.");
+                return;
+            }
+
+            document.getElementById("auth-gate").hidden = true;
+            document.getElementById("panel-header").hidden = false;
+            document.getElementById("panel-content").hidden = false;
             cargarPedidos();
             // Refresco automático cada 45 segundos
             setInterval(cargarPedidos, 45000);
-        });
+        }
+
+        async function cerrarSesion() {
+            await window.supabaseClient.auth.signOut();
+            window.location.reload();
+        }
+
+        function mostrarErrorAcceso(mensaje) {
+            document.getElementById("auth-error").textContent = mensaje;
+        }
 
         async function cargarPedidos() {
             const spinner = document.getElementById("refresh-spinner");
