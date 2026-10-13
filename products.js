@@ -35,13 +35,13 @@ const PRODUCTS = [
     },
     {
         id: "prod-04",
-        name: "Pollo Condimentado Crudo (Listo para cocer)",
+        name: "Pollo Condimentado Pollita Lu (Listo para cocer)",
         category: "crudo",
         price: 5900,
-        portion: "600g · Marinado al vacío",
-        badge: "Para tu sartén o parrilla",
-        desc: "Pechuga y trutros sellados al vacío con marinado de limón, romero silvestre, pimentón dulce y ajo. Absorción total de sabores.",
-        prep: "Directo a sartén, parrilla u horno por 15-20 min.",
+        portion: "Bolsa sellada al vacío",
+        badge: "Pollita Lu · Para cocinar",
+        desc: "Presas seleccionadas marinadas al vacío con cebolla, pimientos rojos, hierbas y sazón artesanal. Sabor concentrado listo para sartén, horno o parrilla.",
+        prep: "Directo a sartén, horno o parrilla por 15-20 min.",
         image: "pollo_marinado_crudo.jpg"
     }
 ];

@@ -2,10 +2,10 @@
  * App para Envasados al Vacío Gourmet & Caseros - Sé tu propio Chef
  */
 
-// Teléfono fijo inmutable (Salta, Argentina: 387 228 4536)
+// Teléfono fijo inmutable (Salta, Argentina: +54 387 228 3546)
 const STORE_CONFIG = Object.freeze({
     storeName: "Envasados al Vacío Gourmet",
-    whatsappPhone: "5493872284536",
+    whatsappPhone: "543872283546",
     deliveryFee: 2500,
     freeDeliveryThreshold: 25000
 });
@@ -244,57 +244,46 @@ async function sendWhatsApp() {
 
     const cleanPhone = STORE_CONFIG.whatsappPhone;
     const url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`;
-    const whatsappWindow = window.open("about:blank", "_blank");
     const submitButton = document.querySelector(".btn-whatsapp-send");
-
-    if (!window.supabaseClient) {
-        whatsappWindow?.close();
-        alert("No se pudo conectar con el sistema de pedidos. Intenta nuevamente en unos minutos.");
-        return;
-    }
 
     if (submitButton) {
         submitButton.disabled = true;
         submitButton.setAttribute("aria-busy", "true");
     }
 
-    try {
-        const { error } = await window.supabaseClient.from("store_orders").insert({
-            customer_name: name,
-            delivery_method: deliveryMethod,
-            delivery_address: deliveryMethod === "delivery" ? address : "",
-            payment_method: payment,
-            notes,
-            items: cart.map(item => {
-                const product = PRODUCTS.find(prod => prod.id === item.id);
-                return {
-                    product_id: item.id,
-                    name: product.name,
-                    quantity: item.qty,
-                    unit_price: product.price
-                };
-            }),
-            subtotal,
-            shipping,
-            total
-        });
-
-        if (error) throw error;
-
-        if (whatsappWindow) {
-            whatsappWindow.location.href = url;
-        } else {
-            window.location.href = url;
+    // Intentar registrar en Supabase si está disponible de forma no bloqueante para el cliente
+    if (window.supabaseClient) {
+        try {
+            await window.supabaseClient.from("store_orders").insert({
+                customer_name: name,
+                delivery_method: deliveryMethod,
+                delivery_address: deliveryMethod === "delivery" ? address : "",
+                payment_method: payment,
+                notes,
+                items: cart.map(item => {
+                    const product = PRODUCTS.find(prod => prod.id === item.id);
+                    return {
+                        product_id: item.id,
+                        name: product ? product.name : "Producto",
+                        quantity: item.qty,
+                        unit_price: product ? product.price : 0
+                    };
+                }),
+                subtotal,
+                shipping,
+                total
+            });
+        } catch (error) {
+            console.warn("Aviso: no se pudo sincronizar con la base de datos de respaldo:", error);
         }
-    } catch (error) {
-        whatsappWindow?.close();
-        console.error("No se pudo guardar el pedido:", error);
-        alert("No se pudo guardar tu pedido. Revisa tu conexión e intenta nuevamente; todavía no se envió por WhatsApp.");
-    } finally {
-        if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.removeAttribute("aria-busy");
-        }
+    }
+
+    // Abrir WhatsApp con el pedido generado
+    window.open(url, "_blank");
+
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.removeAttribute("aria-busy");
     }
 }
 
