@@ -29,13 +29,15 @@ CREATE POLICY "Panel admins can update production stock"
         SELECT 1 FROM public.panel_admins pa WHERE pa.user_id = (SELECT auth.uid())
     ));
 
+-- Quitar primero la marca para que un fallo posterior mantenga bloqueada la entrega.
+DELETE FROM public.production_stock WHERE product_id = '__stock_trigger_v1__';
+
 INSERT INTO public.production_stock (product_id, product_name, quantity)
 VALUES
     ('prod-01', 'Empanadas Árabes', 0),
     ('prod-02', 'Pollo al Horno con Papas', 0),
     ('prod-03', 'Puré de Papas con Solomillo a la Cerveza', 0),
-    ('prod-04', 'Pollo Condimentado Pollita Lu', 0),
-    ('__stock_trigger_v1__', 'Configuración interna de stock', 0)
+    ('prod-04', 'Pollo Condimentado Pollita Lu', 0)
 ON CONFLICT (product_id) DO UPDATE SET product_name = EXCLUDED.product_name;
 
 CREATE OR REPLACE FUNCTION public.apply_production_stock_for_order_status()
@@ -107,6 +109,11 @@ CREATE TRIGGER store_orders_production_stock
     BEFORE UPDATE OF status ON public.store_orders
     FOR EACH ROW
     EXECUTE FUNCTION public.apply_production_stock_for_order_status();
+
+-- La marca se escribe solo después de crear la rutina y el trigger.
+INSERT INTO public.production_stock (product_id, product_name, quantity)
+VALUES ('__stock_trigger_v1__', 'Configuración interna de stock', 0)
+ON CONFLICT (product_id) DO UPDATE SET product_name = EXCLUDED.product_name;
 
 -- Actualizar el esquema que usa la Data API para resolver la tabla recién creada.
 NOTIFY pgrst, 'reload schema';
