@@ -14,6 +14,20 @@
     <script src="supabase-config.js" defer></script>
     <script src="products.js" defer></script>
     <script src="app.js" defer></script>
+    <style>
+        .catalog-hero{position:relative;overflow:hidden;margin:0 auto 32px;border-radius:22px;background:#f4f1e9;box-shadow:0 14px 36px rgba(22,31,24,.14);isolation:isolate}
+        .catalog-hero-viewport{position:relative;aspect-ratio:2/1;min-height:260px}
+        .catalog-hero-slide{position:absolute;inset:0;display:grid;place-items:center;opacity:0;visibility:hidden;transition:opacity .5s ease}
+        .catalog-hero-slide.is-active{opacity:1;visibility:visible}
+        .catalog-hero-slide img{display:block;width:100%;height:100%;object-fit:contain}
+        .catalog-hero-arrow{position:absolute;z-index:2;top:50%;display:grid;place-items:center;width:46px;height:46px;padding:0;border:0;border-radius:50%;background:rgba(20,30,23,.68);color:#fff;font-size:32px;line-height:1;cursor:pointer;transform:translateY(-50%);transition:background .2s}
+        .catalog-hero-arrow:hover{background:#1b3828}.catalog-hero-prev{left:16px}.catalog-hero-next{right:16px}
+        .catalog-hero-dots{position:absolute;z-index:2;bottom:14px;left:50%;display:flex;gap:9px;transform:translateX(-50%)}
+        .catalog-hero-dots button{width:10px;height:10px;padding:0;border:1px solid #fff;border-radius:50%;background:rgba(30,40,32,.48);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+        .catalog-hero-dots button.is-active{width:26px;border-radius:8px;background:#efb82e;border-color:#efb82e}
+        @media(max-width:640px){.catalog-hero{margin:0 0 24px;border-radius:16px}.catalog-hero-viewport{aspect-ratio:4/3;min-height:0}.catalog-hero-arrow{width:38px;height:38px;font-size:27px}.catalog-hero-prev{left:9px}.catalog-hero-next{right:9px}.catalog-hero-dots{bottom:10px}}
+        @media(prefers-reduced-motion:reduce){.catalog-hero-slide{transition:none}}
+    </style>
 </head>
 <body>
 
@@ -48,6 +62,22 @@
 
     <!-- Grid de los 4 platos principales -->
     <main class="main-content">
+        <section class="catalog-hero" id="catalogHeroCarousel" aria-label="Promociones destacadas">
+            <div class="catalog-hero-viewport">
+                <div class="catalog-hero-slide is-active" aria-hidden="false">
+                    <img src="banner_pollita_chef.jpg" alt="Pollita Lu: congelados al vacío, el sabor del campo" fetchpriority="high">
+                </div>
+                <div class="catalog-hero-slide" aria-hidden="true">
+                    <img src="snacks.jpg" alt="Snacks Fuerza Natural: pollo, cerdo, toro y mix especiado" loading="lazy" decoding="async">
+                </div>
+            </div>
+            <button class="catalog-hero-arrow catalog-hero-prev" type="button" aria-label="Imagen anterior">&#8249;</button>
+            <button class="catalog-hero-arrow catalog-hero-next" type="button" aria-label="Imagen siguiente">&#8250;</button>
+            <div class="catalog-hero-dots" role="group" aria-label="Elegir imagen">
+                <button class="is-active" type="button" aria-label="Mostrar banner Pollita Lu" aria-pressed="true"></button>
+                <button type="button" aria-label="Mostrar banner Fuerza Natural" aria-pressed="false"></button>
+            </div>
+        </section>
         <div class="section-head">
             <div>
                 
@@ -97,11 +127,6 @@
     <section class="pollita-showcase">
         <div class="pollita-container">
             
-            <!-- Banner oficial panorámico -->
-            <div class="pollita-banner-frame">
-                <img src="banner_pollita_chef.jpg" alt="Pollita Lu - Congelados al Vacío Salta" class="pollita-banner-img" width="850" height="478" loading="lazy" decoding="async">
-            </div>
-
             <!-- Caja explicativa y variedades de sabores -->
             <div class="pollita-content-box">
                 <div class="pollita-header-row">
@@ -193,8 +218,8 @@
 
         <div class="drawer-body">
             <div id="cart-empty" style="text-align: center; color: var(--text-muted); padding: 40px 10px;">
-                <p id="cart-empty-icon" style="font-size: 2rem; margin-bottom: 8px;">🍽️</p>
-                <p id="cart-empty-message">Tu pedido está vacío.</p>
+                <p style="font-size: 2rem; margin-bottom: 8px;">🍽️</p>
+                <p>Tu pedido está vacío.</p>
             </div>
 
             <div class="cart-items" id="cart-items"></div>
@@ -255,5 +280,38 @@
             </button>
         </div>
     </aside>
+
+<script>
+(function() {
+    var carousel = document.getElementById('catalogHeroCarousel');
+    if (!carousel) return;
+    var slides = Array.prototype.slice.call(carousel.querySelectorAll('.catalog-hero-slide'));
+    var dots = Array.prototype.slice.call(carousel.querySelectorAll('.catalog-hero-dots button'));
+    var index = 0;
+    var timer;
+    function show(next) {
+        index = (next + slides.length) % slides.length;
+        slides.forEach(function(slide, i) {
+            var active = i === index;
+            slide.classList.toggle('is-active', active);
+            slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+        });
+        dots.forEach(function(dot, i) {
+            var active = i === index;
+            dot.classList.toggle('is-active', active);
+            dot.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+    }
+    function start() { window.clearInterval(timer); timer = window.setInterval(function() { show(index + 1); }, 5500); }
+    carousel.querySelector('.catalog-hero-prev').addEventListener('click', function() { show(index - 1); start(); });
+    carousel.querySelector('.catalog-hero-next').addEventListener('click', function() { show(index + 1); start(); });
+    dots.forEach(function(dot, i) { dot.addEventListener('click', function() { show(i); start(); }); });
+    carousel.addEventListener('mouseenter', function() { window.clearInterval(timer); });
+    carousel.addEventListener('mouseleave', start);
+    carousel.addEventListener('focusin', function() { window.clearInterval(timer); });
+    carousel.addEventListener('focusout', start);
+    start();
+}());
+</script>
 </body>
 </html>
