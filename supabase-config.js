@@ -3,7 +3,11 @@
 const SUPABASE_URL = "https://fotttmvhpxtvzgykwvly.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ttTv69g7EiuQxVE24r8rGg_Ia7Y7ASF";
 
-window.supabaseClient = window.supabase?.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-);
+if (!window.supabase || typeof window.supabase.createClient !== "function") {
+    console.error("No se cargó @supabase/supabase-js. Verifica la conexión al CDN.");
+} else {
+    window.supabaseClient = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+    );
+}
