@@ -2,25 +2,27 @@
  * App para Envasados al Vacío Gourmet & Caseros - Sé tu propio Chef
  */
 
-const DEFAULT_CONFIG = {
+// Teléfono fijo inmutable (Salta, Argentina: 387 228 4536)
+const STORE_CONFIG = Object.freeze({
     storeName: "Envasados al Vacío Gourmet",
-    whatsappPhone: "56912345678", // Configurable por el usuario
+    whatsappPhone: "5493872284536",
     deliveryFee: 2500,
     freeDeliveryThreshold: 25000
-};
+});
 
-let storeConfig = JSON.parse(localStorage.getItem("env_config")) || { ...DEFAULT_CONFIG };
+// Limpiar configuraciones previas de localStorage para garantizar el número fijo
+localStorage.removeItem("env_config");
+
 let cart = JSON.parse(localStorage.getItem("env_cart")) || [];
 let deliveryMethod = "delivery"; // "delivery" o "pickup"
 
 function formatPrice(val) {
-    return `$${Number(val).toLocaleString('es-CL')}`;
+    return `$${Number(val).toLocaleString('es-AR')}`;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     renderProducts();
     updateCartUI();
-    loadConfigForm();
 });
 
 function renderProducts() {
@@ -34,7 +36,7 @@ function renderProducts() {
         return `
             <article class="card">
                 <div class="card-img-wrap">
-                    <img src="${p.image}" alt="${p.name}" class="card-img" loading="lazy">
+                    <img src="${p.image}" alt="${p.name}" class="card-img" width="500" height="375" loading="lazy" decoding="async">
                     <span class="card-badge">${p.badge}</span>
                 </div>
                 <div class="card-body">
@@ -104,7 +106,7 @@ function updateCartUI() {
 
     let shipping = 0;
     if (deliveryMethod === "delivery") {
-        shipping = (subtotal >= storeConfig.freeDeliveryThreshold || subtotal === 0) ? 0 : storeConfig.deliveryFee;
+        shipping = (subtotal >= STORE_CONFIG.freeDeliveryThreshold || subtotal === 0) ? 0 : STORE_CONFIG.deliveryFee;
     }
     const total = subtotal + shipping;
 
@@ -186,7 +188,7 @@ function toggleCart(open) {
     }
 }
 
-function sendWhatsApp() {
+async function sendWhatsApp() {
     if (cart.length === 0) return;
 
     const name = (document.getElementById("cust-name")?.value || "").trim();
@@ -217,7 +219,7 @@ function sendWhatsApp() {
 
     let shipping = 0;
     if (deliveryMethod === "delivery") {
-        shipping = (subtotal >= storeConfig.freeDeliveryThreshold) ? 0 : storeConfig.deliveryFee;
+        shipping = (subtotal >= STORE_CONFIG.freeDeliveryThreshold) ? 0 : STORE_CONFIG.deliveryFee;
     }
     const total = subtotal + shipping;
 
@@ -240,39 +242,68 @@ function sendWhatsApp() {
         `_Listo para regenerar y servir con calidad de restaurante en mi mesa._`
     ].filter(Boolean).join("\n");
 
-    const cleanPhone = storeConfig.whatsappPhone.replace(/[^0-9]/g, "");
+    const cleanPhone = STORE_CONFIG.whatsappPhone;
     const url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
+    const whatsappWindow = window.open("about:blank", "_blank");
+    const submitButton = document.querySelector(".btn-whatsapp-send");
+
+    if (!window.supabaseClient) {
+        whatsappWindow?.close();
+        alert("No se pudo conectar con el sistema de pedidos. Intenta nuevamente en unos minutos.");
+        return;
+    }
+
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.setAttribute("aria-busy", "true");
+    }
+
+    try {
+        const { error } = await window.supabaseClient.from("store_orders").insert({
+            customer_name: name,
+            delivery_method: deliveryMethod,
+            delivery_address: deliveryMethod === "delivery" ? address : "",
+            payment_method: payment,
+            notes,
+            items: cart.map(item => {
+                const product = PRODUCTS.find(prod => prod.id === item.id);
+                return {
+                    product_id: item.id,
+                    name: product.name,
+                    quantity: item.qty,
+                    unit_price: product.price
+                };
+            }),
+            subtotal,
+            shipping,
+            total
+        });
+
+        if (error) throw error;
+
+        if (whatsappWindow) {
+            whatsappWindow.location.href = url;
+        } else {
+            window.location.href = url;
+        }
+    } catch (error) {
+        whatsappWindow?.close();
+        console.error("No se pudo guardar el pedido:", error);
+        alert("No se pudo guardar tu pedido. Revisa tu conexión e intenta nuevamente; todavía no se envió por WhatsApp.");
+    } finally {
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.removeAttribute("aria-busy");
+        }
+    }
 }
 
 function consultPollitaLu(flavorName = "") {
-    const cleanPhone = storeConfig.whatsappPhone.replace(/[^0-9]/g, "");
+    const cleanPhone = STORE_CONFIG.whatsappPhone;
     const topic = flavorName ? ` por el sabor *${flavorName}*` : "";
     const msg = `Hola! Me gustaría consultar disponibilidad y hacer un pedido${topic} de la línea *Pollita Lu (Congelados al Vacío)* para cocinar en casa.`;
     const url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`;
     window.open(url, "_blank");
-}
-
-// Config Modal
-function openConfig() {
-    document.getElementById("config-modal")?.classList.add("active");
-}
-function closeConfig() {
-    document.getElementById("config-modal")?.classList.remove("active");
-}
-function loadConfigForm() {
-    const phoneInput = document.getElementById("cfg-phone");
-    if (phoneInput) phoneInput.value = storeConfig.whatsappPhone;
-}
-function saveConfig(e) {
-    e.preventDefault();
-    const phone = document.getElementById("cfg-phone")?.value.trim();
-    if (phone) {
-        storeConfig.whatsappPhone = phone.replace(/[^0-9]/g, "");
-        localStorage.setItem("env_config", JSON.stringify(storeConfig));
-        showToast("Configuración guardada");
-        closeConfig();
-    }
 }
 
 function showToast(text) {
