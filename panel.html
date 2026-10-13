@@ -539,6 +539,50 @@
         .stock-save-button:disabled { opacity: .55; cursor: not-allowed; }
         .stock-card-note { margin: 9px 0 0; color: var(--text-muted); font-size: .7rem; line-height: 1.4; }
         .stock-message { margin-top: 14px !important; padding: 11px 13px; border: 1px solid #f2d89a; border-radius: var(--radius-sm); background: var(--gold-soft); color: #775b19 !important; font-size: .82rem !important; line-height: 1.5; }
+        .panel-tabs { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 22px; padding:6px; background:var(--bg-subtle); border:1px solid var(--border); border-radius:var(--radius-full); width:max-content; max-width:100%; }
+        .panel-tab { border:0; border-radius:var(--radius-full); padding:10px 18px; background:transparent; color:var(--text-muted); font:inherit; font-size:.86rem; font-weight:800; cursor:pointer; }
+        .panel-tab[aria-selected="true"] { background:var(--bg-surface); color:var(--accent); box-shadow:var(--shadow-soft); }
+        .finance-view { display:grid; gap:20px; }
+        .finance-toolbar,.finance-panel,.finance-card { background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-md); box-shadow:var(--shadow-soft); }
+        .finance-toolbar { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:16px 18px; }
+        .finance-toolbar h2,.finance-panel h2 { margin:0; color:var(--text-main); font-size:1.15rem; }
+        .finance-month-controls { display:flex; align-items:center; gap:8px; }
+        .finance-month-controls input,.finance-field input,.finance-field select,.finance-field textarea { min-width:0; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; background:var(--bg-subtle); color:var(--text-main); font:inherit; }
+        .finance-month-controls button { border:1px solid var(--border); background:var(--bg-surface); border-radius:var(--radius-sm); padding:9px 12px; color:var(--text-main); cursor:pointer; }
+        .finance-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+        .finance-card { padding:16px 18px; }
+        .finance-card span { display:block; color:var(--text-muted); font-size:.76rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
+        .finance-card strong { display:block; margin-top:7px; color:var(--text-main); font-size:clamp(1.3rem,3vw,1.8rem); }
+        .finance-card.income strong { color:#18794e; } .finance-card.expense strong { color:#b42318; }
+        .finance-columns { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(280px,.8fr); gap:18px; align-items:start; }
+        .finance-panel { min-width:0; padding:18px; }
+        .finance-calendar-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:16px; }
+        .finance-calendar { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
+        .finance-weekday { padding:5px 2px; color:var(--text-muted); text-align:center; font-size:.68rem; font-weight:850; text-transform:uppercase; }
+        .finance-day { min-height:70px; padding:7px; text-align:left; border:1px solid var(--border-light); border-radius:10px; background:var(--bg-surface); color:var(--text-main); cursor:pointer; }
+        .finance-day:hover,.finance-day.selected { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft); }
+        .finance-day.muted { opacity:.45; } .finance-day.today .finance-day-number { color:var(--accent); font-weight:900; }
+        .finance-day-number { display:block; font-size:.8rem; font-weight:750; }
+        .finance-day-total { display:block; overflow:hidden; margin-top:4px; color:#18794e; font-size:.65rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+        .finance-day-expense { display:block; overflow:hidden; color:#b42318; font-size:.62rem; text-overflow:ellipsis; white-space:nowrap; }
+        .finance-form { display:grid; gap:12px; }
+        .finance-form h2 { margin-bottom:2px; }
+        .finance-field { display:grid; gap:6px; }
+        .finance-field label { color:var(--text-muted); font-size:.76rem; font-weight:800; }
+        .finance-field textarea { min-height:78px; resize:vertical; }
+        .finance-form-note,.finance-status { margin:0; color:var(--text-muted); font-size:.78rem; line-height:1.45; }
+        .finance-status { min-height:1.2em; color:#b42318; }
+        .finance-submit { justify-content:center; }
+        .finance-day-list { margin-top:20px; }
+        .finance-day-list h3 { margin:0 0 10px; font-size:.95rem; }
+        .finance-entry { display:flex; justify-content:space-between; gap:12px; padding:11px 0; border-top:1px solid var(--border-light); }
+        .finance-entry-main { min-width:0; } .finance-entry-main strong { display:block; color:var(--text-main); font-size:.85rem; }
+        .finance-entry-main span { display:block; margin-top:3px; color:var(--text-muted); font-size:.75rem; overflow-wrap:anywhere; }
+        .finance-entry-amount { flex:0 0 auto; text-align:right; font-size:.85rem; font-weight:850; }
+        .finance-entry-amount.income { color:#18794e; } .finance-entry-amount.expense { color:#b42318; }
+        .finance-receipt { display:inline-block; margin-top:5px; color:var(--accent); font-size:.74rem; font-weight:800; }
+        @media(max-width:760px) { .finance-columns { grid-template-columns:1fr; } }
+        @media(max-width:520px) { .finance-summary { grid-template-columns:1fr; gap:9px; } .finance-card { padding:13px 15px; } .finance-day { min-height:58px; padding:5px; } .finance-day-total,.finance-day-expense { font-size:.56rem; } .panel-tabs { width:100%; } .panel-tab { flex:1; padding:10px 9px; } }
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -588,7 +632,7 @@
         <div class="panel-title-area">
             <div>
                 <div class="panel-header-badge">👨‍🍳 Gestión de Pedidos & Cocina</div>
-                <h1>Panel de <span>Preparación & Entrega</span></h1>
+                <h1>Panel de <span id="panel-view-title">Preparación & Entrega</span></h1>
             </div>
             <div>
                 <span style="font-size: 0.85rem; color: var(--text-muted);">
@@ -597,8 +641,13 @@
             </div>
         </div>
 
+        <nav class="panel-tabs" aria-label="Secciones del panel">
+            <button class="panel-tab" type="button" data-panel-tab="operaciones" aria-selected="true" onclick="cambiarVistaPanel('operaciones')">Pedidos y stock</button>
+            <button class="panel-tab" type="button" data-panel-tab="finanzas" aria-selected="false" onclick="cambiarVistaPanel('finanzas')">Facturación</button>
+        </nav>
+
         <!-- Indicadores KPIs -->
-        <section class="kpis-grid">
+        <section class="kpis-grid" data-panel-view="operaciones">
             <div class="kpi-card">
                 <div>
                     <span class="kpi-label">Total Pedidos</span>
@@ -641,7 +690,7 @@
         </section>
 
         <!-- Stock de Producción -->
-        <section class="stock-section" aria-labelledby="stock-title">
+        <section class="stock-section" data-panel-view="operaciones" aria-labelledby="stock-title">
             <div class="stock-section-head">
                 <div>
                     <span class="stock-eyebrow">Control de cocina</span>
@@ -662,8 +711,9 @@
                 <div class="empty-box"><p>Cargando inventario…</p></div>
             </div>
             <p class="stock-message" id="stock-message" role="status" hidden></p>
-        </section>        <!-- Barra de Filtros y Búsqueda -->
-        <section class="controls-bar">
+        </section>
+        <!-- Barra de Filtros y Búsqueda -->
+        <section class="controls-bar" data-panel-view="operaciones">
             <div class="filter-tabs">
                 <button class="filter-tab active" onclick="filtrarEstado('todos', this)">Todos</button>
                 <button class="filter-tab" onclick="filtrarEstado('pendiente', this)">⏳ Pendientes</button>
@@ -684,11 +734,52 @@
         </section>
 
         <!-- Grid de Pedidos -->
-        <section class="orders-grid" id="orders-container">
+        <section class="orders-grid" id="orders-container" data-panel-view="operaciones">
             <div class="empty-box">
                 <span class="empty-box-icon">⏳</span>
                 <h3>Cargando pedidos...</h3>
                 <p>Conectando con Supabase para cargar los pedidos.</p>
+            </div>
+        </section>
+
+        <section class="finance-view" id="finance-view" data-panel-view="finanzas" hidden aria-label="Ingresos y gastos">
+            <div class="finance-toolbar">
+                <div><span class="stock-eyebrow">Administración</span><h2>Facturación: ingresos y gastos</h2></div>
+                <div class="finance-month-controls" aria-label="Cambiar mes">
+                    <button type="button" aria-label="Mes anterior" onclick="moverMesFinanzas(-1)">←</button>
+                    <input type="month" id="finance-month" aria-label="Mes del calendario">
+                    <button type="button" aria-label="Mes siguiente" onclick="moverMesFinanzas(1)">→</button>
+                </div>
+            </div>
+            <div class="finance-summary" aria-live="polite">
+                <article class="finance-card income"><span>Ingresos del mes</span><strong id="finance-income-total">$0</strong></article>
+                <article class="finance-card expense"><span>Gastos del mes</span><strong id="finance-expense-total">$0</strong></article>
+                <article class="finance-card"><span>Disponible en caja</span><strong id="finance-balance-total">$0</strong></article>
+            </div>
+            <p class="finance-form-note">La caja suma los pedidos entregados y otros ingresos, y descuenta los gastos registrados, desde el primer movimiento hasta hoy.</p>
+            <div class="finance-columns">
+                <section class="finance-panel" aria-label="Calendario de movimientos">
+                    <div class="finance-calendar-head"><h2 id="finance-calendar-title">Calendario</h2></div>
+                    <div class="finance-calendar" id="finance-calendar" role="grid"></div>
+                    <div class="finance-day-list">
+                        <h3 id="finance-selected-title">Movimientos del día</h3>
+                        <div id="finance-day-entries"><p class="finance-form-note">Seleccioná una fecha para ver sus movimientos.</p></div>
+                    </div>
+                </section>
+                <section class="finance-panel">
+                    <form class="finance-form" id="finance-form">
+                        <h2>Registrar movimiento</h2>
+                <p class="finance-form-note">Al marcar un pedido como entregado, su total se suma automáticamente. Registrá aquí los gastos de producción y otros ingresos no vinculados a pedidos.</p>
+                        <div class="finance-field"><label for="finance-type">Tipo</label><select id="finance-type" required><option value="expense">Gasto de producción</option><option value="income">Otro ingreso manual</option></select></div>
+                        <div class="finance-field"><label for="finance-date">Fecha</label><input id="finance-date" type="date" required></div>
+                        <div class="finance-field"><label for="finance-category">Categoría</label><input id="finance-category" maxlength="80" placeholder="Ej.: ingredientes, envíos, venta" required></div>
+                        <div class="finance-field"><label for="finance-description">Detalle</label><textarea id="finance-description" maxlength="500" placeholder="Concepto o referencia" required></textarea></div>
+                        <div class="finance-field"><label for="finance-amount">Importe (ARS)</label><input id="finance-amount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00" required></div>
+                        <div class="finance-field"><label for="finance-receipt">Comprobante (opcional)</label><input id="finance-receipt" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"><span class="finance-form-note">PDF o imagen JPG, PNG o WebP. Máximo 6 MB.</span></div>
+                        <p class="finance-status" id="finance-status" role="status" aria-live="polite"></p>
+                        <button class="btn-panel-action primary finance-submit" id="finance-submit" type="submit">Guardar movimiento</button>
+                    </form>
+                </section>
             </div>
         </section>
 
@@ -703,9 +794,23 @@
         const stockBorradores = new Map();
         const stockGuardando = new Set();
         let stockErrorMessage = "";
+        let movimientosFinancieros = [];
+        let cajaAcumulada = 0;
+        let fechaFinanzasSeleccionada = "";
+        let finanzasRequestVersion = 0;
 
         document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("auth-form").addEventListener("submit", ingresarAlPanel);
+            const hoy = fechaLocal(new Date());
+            document.getElementById("finance-month").value = hoy.slice(0, 7);
+            document.getElementById("finance-date").value = hoy;
+            fechaFinanzasSeleccionada = hoy;
+            document.getElementById("finance-form").addEventListener("submit", guardarMovimientoFinanciero);
+            document.getElementById("finance-month").addEventListener("change", () => {
+                fechaFinanzasSeleccionada = document.getElementById("finance-month").value + "-01";
+                document.getElementById("finance-date").value = fechaFinanzasSeleccionada;
+                cargarFinanzas();
+            });
             if (!window.supabaseClient) {
                 mostrarErrorAcceso("No se cargó Supabase. Revisá tu conexión y recargá la página.");
                 return;
@@ -760,7 +865,144 @@
             document.getElementById("panel-content").hidden = false;
             cargarPedidos();
             // Refresco automático cada 45 segundos
-            setInterval(cargarPedidos, 45000);
+            setInterval(() => {
+                cargarPedidos();
+                if (!document.getElementById("finance-view").hidden) cargarFinanzas();
+            }, 45000);
+        }
+
+        function cambiarVistaPanel(vista) {
+            document.querySelectorAll("[data-panel-view]").forEach(seccion => { seccion.hidden = seccion.dataset.panelView !== vista; });
+            document.querySelectorAll("[data-panel-tab]").forEach(tab => tab.setAttribute("aria-selected", String(tab.dataset.panelTab === vista)));
+            document.getElementById("panel-view-title").textContent = vista === "finanzas" ? "Facturación" : "Preparación & Entrega";
+            if (vista === "finanzas") cargarFinanzas();
+        }
+
+        function fechaLocal(fecha) {
+            return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}`;
+        }
+
+        async function cargarFinanzas() {
+            try {
+                const mes = document.getElementById("finance-month").value;
+                const version = ++finanzasRequestVersion;
+                const [year, month] = mes.split("-").map(Number);
+                const desde = `${mes}-01`;
+                const hasta = `${year + (month === 12 ? 1 : 0)}-${String(month === 12 ? 1 : month + 1).padStart(2, "0")}-01`;
+                document.getElementById("finance-status").textContent = "Sincronizando con Supabase…";
+                const [monthResult, cashResult] = await Promise.all([
+                    window.supabaseClient.from("finance_transactions")
+                        .select("id, entry_type, entry_date, category, description, amount, receipt_path, receipt_name, created_at")
+                        .gte("entry_date", desde).lt("entry_date", hasta)
+                        .order("entry_date", { ascending: true }).order("created_at", { ascending: true }),
+                    window.supabaseClient.from("finance_transactions")
+                        .select("entry_type, amount")
+                        .lte("entry_date", fechaLocal(new Date()))
+                ]);
+                if (version !== finanzasRequestVersion) return;
+                if (monthResult.error) throw monthResult.error;
+                if (cashResult.error) throw cashResult.error;
+                movimientosFinancieros = monthResult.data || [];
+                cajaAcumulada = (cashResult.data || []).reduce((sum, row) => sum + (row.entry_type === "income" ? 1 : -1) * Number(row.amount), 0);
+                document.getElementById("finance-status").textContent = "Sincronizado · accesible desde este panel.";
+                pintarResumenFinanzas(); pintarCalendarioFinanzas(); pintarMovimientosDelDia();
+            } catch (error) {
+                console.error("Error al sincronizar la facturación:", error);
+                document.getElementById("finance-status").textContent = "No se pudieron sincronizar los movimientos. Revisá la conexión y los permisos de Facturación en Supabase.";
+                movimientosFinancieros = [];
+                cajaAcumulada = 0;
+                pintarResumenFinanzas(); pintarCalendarioFinanzas(); pintarMovimientosDelDia();
+            }
+        }
+
+        function formatoARS(amount) { return new Intl.NumberFormat("es-AR", { style:"currency", currency:"ARS", maximumFractionDigits:2 }).format(Number(amount)||0); }
+        function pintarResumenFinanzas() {
+            const income = movimientosFinancieros.filter(m=>m.entry_type==="income").reduce((n,m)=>n+Number(m.amount),0);
+            const expense = movimientosFinancieros.filter(m=>m.entry_type==="expense").reduce((n,m)=>n+Number(m.amount),0);
+            document.getElementById("finance-income-total").textContent = formatoARS(income);
+            document.getElementById("finance-expense-total").textContent = formatoARS(expense);
+            document.getElementById("finance-balance-total").textContent = formatoARS(cajaAcumulada);
+        }
+
+        function pintarCalendarioFinanzas() {
+            const [year,month] = document.getElementById("finance-month").value.split("-").map(Number);
+            const first = new Date(year,month-1,1), offset = (first.getDay()+6)%7;
+            const last = new Date(year,month,0).getDate(), start = new Date(year,month-1,1-offset);
+            document.getElementById("finance-calendar-title").textContent = first.toLocaleDateString("es-AR",{month:"long",year:"numeric"});
+            const html = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].map(d=>`<span class="finance-weekday" role="columnheader">${d}</span>`);
+            const count = Math.ceil((offset+last)/7)*7, today = fechaLocal(new Date());
+            for(let i=0;i<count;i++) {
+                const date = new Date(start.getFullYear(),start.getMonth(),start.getDate()+i), key=fechaLocal(date), same=date.getMonth()===month-1;
+                const rows=movimientosFinancieros.filter(m=>m.entry_date===key);
+                const inc=rows.filter(m=>m.entry_type==="income").reduce((n,m)=>n+Number(m.amount),0), exp=rows.filter(m=>m.entry_type==="expense").reduce((n,m)=>n+Number(m.amount),0);
+                html.push(`<button type="button" class="finance-day${same?"":" muted"}${fechaFinanzasSeleccionada===key?" selected":""}${today===key?" today":""}" role="gridcell" aria-label="${date.toLocaleDateString("es-AR")}" onclick="seleccionarDiaFinanzas('${key}')"><span class="finance-day-number">${date.getDate()}</span>${inc?`<span class="finance-day-total">+${formatoARS(inc)}</span>`:""}${exp?`<span class="finance-day-expense">−${formatoARS(exp)}</span>`:""}</button>`);
+            }
+            document.getElementById("finance-calendar").innerHTML=html.join("");
+        }
+
+        function seleccionarDiaFinanzas(fecha) {
+            fechaFinanzasSeleccionada=fecha; document.getElementById("finance-date").value=fecha;
+            const mes=document.getElementById("finance-month");
+            if(mes.value!==fecha.slice(0,7)){mes.value=fecha.slice(0,7);cargarFinanzas();return;}
+            pintarCalendarioFinanzas();pintarMovimientosDelDia();
+        }
+
+        function pintarMovimientosDelDia() {
+            const date=new Date(`${fechaFinanzasSeleccionada}T12:00:00`);
+            document.getElementById("finance-selected-title").textContent=`Movimientos del ${date.toLocaleDateString("es-AR",{day:"numeric",month:"long",year:"numeric"})}`;
+            const rows=movimientosFinancieros.filter(m=>m.entry_date===fechaFinanzasSeleccionada), list=document.getElementById("finance-day-entries");
+            if(!rows.length){list.innerHTML='<p class="finance-form-note">No hay movimientos registrados en esta fecha.</p>';return;}
+            list.innerHTML=rows.map(m=>`<article class="finance-entry"><div class="finance-entry-main"><strong>${escapeHtml(m.category)}</strong><span>${escapeHtml(m.description)}</span>${m.receipt_path?`<a class="finance-receipt" href="#" onclick="abrirComprobante('${escapeHtml(m.receipt_path)}');return false">Ver comprobante · ${escapeHtml(m.receipt_name||"archivo")}</a>`:""}</div><span class="finance-entry-amount ${m.entry_type}">${m.entry_type==="income"?"+":"−"}${formatoARS(m.amount)}</span></article>`).join("");
+        }
+
+        async function abrirComprobante(path) {
+            const tab=window.open("about:blank","_blank");
+            try {
+                const { data, error } = await window.supabaseClient.storage.from("finance-receipts").createSignedUrl(path, 3600);
+                if(error) throw error;
+                if(tab) tab.location.href=data.signedUrl;
+            } catch(error) { if(tab) tab.close(); console.error(error);document.getElementById("finance-status").textContent="No se pudo abrir el comprobante. Revisá los permisos de Supabase."; }
+        }
+
+        function moverMesFinanzas(delta) {
+            const input=document.getElementById("finance-month"), [year,month]=input.value.split("-").map(Number), next=new Date(year,month-1+delta,1);
+            input.value=`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,"0")}`;
+            fechaFinanzasSeleccionada=input.value+"-01";document.getElementById("finance-date").value=fechaFinanzasSeleccionada;cargarFinanzas();
+        }
+
+        async function guardarMovimientoFinanciero(event) {
+            event.preventDefault();
+            const button=document.getElementById("finance-submit"), status=document.getElementById("finance-status"), file=document.getElementById("finance-receipt").files[0], amount=Number(document.getElementById("finance-amount").value);
+            if(!Number.isFinite(amount)||amount<=0){status.textContent="Ingresá un importe mayor que cero.";return;}
+            if(file&&(!["application/pdf","image/jpeg","image/png","image/webp"].includes(file.type)||file.size>6*1024*1024)){status.textContent="Adjuntá un PDF o imagen JPG, PNG o WebP de hasta 6 MB.";return;}
+            button.disabled=true;button.textContent="Guardando…";
+            let receiptPath = null;
+            try {
+                const { data: userData, error: userError } = await window.supabaseClient.auth.getUser();
+                if(userError || !userData.user) throw new Error("La sesión venció. Volvé a ingresar al panel.");
+                const fileTypes=["application/pdf","image/jpeg","image/png","image/webp"];
+                if(file&&(!fileTypes.includes(file.type)||file.size>6*1024*1024)) throw new Error("Adjuntá un PDF o una imagen JPG, PNG o WebP de hasta 6 MB.");
+                if(file) {
+                    const ext=file.name.includes(".")?file.name.split(".").pop().toLowerCase().replace(/[^a-z0-9]/g,""):"bin";
+                    receiptPath=`${userData.user.id}/${crypto.randomUUID()}.${ext}`;
+                    const { error: uploadError }=await window.supabaseClient.storage.from("finance-receipts").upload(receiptPath,file,{contentType:file.type,upsert:false});
+                    if(uploadError) throw uploadError;
+                }
+                const record={entry_type:document.getElementById("finance-type").value,entry_date:document.getElementById("finance-date").value,category:document.getElementById("finance-category").value.trim(),description:document.getElementById("finance-description").value.trim(),amount,receipt_path:receiptPath,receipt_name:file?file.name:null};
+                const { error }=await window.supabaseClient.from("finance_transactions").insert(record);
+                if(error) throw error;
+                fechaFinanzasSeleccionada=record.entry_date;document.getElementById("finance-month").value=record.entry_date.slice(0,7);
+                document.getElementById("finance-form").reset();document.getElementById("finance-date").value=record.entry_date;
+                status.textContent="Movimiento guardado y sincronizado con Supabase.";mostrarToast("Movimiento guardado");await cargarFinanzas();
+            } catch(error) {
+                console.error(error);
+                if(receiptPath) {
+                    const { error: cleanupError }=await window.supabaseClient.storage.from("finance-receipts").remove([receiptPath]);
+                    if(cleanupError) console.error("No se pudo limpiar el comprobante temporal:",cleanupError);
+                }
+                status.textContent=error.message||"No se pudo guardar. Verificá la configuración de Supabase.";
+            }
+            finally { button.disabled=false;button.textContent="Guardar movimiento"; }
         }
 
         async function cerrarSesion() {
