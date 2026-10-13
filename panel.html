@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Pedidos | Envasados al Vacío Gourmet</title>
+    
+    <!-- Tipografía idéntica a index.html -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+    <script src="supabase-config.js"></script>
+
+    <style>
+        /* Estilos específicos del Dashboard adaptados a la paleta Gourmet de styles.css */
+        .panel-container {
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+        }
+
+        .panel-header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            padding: 5px 14px;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 700;
+            border: 1px solid var(--accent-border);
+            margin-bottom: 12px;
+        }
+
+        .panel-title-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .panel-title-area h1 {
+            font-size: clamp(1.8rem, 3.5vw, 2.3rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .panel-title-area h1 span {
+            color: var(--accent);
+        }
+
+        .btn-panel-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 9px 16px;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .btn-panel-action:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .btn-panel-action.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .btn-panel-action.primary:hover {
+            background: var(--accent-hover);
+            color: #fff;
+        }
+
+        /* KPIs / Métricas */
+        .kpis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .kpi-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px 20px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .kpi-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .kpi-value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1;
+        }
+
+        .kpi-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            background: var(--bg-subtle);
+        }
+
+        /* Barra de Filtros y Búsqueda */
+        .controls-bar {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .filter-tabs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-light);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-tab:hover {
+            color: var(--text-main);
+            background: #e9eee9;
+        }
+
+        .filter-tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #ffffff;
+        }
+
+        .search-container {
+            min-width: 260px;
+            flex: 1;
+            max-width: 360px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            outline: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            background: #ffffff;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        /* Grid de Pedidos */
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 640px) {
+            .orders-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .order-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+            transition: all 0.25s;
+        }
+
+        .order-card:hover {
+            border-color: var(--accent-border);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .order-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .order-code {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .order-date {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Estados (Badges Gourmet) */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pendiente {
+            background: var(--gold-soft);
+            color: var(--gold);
+            border: 1px solid var(--gold-border);
+        }
+
+        .status-en_preparacion {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+
+        .status-en_camino {
+            background: #f5f3ff;
+            color: #7c3aed;
+            border: 1px solid #ddd6fe;
+        }
+
+        .status-entregado {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1px solid var(--accent-border);
+        }
+
+        .status-cancelado {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        /* Cliente y Envío */
+        .customer-card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin: 6px 0;
+        }
+
+        .customer-card-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .customer-card-meta {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Lista de productos */
+        .order-card-items {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+
+        .order-card-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+        }
+
+        .order-card-item-qty {
+            font-weight: 800;
+            color: var(--accent);
+            margin-right: 4px;
+        }
+
+        .order-card-item-price {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* Notas del cliente */
+        .order-card-note {
+            background: var(--gold-soft);
+            border-left: 3px solid var(--gold);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            color: #7a5814;
+            line-height: 1.4;
+        }
+
+        /* Total */
+        .order-card-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding-top: 6px;
+        }
+
+        .order-card-total-row span:first-child {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .order-card-total-val {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        /* Selector de actualización */
+        .order-status-update {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .order-status-update label {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+        }
+
+        .order-status-select {
+            background: var(--bg-page);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .order-status-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        /* Empty & Loading State */
+        .empty-box {
+            grid-column: 1 / -1;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-box-icon {
+            font-size: 2.4rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .empty-box h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        /* Toast notification */
+        .toast-popup {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--text-main);
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-hover);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header idéntico a index.html -->
+    <header class="header">
+        <div class="header-inner">
+            <a href="index.html" class="brand-link">
+                <img src="logo.png" alt="Envasados al Vacío" class="brand-logo" width="160" height="44">
+                <span class="brand-sub">Panel de Control</span>
+            </a>
+            <div class="header-right">
+                <a href="index.html" class="btn-panel-action">
+                    <span>🛒 Ver Catálogo</span>
+                </a>
+                <button class="btn-panel-action primary" onclick="cargarPedidos()">
+                    <span id="refresh-spinner">🔄</span>
+                    <span>Actualizar</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal del Panel -->
+    <main class="panel-container">
+
+        <!-- Encabezado del Dashboard -->
+        <div class="panel-title-area">
+            <div>
+                <div class="panel-header-badge">👨‍🍳 Gestión de Pedidos & Cocina</div>
+                <h1>Panel de <span>Preparación & Entrega</span></h1>
+            </div>
+            <div>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                    Actualización automática cada 45 segundos
+                </span>
+            </div>
+        </div>
+
+        <!-- Indicadores KPIs -->
+        <section class="kpis-grid">
+            <div class="kpi-card">
+                <div>
+                    <span class="kpi-label">Total Pedidos</span>
+                    <div class="kpi-value" id="kpi-total">0</div>
+                </div>
+                <div class="kpi-icon">📦</div>
+            </div>
+
+            <div class="kpi-card">
+                <div>
+                    <span class="kpi-label">Pendientes</span>
+                    <div class="kpi-value" id="kpi-pending" style="color: var(--gold);">0</div>
+                </div>
+                <div class="kpi-icon">⏳</div>
+            </div>
+
+            <div class="kpi-card">
+                <div>
+                    <span class="kpi-label">En Cocina</span>
+                    <div class="kpi-value" id="kpi-prep" style="color: #2563eb;">0</div>
+                </div>
+                <div class="kpi-icon">🔥</div>
+            </div>
+
+            <div class="kpi-card">
+                <div>
+                    <span class="kpi-label">En Reparto</span>
+                    <div class="kpi-value" id="kpi-delivery" style="color: #7c3aed;">0</div>
+                </div>
+                <div class="kpi-icon">🛵</div>
+            </div>
+
+            <div class="kpi-card">
+                <div>
+                    <span class="kpi-label">Entregados</span>
+                    <div class="kpi-value" id="kpi-done" style="color: var(--accent);">0</div>
+                </div>
+                <div class="kpi-icon">✅</div>
+            </div>
+        </section>
+
+        <!-- Barra de Filtros y Búsqueda -->
+        <section class="controls-bar">
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filtrarEstado('todos', this)">Todos</button>
+                <button class="filter-tab" onclick="filtrarEstado('pendiente', this)">⏳ Pendientes</button>
+                <button class="filter-tab" onclick="filtrarEstado('en_preparacion', this)">🔥 En Cocina</button>
+                <button class="filter-tab" onclick="filtrarEstado('en_camino', this)">🛵 En Reparto</button>
+                <button class="filter-tab" onclick="filtrarEstado('entregado', this)">✅ Entregados</button>
+            </div>
+
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    class="search-input" 
+                    placeholder="🔍 Buscar por cliente o dirección..." 
+                    oninput="filtrarPorTexto()"
+                />
+            </div>
+        </section>
+
+        <!-- Grid de Pedidos -->
+        <section class="orders-grid" id="orders-container">
+            <div class="empty-box">
+                <span class="empty-box-icon">⏳</span>
+                <h3>Cargando pedidos...</h3>
+                <p>Conectando con Supabase para cargar los pedidos.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let todosLosPedidos = [];
+        let filtroActual = 'todos';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarPedidos();
+            // Refresco automático cada 45 segundos
+            setInterval(cargarPedidos, 45000);
+        });
+
+        async function cargarPedidos() {
+            const spinner = document.getElementById("refresh-spinner");
+            if (spinner) spinner.style.display = "inline-block";
+
+            try {
+                if (!window.supabaseClient) {
+                    throw new Error("Cliente de Supabase no inicializado en supabase-config.js");
+                }
+
+                const { data, error } = await window.supabaseClient
+                    .from("store_orders")
+                    .select("*")
+                    .order("created_at", { ascending: false });
+
+                if (error) throw error;
+
+                todosLosPedidos = data || [];
+                actualizarKPIs();
+                renderizarPedidos();
+            } catch (err) {
+                console.error("Error al cargar pedidos:", err);
+                const container = document.getElementById("orders-container");
+                const mensajeError = err.message || "Error de conexión con la base de datos.";
+
+                container.innerHTML = `
+                    <div class="empty-box" style="border-color: #f1dfb8; background: #fffcf5;">
+                        <span class="empty-box-icon">⚠️</span>
+                        <h3 style="color: #8c6b1d;">No se pudieron sincronizar los pedidos</h3>
+                        <p style="max-width: 580px; margin: 8px auto 16px; font-size: 0.88rem; line-height: 1.5; color: #69521d;">
+                            ${escapeHtml(mensajeError)}
+                        </p>
+
+                        <button class="btn-panel-action primary" onclick="cargarPedidos()">
+                            <span>🔄 Reintentar sincronización</span>
+                        </button>
+                    </div>
+                `;
+            } finally {
+                if (spinner) spinner.style.display = "";
+            }
+        }
+
+        function actualizarKPIs() {
+            document.getElementById("kpi-total").textContent = todosLosPedidos.length;
+            document.getElementById("kpi-pending").textContent = todosLosPedidos.filter(p => !p.status || p.status === 'pendiente').length;
+            document.getElementById("kpi-prep").textContent = todosLosPedidos.filter(p => p.status === 'en_preparacion').length;
+            document.getElementById("kpi-delivery").textContent = todosLosPedidos.filter(p => p.status === 'en_camino').length;
+            document.getElementById("kpi-done").textContent = todosLosPedidos.filter(p => p.status === 'entregado').length;
+        }
+
+        function renderizarPedidos() {
+            const container = document.getElementById("orders-container");
+            const busqueda = (document.getElementById("search-input")?.value || "").toLowerCase().trim();
+
+            let pedidosFiltrados = todosLosPedidos.filter(p => {
+                const estado = p.status || 'pendiente';
+                const coincideEstado = (filtroActual === 'todos') || (estado === filtroActual);
+                
+                const coincideTexto = !busqueda || 
+                    (p.customer_name && p.customer_name.toLowerCase().includes(busqueda)) ||
+                    (p.delivery_address && p.delivery_address.toLowerCase().includes(busqueda));
+
+                return coincideEstado && coincideTexto;
+            });
+
+            if (pedidosFiltrados.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-box">
+                        <span class="empty-box-icon">📦</span>
+                        <h3>No hay pedidos aquí</h3>
+                        <p>No se encontraron pedidos con el filtro o búsqueda actual.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = pedidosFiltrados.map(pedido => {
+                const estado = pedido.status || 'pendiente';
+                const fecha = pedido.created_at ? new Date(pedido.created_at).toLocaleString('es-AR', {
+                    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+                }) : 'Reciente';
+
+                const badgeLabels = {
+                    'pendiente': '⏳ Pendiente',
+                    'en_preparacion': '🔥 En Cocina',
+                    'en_camino': '🛵 En Camino',
+                    'entregado': '✅ Entregado',
+                    'cancelado': '❌ Cancelado'
+                };
+
+                const items = Array.isArray(pedido.items) ? pedido.items : [];
+
+                return `
+                    <article class="order-card" data-id="${pedido.id}">
+                        <div>
+                            <div class="order-card-top">
+                                <div>
+                                    <span class="order-code">Pedido #${pedido.id ? String(pedido.id).slice(0, 8) : 'ORD'}</span>
+                                    <span class="order-date">${fecha} hs</span>
+                                </div>
+                                <span class="status-badge status-${estado}">${badgeLabels[estado] || estado}</span>
+                            </div>
+
+                            <div class="customer-card-info">
+                                <div class="customer-card-name">${escapeHtml(pedido.customer_name || 'Cliente')}</div>
+                                <div class="customer-card-meta">
+                                    <span>${pedido.delivery_method === 'delivery' ? '🛵' : '🏪'}</span>
+                                    <span>${pedido.delivery_method === 'delivery' ? escapeHtml(pedido.delivery_address || 'Envío a domicilio') : 'Retiro en el Local'}</span>
+                                </div>
+                                <div class="customer-card-meta">
+                                    <span>💳</span>
+                                    <span>${escapeHtml(pedido.payment_method || 'A convenir')}</span>
+                                </div>
+                            </div>
+
+                            <!-- Lista de platos/productos -->
+                            <div class="order-card-items">
+                                ${items.map(item => `
+                                    <div class="order-card-item-row">
+                                        <div>
+                                            <span class="order-card-item-qty">${item.quantity || 1}x</span>
+                                            <span>${escapeHtml(item.name || 'Producto')}</span>
+                                        </div>
+                                        <span class="order-card-item-price">$${Number((item.unit_price || 0) * (item.quantity || 1)).toLocaleString('es-AR')}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            ${pedido.notes ? `
+                                <div class="order-card-note" style="margin-top: 10px;">
+                                    <strong>Nota del cliente:</strong> ${escapeHtml(pedido.notes)}
+                                </div>
+                            ` : ''}
+
+                            <div class="order-card-total-row" style="margin-top: 12px;">
+                                <span>Total del pedido:</span>
+                                <span class="order-card-total-val">$${Number(pedido.total || 0).toLocaleString('es-AR')}</span>
+                            </div>
+                        </div>
+
+                        <!-- Selector para actualizar estado -->
+                        <div class="order-status-update">
+                            <label>Actualizar Estado</label>
+                            <select class="order-status-select" onchange="cambiarEstadoPedido('${pedido.id}', this.value)">
+                                <option value="pendiente" ${estado === 'pendiente' ? 'selected' : ''}>⏳ Pendiente (Recibido)</option>
+                                <option value="en_preparacion" ${estado === 'en_preparacion' ? 'selected' : ''}>🔥 En Cocina / Preparación</option>
+                                <option value="en_camino" ${estado === 'en_camino' ? 'selected' : ''}>🛵 En Reparto / Despachado</option>
+                                <option value="entregado" ${estado === 'entregado' ? 'selected' : ''}>✅ Entregado / Finalizado</option>
+                                <option value="cancelado" ${estado === 'cancelado' ? 'selected' : ''}>❌ Cancelado</option>
+                            </select>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        async function cambiarEstadoPedido(pedidoId, nuevoEstado) {
+            try {
+                if (!window.supabaseClient) {
+                    alert("No se encontró la conexión con Supabase");
+                    return;
+                }
+
+                const { error } = await window.supabaseClient
+                    .from("store_orders")
+                    .update({ status: nuevoEstado })
+                    .eq("id", pedidoId);
+
+                if (error) throw error;
+
+                // Actualizar estado local
+                const index = todosLosPedidos.findIndex(p => p.id === pedidoId);
+                if (index !== -1) {
+                    todosLosPedidos[index].status = nuevoEstado;
+                }
+
+                actualizarKPIs();
+                renderizarPedidos();
+                mostrarToast(`Estado actualizado a "${nuevoEstado.replace('_', ' ')}"`);
+            } catch (err) {
+                console.error("Error al actualizar estado:", err);
+                alert("No se pudo actualizar el estado: " + err.message);
+                cargarPedidos();
+            }
+        }
+
+        function filtrarEstado(estado, btnElement) {
+            filtroActual = estado;
+            document.querySelectorAll(".filter-tab").forEach(tab => tab.classList.remove("active"));
+            if (btnElement) btnElement.classList.add("active");
+            renderizarPedidos();
+        }
+
+        function filtrarPorTexto() {
+            renderizarPedidos();
+        }
+
+        function mostrarToast(mensaje) {
+            const toast = document.createElement("div");
+            toast.className = "toast-popup";
+            toast.innerHTML = `<span>✓</span> <span>${escapeHtml(mensaje)}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2800);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>
