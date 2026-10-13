@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="styles.css">
 
     <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
 
     <style>
@@ -606,7 +606,7 @@
 
             try {
                 if (!window.supabaseClient) {
-                    throw new Error("Cliente de Supabase no inicializado en supabase-config.js");
+                    throw new Error("No se cargó el SDK de Supabase. Revisá la conexión al CDN y recargá la página.");
                 }
 
                 const { data, error } = await window.supabaseClient
