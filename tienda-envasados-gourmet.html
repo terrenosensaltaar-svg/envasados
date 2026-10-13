@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envasados al Vacío Gourmet | Sé tu propio Chef</title>
+    <!-- Preconnect y carga ultra-rápida de tipografía con swap para no bloquear render -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap"></noscript>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js" defer></script>
+    <script src="supabase-config.js" defer></script>
+    <script src="products.js" defer></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+
+    <!-- Header con logo y acceso al carrito -->
+    <header class="header">
+        <div class="header-inner">
+            <a href="#" class="brand-link">
+                <img src="logo.png" alt="Envasados al Vacío" class="brand-logo" width="160" height="44" fetchpriority="high">
+                <span class="brand-sub">Catálogo</span>
+            </a>
+            <div class="header-right">
+                <button class="btn-cart" onclick="toggleCart(true)">
+                    <span>🛒 Mi Pedido</span>
+                    <span class="cart-pill cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero con enfoque: Sé tu propio chef en casa -->
+    <section class="hero">
+        <div class="hero-pill">👨‍🍳 Experiencia de cocina en tu hogar</div>
+        <h1>Envasados al Vacío Gourmet,<br><span>conviértete en tu propio chef</span></h1>
+        <p>Cortes seleccionados, marinados frescos y platos de olla envasados al vacío. Sin conservantes y listos para regenerar o cocinar en minutos con sabor y textura de restaurante.</p>
+        <div class="hero-badges">
+            <span>⏱️ Listo en 10-15 min</span>
+            <span>🌿 100% Sabor natural</span>
+            <span>❄️ Conservación al vacío</span>
+            <span>🛵 Envío refrigerado</span>
+        </div>
+    </section>
+
+    <!-- Grid de los 4 platos principales -->
+    <main class="main-content">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title">Nuestra Selección de la Semana</h2>
+                <p class="section-subtitle">Platos listos para regenerar y cortes listos para cocer en minutos</p>
+            </div>
+        </div>
+
+        <div class="products-grid" id="products-grid">
+            <!-- Cargado dinámicamente desde products.js -->
+        </div>
+    </main>
+
+    <!-- Beneficios del chef en casa -->
+    <section class="chef-tips-section">
+        <div class="section-head" style="justify-content: center; text-align: center;">
+            <div>
+                <h3 class="section-title">¿Por qué cocinar con envasados al vacío?</h3>
+                <p class="section-subtitle">Técnica culinaria profesional adaptada para que disfrutes en tu casa sin complicaciones</p>
+            </div>
+        </div>
+
+        <div class="tips-grid">
+            <div class="tip-card">
+                <div class="tip-icon">🫕</div>
+                <h4>Jugosidad 100% Concentrada</h4>
+                <p>Al cocinarse o marinarse al vacío, los jugos y aromas no se evaporan, logrando carnes ultra tiernas y sabrosas.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">⏱️</div>
+                <h4>Ahorro de Tiempo Real</h4>
+                <p>Olvídate de picar, marinar por horas o ensuciar múltiples ollas. Abres la bolsa, regeneras y emplatas en minutos.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">❄️</div>
+                <h4>Frescura Prolongada</h4>
+                <p>La ausencia de oxígeno conserva de forma completamente natural en tu refrigerador sin necesidad de químicos.</p>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">⭐</div>
+                <h4>Resultado Gourmet Siempre</h4>
+                <p>Punto de cocción parejo y controlado en cada plato para que sorprendas a tu familia e invitados.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= SECCIÓN POLLITA LU (AL FINAL DEL LANDING) ================= -->
+    <section class="pollita-showcase">
+        <div class="pollita-container">
+            
+            <!-- Banner oficial panorámico -->
+            <div class="pollita-banner-frame">
+                <img src="banner_pollita_chef.jpg" alt="Pollita Lu - Congelados al Vacío Salta" class="pollita-banner-img" width="850" height="478" loading="lazy" decoding="async">
+            </div>
+
+            <!-- Caja explicativa y variedades de sabores -->
+            <div class="pollita-content-box">
+                <div class="pollita-header-row">
+                    <div class="pollita-head-left">
+                        <h3>Línea Pollita Lu: El sabor del campo en tu mesa</h3>
+                        <p>Cortes marinados al vacío listos para cocinar. Solo sacas de la bolsa, doras y sirves como un chef profesional.</p>
+                    </div>
+                    <button class="btn-consult-flavors" onclick="consultPollitaLu('Línea Pollita Lu')">
+                        <span>💬 Pedir Variedades por WhatsApp</span>
+                    </button>
+                </div>
+
+                <!-- 6 Variedades gourmet de marinado -->
+                <div class="flavors-pills-grid">
+                    <div class="flavor-item">
+                        <div class="flavor-icon">🔥</div>
+                        <div class="flavor-text">
+                            <strong>Estilo Parrillero</strong>
+                            <span>Sabor intenso, ahumado y jugoso para parrilla o plancha.</span>
+                        </div>
+                    </div>
+
+                    <div class="flavor-item">
+                        <div class="flavor-icon">🍯</div>
+                        <div class="flavor-text">
+                            <strong>Mostaza Ajo y Miel</strong>
+                            <span>Toque dulce y suave, caramelizado dorado irresistible.</span>
+                        </div>
+                    </div>
+
+                    <div class="flavor-item">
+                        <div class="flavor-icon">🌶️</div>
+                        <div class="flavor-text">
+                            <strong>Pimentón Ahumado</strong>
+                            <span>Ajo confitado y especias con fondo ahumado y picor justo.</span>
+                        </div>
+                    </div>
+
+                    <div class="flavor-item">
+                        <div class="flavor-icon">🌿</div>
+                        <div class="flavor-text">
+                            <strong>Curry & Nuez Moscada</strong>
+                            <span>Sabor exótico, aromático y especiado de gran perfil.</span>
+                        </div>
+                    </div>
+
+                    <div class="flavor-item">
+                        <div class="flavor-icon">🌱</div>
+                        <div class="flavor-text">
+                            <strong>Finas Hierbas</strong>
+                            <span>Fresco y muy natural con romero, tomillo y orégano de huerta.</span>
+                        </div>
+                    </div>
+
+                    <div class="flavor-item">
+                        <div class="flavor-icon">🧄</div>
+                        <div class="flavor-text">
+                            <strong>Provenzal Clásico</strong>
+                            <span>Ajo picado y perejil fresco. El gran clásico infaltable.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>© 2026 Envasados al Vacío & Pollita Lu · Salta, Argentina</p>
+        <p style="margin-top: 4px; font-size: 0.8rem; color: var(--accent); font-weight: 600;">Pedidos directos por WhatsApp: 387 228 3546</p>
+    </footer>
+
+    <!-- Botón flotante para móviles -->
+    <div class="cart-float" id="cart-float" onclick="toggleCart(true)">
+        <div>
+            <span>🛒</span>
+            <span style="font-weight: 700; margin-left: 6px;">Ver pedido (<span class="cart-count">0</span>)</span>
+        </div>
+        <div style="font-weight: 800;" id="float-total">$0</div>
+    </div>
+
+    <!-- Drawer de Pedido -->
+    <div class="drawer-overlay" id="drawer-overlay" onclick="toggleCart(false)"></div>
+    <aside class="drawer" id="drawer">
+        <div class="drawer-header">
+            <h3>Tu Pedido Gourmet</h3>
+            <button class="btn-close" onclick="toggleCart(false)">✕</button>
+        </div>
+
+        <div class="drawer-body">
+            <div id="cart-empty" style="text-align: center; color: var(--text-muted); padding: 40px 10px;">
+                <p style="font-size: 2rem; margin-bottom: 8px;">🍽️</p>
+                <p>Tu pedido está vacío.</p>
+            </div>
+
+            <div class="cart-items" id="cart-items"></div>
+
+            <div class="checkout-box" id="checkout-box" style="display: none;">
+                <h4>Datos para el envío</h4>
+
+                <div class="form-group">
+                    <label class="form-label">Modalidad de entrega</label>
+                    <select class="form-select" onchange="setDeliveryMethod(this.value)">
+                        <option value="delivery">Envío a domicilio</option>
+                        <option value="pickup">Retiro en local ($0)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nombre y apellido *</label>
+                    <input type="text" id="cust-name" class="form-input" placeholder="Tu nombre">
+                </div>
+
+                <div class="form-group" id="address-group">
+                    <label class="form-label">Dirección de entrega *</label>
+                    <input type="text" id="cust-address" class="form-input" placeholder="Calle, número y comuna/barrio">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Medio de pago</label>
+                    <select class="form-select" id="cust-payment">
+                        <option value="Transferencia">Transferencia bancaria</option>
+                        <option value="Efectivo contra entrega">Efectivo contra entrega</option>
+                        <option value="Link de pago / Tarjeta">Link de pago / Tarjeta</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Notas o comentarios</label>
+                    <input type="text" id="cust-notes" class="form-input" placeholder="Ej: Punto de entrega, horario preferido...">
+                </div>
+            </div>
+        </div>
+
+        <div class="drawer-footer" id="drawer-footer" style="display: none;">
+            <div class="price-row">
+                <span>Subtotal:</span>
+                <span id="subtotal-val">$0</span>
+            </div>
+            <div class="price-row">
+                <span>Envío:</span>
+                <span id="shipping-val">$2.500</span>
+            </div>
+            <div class="price-row total">
+                <span>Total a pagar:</span>
+                <span id="total-val">$0</span>
+            </div>
+
+            <button class="btn-whatsapp-send" onclick="sendWhatsApp()">
+                <span>💬 Enviar Pedido por WhatsApp</span>
+            </button>
+        </div>
+    </aside>
+</body>
+</html>

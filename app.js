@@ -251,10 +251,11 @@ async function sendWhatsApp() {
         submitButton.setAttribute("aria-busy", "true");
     }
 
-    // Intentar registrar en Supabase si está disponible de forma no bloqueante para el cliente
+    // Registrar el pedido antes de abrir WhatsApp y comprobar también los errores
+    // devueltos por PostgREST (no siempre se rechaza la promesa).
     if (window.supabaseClient) {
         try {
-            await window.supabaseClient.from("store_orders").insert({
+            const { error } = await window.supabaseClient.from("store_orders").insert({
                 customer_name: name,
                 delivery_method: deliveryMethod,
                 delivery_address: deliveryMethod === "delivery" ? address : "",
@@ -273,9 +274,14 @@ async function sendWhatsApp() {
                 shipping,
                 total
             });
+            if (error) throw error;
         } catch (error) {
             console.warn("Aviso: no se pudo sincronizar con la base de datos de respaldo:", error);
+            alert("No pudimos guardar el pedido en el sistema. Podés continuar por WhatsApp, pero avisá que el pedido no quedó registrado en el panel.");
         }
+    } else {
+        console.warn("No se pudo sincronizar: el cliente de Supabase no está inicializado.");
+        alert("No pudimos conectar con el sistema de pedidos. Podés continuar por WhatsApp, pero avisá que el pedido no quedó registrado en el panel.");
     }
 
     // Abrir WhatsApp con el pedido generado
