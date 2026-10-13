@@ -504,18 +504,41 @@
         [hidden] { display: none !important; }
 
         /* Inventario de producción */
-        .stock-section { margin: 0 0 28px; padding: 22px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-soft); }
-        .stock-section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
-        .stock-section-head h2 { margin: 0 0 5px; color: var(--text-main); font-size: 1.2rem; font-weight: 800; }
-        .stock-section-head p { margin: 0; color: var(--text-muted); font-size: .85rem; line-height: 1.5; }
-        .stock-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-        .stock-item { padding: 15px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: var(--bg-subtle); }
-        .stock-item-name { display: block; min-height: 2.5em; margin-bottom: 12px; color: var(--text-main); font-size: .9rem; font-weight: 800; }
-        .stock-item-controls { display: flex; align-items: center; gap: 8px; }
-        .stock-quantity-input { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--text-main); font: inherit; font-weight: 700; }
-        .stock-save-button { flex: 0 0 auto; padding: 9px 12px; border: 0; border-radius: var(--radius-sm); background: var(--accent); color: #fff; font: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; }
-        .stock-save-button:hover { background: var(--accent-hover); }
-        .stock-message { margin-top: 14px !important; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--gold-soft); color: #775b19 !important; font-size: .82rem !important; }
+        .stock-section { margin: 0 0 28px; padding: clamp(18px, 2.6vw, 28px); background: linear-gradient(135deg, var(--bg-surface), var(--bg-subtle)); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-soft); }
+        .stock-section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; }
+        .stock-eyebrow { display: inline-block; margin-bottom: 7px; color: var(--accent); font-size: .68rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+        .stock-section-head h2 { margin: 0 0 6px; color: var(--text-main); font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: 850; }
+        .stock-section-head p { max-width: 650px; margin: 0; color: var(--text-muted); font-size: .88rem; line-height: 1.55; }
+        .stock-sync-status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 11px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg-surface); color: var(--text-muted); font-size: .78rem; font-weight: 700; white-space: nowrap; }
+        .stock-sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+        .stock-sync-status.is-ready .stock-sync-dot { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+        .stock-sync-status.is-error .stock-sync-dot { background: #b42318; box-shadow: 0 0 0 3px #fee4e2; }
+        .stock-summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 18px 0; }
+        .stock-summary-card { display: flex; flex-direction: column; gap: 5px; padding: 13px 15px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--bg-surface) 88%, transparent); }
+        .stock-summary-card span { color: var(--text-muted); font-size: .74rem; font-weight: 700; }
+        .stock-summary-card strong { color: var(--text-main); font-size: 1.15rem; font-weight: 850; }
+        .stock-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr)); gap: 14px; }
+        .stock-item { min-width: 0; padding: 16px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: var(--bg-surface); transition: border-color .2s, transform .2s, box-shadow .2s; }
+        .stock-item:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: var(--shadow-soft); }
+        .stock-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+        .stock-product-icon { display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 auto; border-radius: 12px; background: var(--accent-soft); font-size: 1.15rem; }
+        .stock-item-name { display: block; min-height: 2.6em; margin: 2px 0 12px; color: var(--text-main); font-size: .9rem; font-weight: 800; line-height: 1.35; }
+        .stock-current { display: flex; align-items: baseline; gap: 6px; margin: 4px 0 14px; }
+        .stock-current strong { color: var(--text-main); font-size: 1.9rem; font-weight: 900; line-height: 1; }
+        .stock-current span { color: var(--text-muted); font-size: .78rem; }
+        .stock-level { padding: 5px 8px; border-radius: 999px; background: var(--bg-subtle); color: var(--text-muted); font-size: .66rem; font-weight: 800; white-space: nowrap; }
+        .stock-level.is-available { background: var(--accent-soft); color: var(--accent); }
+        .stock-level.is-empty { background: var(--gold-soft); color: #775b19; }
+        .stock-field-label { display: block; margin-bottom: 6px; color: var(--text-muted); font-size: .73rem; font-weight: 750; }
+        .stock-item-controls { display: flex; align-items: stretch; gap: 8px; }
+        .stock-quantity-input { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-subtle); color: var(--text-main); font: inherit; font-weight: 750; }
+        .stock-quantity-input:focus { outline: 3px solid var(--accent-soft); border-color: var(--accent); }
+        .stock-quantity-input:disabled { opacity: .65; cursor: not-allowed; }
+        .stock-save-button { flex: 0 0 auto; padding: 9px 13px; border: 0; border-radius: var(--radius-sm); background: var(--accent); color: #fff; font: inherit; font-size: .78rem; font-weight: 850; cursor: pointer; transition: background .2s, opacity .2s; }
+        .stock-save-button:hover:not(:disabled) { background: var(--accent-hover); }
+        .stock-save-button:disabled { opacity: .55; cursor: not-allowed; }
+        .stock-card-note { margin: 9px 0 0; color: var(--text-muted); font-size: .7rem; line-height: 1.4; }
+        .stock-message { margin-top: 14px !important; padding: 11px 13px; border: 1px solid #f2d89a; border-radius: var(--radius-sm); background: var(--gold-soft); color: #775b19 !important; font-size: .82rem !important; line-height: 1.5; }
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -621,17 +644,25 @@
         <section class="stock-section" aria-labelledby="stock-title">
             <div class="stock-section-head">
                 <div>
-                    <h2 id="stock-title">📦 Stock de producción</h2>
-                    <p>Actualizá las unidades disponibles. Al entregar un pedido, el sistema descuenta automáticamente sus productos.</p>
+                    <span class="stock-eyebrow">Control de cocina</span>
+                    <h2 id="stock-title">Stock de producción</h2>
+                    <p>Consultá las unidades disponibles y ajustá la cantidad producida. El valor confirmado se mantiene visible aunque el panel sincronice los pedidos.</p>
                 </div>
-                <span id="stock-updated" style="font-size:.8rem;color:var(--text-muted);">Cargando stock…</span>
+                <span class="stock-sync-status" id="stock-updated" role="status" aria-live="polite">
+                    <span class="stock-sync-dot" aria-hidden="true"></span>
+                    <span id="stock-updated-text">Cargando stock…</span>
+                </span>
             </div>
-            <div class="stock-grid" id="stock-grid">
+            <div class="stock-summary-row" aria-label="Resumen de inventario">
+                <div class="stock-summary-card"><span>Productos controlados</span><strong id="stock-products-count">4</strong></div>
+                <div class="stock-summary-card"><span>Unidades disponibles</span><strong id="stock-total-units">—</strong></div>
+                <div class="stock-summary-card"><span>Sincronización</span><strong style="font-size:.92rem">Cada 45 segundos</strong></div>
+            </div>
+            <div class="stock-grid" id="stock-grid" aria-live="polite">
                 <div class="empty-box"><p>Cargando inventario…</p></div>
             </div>
-            <p class="stock-message" id="stock-message" hidden></p>
-        </section>
-        <!-- Barra de Filtros y Búsqueda -->
+            <p class="stock-message" id="stock-message" role="status" hidden></p>
+        </section>        <!-- Barra de Filtros y Búsqueda -->
         <section class="controls-bar">
             <div class="filter-tabs">
                 <button class="filter-tab active" onclick="filtrarEstado('todos', this)">Todos</button>
@@ -667,6 +698,11 @@
         let todosLosPedidos = [];
         let filtroActual = 'todos';
         let stockConfigurado = false;
+        let stockCargaVersion = 0;
+        const stockRegistros = new Map();
+        const stockBorradores = new Map();
+        const stockGuardando = new Set();
+        let stockErrorMessage = "";
 
         document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("auth-form").addEventListener("submit", ingresarAlPanel);
@@ -780,82 +816,205 @@
         }
 
         const productosDeStock = [
-            { id: "prod-01", name: "Empanadas Árabes" },
-            { id: "prod-02", name: "Pollo al Horno con Papas" },
-            { id: "prod-03", name: "Puré de Papas con Solomillo a la Cerveza" },
-            { id: "prod-04", name: "Pollo Condimentado Pollita Lu" }
+            { id: "prod-01", name: "Empanadas Árabes", icon: "🥟" },
+            { id: "prod-02", name: "Pollo al Horno con Papas", icon: "🍗" },
+            { id: "prod-03", name: "Puré de Papas con Solomillo a la Cerveza", icon: "🍽️" },
+            { id: "prod-04", name: "Pollo Condimentado Pollita Lu", icon: "🍗" }
         ];
+
+        function registrarBorradorStock(productId, value) {
+            stockBorradores.set(productId, value);
+            const button = document.getElementById("stock-save-" + productId);
+            const quantity = Number(value);
+            if (button) button.disabled = !stockConfigurado || !stockRegistros.has(productId) || value.trim() === "" || !Number.isInteger(quantity) || quantity < 0 || stockGuardando.has(productId);
+        }
+
+        function pintarStock(registros = [...stockRegistros.values()]) {
+            const grid = document.getElementById("stock-grid");
+            const updated = document.getElementById("stock-updated-text");
+            const status = document.getElementById("stock-updated");
+            const message = document.getElementById("stock-message");
+            if (!grid) return;
+
+            const byId = new Map(registros.map(row => [row.product_id, row]));
+            stockConfigurado = byId.has("__stock_trigger_v1__");
+            stockRegistros.clear();
+            byId.forEach((row, id) => stockRegistros.set(id, row));
+
+            if (!grid.dataset.cardsReady) {
+                grid.innerHTML = productosDeStock.map(producto => `
+                    <article class="stock-item" data-stock-card="${producto.id}">
+                        <div class="stock-card-top">
+                            <span class="stock-product-icon" aria-hidden="true">${producto.icon}</span>
+                            <span class="stock-level" id="stock-level-${producto.id}">Cargando</span>
+                        </div>
+                        <label class="stock-item-name" for="stock-${producto.id}">${escapeHtml(producto.name)}</label>
+                        <div class="stock-current" aria-live="polite">
+                            <strong id="stock-current-${producto.id}">—</strong>
+                            <span>unidades disponibles</span>
+                        </div>
+                        <label class="stock-field-label" for="stock-${producto.id}">Ajustar cantidad disponible</label>
+                        <div class="stock-item-controls">
+                            <input class="stock-quantity-input" id="stock-${producto.id}" type="number" min="0" step="1" inputmode="numeric" placeholder="Sin dato" aria-label="Ajustar stock de ${escapeHtml(producto.name)}" oninput="registrarBorradorStock('${producto.id}', this.value)">
+                            <button class="stock-save-button" id="stock-save-${producto.id}" type="button" onclick="guardarStock('${producto.id}')">Guardar</button>
+                        </div>
+                        <p class="stock-card-note" id="stock-note-${producto.id}">El contador muestra el último valor confirmado.</p>
+                    </article>
+                `).join("");
+                grid.dataset.cardsReady = "true";
+            }
+
+            let totalUnidades = 0;
+            let productosActivos = 0;
+            productosDeStock.forEach(producto => {
+                const row = byId.get(producto.id);
+                const current = document.getElementById("stock-current-" + producto.id);
+                const input = document.getElementById("stock-" + producto.id);
+                const button = document.getElementById("stock-save-" + producto.id);
+                const level = document.getElementById("stock-level-" + producto.id);
+                const note = document.getElementById("stock-note-" + producto.id);
+                const draft = stockBorradores.get(producto.id);
+                const isSaving = stockGuardando.has(producto.id);
+
+                if (row) {
+                    const quantity = Number(row.quantity);
+                    totalUnidades += quantity;
+                    productosActivos += 1;
+                    if (current) current.textContent = String(quantity);
+                    if (level) {
+                        level.textContent = quantity > 0 ? "Disponible" : "Sin unidades";
+                        level.classList.toggle("is-available", quantity > 0);
+                        level.classList.toggle("is-empty", quantity === 0);
+                    }
+                    if (input && draft === undefined && document.activeElement !== input) input.value = String(quantity);
+                    if (note) note.textContent = draft !== undefined ? "Tenés cambios sin guardar." : "El contador muestra el último valor confirmado.";
+                } else {
+                    if (current) current.textContent = "—";
+                    if (level) {
+                        level.textContent = "Sin configurar";
+                        level.classList.remove("is-available", "is-empty");
+                    }
+                    if (input && draft === undefined && document.activeElement !== input) input.value = "";
+                    if (note) note.textContent = "Este producto aún no tiene un registro de stock.";
+                }
+                if (input) input.disabled = !stockConfigurado || !row || isSaving;
+                if (button) {
+                    button.textContent = isSaving ? "Guardando…" : "Guardar";
+                    const value = input ? Number(input.value) : NaN;
+                    button.disabled = !stockConfigurado || !row || isSaving || !input.value.trim() || !Number.isInteger(value) || value < 0;
+                }
+            });
+
+            const total = document.getElementById("stock-total-units");
+            const count = document.getElementById("stock-products-count");
+            if (total) total.textContent = productosActivos ? totalUnidades.toLocaleString("es-AR") : "—";
+            if (count) count.textContent = `${productosActivos} de ${productosDeStock.length}`;
+            if (status) {
+                status.classList.toggle("is-ready", stockConfigurado && !stockErrorMessage);
+                status.classList.toggle("is-error", Boolean(stockErrorMessage));
+            }
+            if (message) {
+                const configurationMessage = "Inventario pendiente de configuración. No marques pedidos como entregados hasta que estén cargados los registros de stock.";
+                message.hidden = stockConfigurado && !stockErrorMessage;
+                message.textContent = stockErrorMessage || (stockConfigurado ? "" : configurationMessage);
+            }
+            if (updated) updated.textContent = stockErrorMessage ? "Revisar sincronización" : (stockConfigurado ? "Guardado · " + new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) : "Configuración pendiente");
+            renderizarPedidos();
+        }
 
         async function cargarStock() {
             const grid = document.getElementById("stock-grid");
-            const updated = document.getElementById("stock-updated");
+            const updated = document.getElementById("stock-updated-text");
+            const status = document.getElementById("stock-updated");
             const message = document.getElementById("stock-message");
-            if (!grid || !window.supabaseClient) return;
+            if (!grid || !window.supabaseClient || stockGuardando.size > 0) return;
+
+            const version = ++stockCargaVersion;
             try {
                 const { data, error } = await window.supabaseClient
                     .from("production_stock")
                     .select("product_id, product_name, quantity, updated_at")
                     .order("product_id");
+                if (version !== stockCargaVersion) return;
                 if (error) throw error;
-                stockConfigurado = (data || []).some(row => row.product_id === "__stock_trigger_v1__");
-                const stockById = new Map((data || []).map(row => [row.product_id, row]));
-                grid.innerHTML = productosDeStock.map(producto => {
-                    const stock = stockById.get(producto.id);
-                    const quantity = stock ? Number(stock.quantity) : 0;
-                    return `
-                        <article class="stock-item">
-                            <label class="stock-item-name" for="stock-${producto.id}">${escapeHtml(stock?.product_name || producto.name)}</label>
-                            <div class="stock-item-controls">
-                                <input class="stock-quantity-input" id="stock-${producto.id}" type="number" min="0" step="1" value="${quantity}" aria-label="Unidades disponibles de ${escapeHtml(producto.name)}">
-                                <button class="stock-save-button" type="button" onclick="guardarStock('${producto.id}')">Guardar</button>
-                            </div>
-                        </article>
-                    `;
-                }).join("");
-                if (message) {
-                    message.hidden = stockConfigurado;
-                    message.textContent = stockConfigurado ? "" : "Ejecutá stock-produccion.sql en Supabase antes de marcar pedidos como entregados.";
-                }
-                if (updated) updated.textContent = stockConfigurado ? ("Actualizado " + new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })) : "Configuración pendiente";
-                renderizarPedidos();
+                if (status) status.classList.remove("is-error");
+                stockErrorMessage = "";
+                if (message) message.hidden = true;
+                pintarStock(data || []);
             } catch (error) {
+                if (version !== stockCargaVersion) return;
                 console.error("Error al cargar stock:", error);
                 stockConfigurado = false;
-                if (updated) updated.textContent = "Stock sin configurar";
+                stockErrorMessage = "No se pudo actualizar el inventario. Se conserva en pantalla el último valor mostrado. " + (error.message || "");
+                if (status) {
+                    status.classList.add("is-error");
+                    status.classList.remove("is-ready");
+                }
+                if (updated) updated.textContent = "No se pudo sincronizar";
+                if (!grid.dataset.cardsReady) pintarStock([]);
                 if (message) {
                     message.hidden = false;
-                    message.textContent = "Para activar el inventario, ejecutá una vez el archivo stock-produccion.sql en el SQL Editor de Supabase. " + (error.message || "");
+                    message.textContent = stockErrorMessage;
                 }
-                grid.innerHTML = "";
+                grid.querySelectorAll(".stock-quantity-input, .stock-save-button").forEach(control => control.disabled = true);
                 renderizarPedidos();
             }
         }
 
         async function guardarStock(productId) {
             const input = document.getElementById("stock-" + productId);
+            const button = document.getElementById("stock-save-" + productId);
+            const message = document.getElementById("stock-message");
             const quantity = Number(input?.value);
-            if (!Number.isInteger(quantity) || quantity < 0) {
-                alert("Ingresá un número entero igual o mayor que cero.");
+            if (!input?.value?.trim() || !Number.isInteger(quantity) || quantity < 0) {
+                if (message) {
+                    message.hidden = false;
+                    message.textContent = "Ingresá una cantidad entera igual o mayor que cero.";
+                }
                 input?.focus();
                 return;
             }
+            if (!stockConfigurado || !stockRegistros.has(productId)) {
+                if (message) {
+                    message.hidden = false;
+                    message.textContent = "No hay un registro de stock listo para este producto. Actualizá el panel y volvé a intentar.";
+                }
+                return;
+            }
+            if (stockGuardando.has(productId)) return;
+
+            stockBorradores.set(productId, String(quantity));
+            stockGuardando.add(productId);
+            stockCargaVersion += 1;
+            pintarStock([...stockRegistros.values()]);
             try {
                 const { data, error } = await window.supabaseClient
                     .from("production_stock")
                     .update({ quantity, updated_at: new Date().toISOString() })
                     .eq("product_id", productId)
-                    .select("product_id")
+                    .select("product_id, product_name, quantity, updated_at")
                     .maybeSingle();
                 if (error) throw error;
-                if (!data) throw new Error("No existe el producto en el stock. Ejecutá stock-produccion.sql en Supabase.");
+                if (!data) throw new Error("Supabase no confirmó el cambio. Verificá tu acceso de administrador y volvé a intentar.");
+                stockErrorMessage = "";
+                stockRegistros.set(productId, data);
+                stockBorradores.delete(productId);
                 const producto = productosDeStock.find(item => item.id === productId);
-                mostrarToast("Stock actualizado: " + (producto?.name || "producto"));
-                await cargarStock();
+                mostrarToast("Stock guardado: " + (producto?.name || "producto"));
             } catch (error) {
                 console.error("Error al guardar stock:", error);
-                alert("No se pudo guardar el stock: " + (error.message || "Error de conexión."));
+                stockErrorMessage = "No se pudo guardar el stock. El valor escrito se conserva para que puedas reintentar. " + (error.message || "");
+                if (message) {
+                    message.hidden = false;
+                    message.textContent = stockErrorMessage;
+                }
+            } finally {
+                stockGuardando.delete(productId);
+                pintarStock([...stockRegistros.values()]);
+                if (stockGuardando.size === 0) await cargarStock();
             }
         }
+
         function actualizarKPIs() {
             document.getElementById("kpi-total").textContent = todosLosPedidos.length;
             document.getElementById("kpi-pending").textContent = todosLosPedidos.filter(p => !p.status || p.status === 'pendiente').length;
