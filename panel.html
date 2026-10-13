@@ -503,6 +503,19 @@
         .auth-error { min-height: 1.4em; color: #b42318 !important; font-size: 0.9rem; }
         [hidden] { display: none !important; }
 
+        /* Inventario de producción */
+        .stock-section { margin: 0 0 28px; padding: 22px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-soft); }
+        .stock-section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+        .stock-section-head h2 { margin: 0 0 5px; color: var(--text-main); font-size: 1.2rem; font-weight: 800; }
+        .stock-section-head p { margin: 0; color: var(--text-muted); font-size: .85rem; line-height: 1.5; }
+        .stock-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+        .stock-item { padding: 15px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: var(--bg-subtle); }
+        .stock-item-name { display: block; min-height: 2.5em; margin-bottom: 12px; color: var(--text-main); font-size: .9rem; font-weight: 800; }
+        .stock-item-controls { display: flex; align-items: center; gap: 8px; }
+        .stock-quantity-input { width: 100%; min-width: 0; padding: 9px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--text-main); font: inherit; font-weight: 700; }
+        .stock-save-button { flex: 0 0 auto; padding: 9px 12px; border: 0; border-radius: var(--radius-sm); background: var(--accent); color: #fff; font: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; }
+        .stock-save-button:hover { background: var(--accent-hover); }
+        .stock-message { margin-top: 14px !important; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--gold-soft); color: #775b19 !important; font-size: .82rem !important; }
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -604,6 +617,20 @@
             </div>
         </section>
 
+        <!-- Stock de Producción -->
+        <section class="stock-section" aria-labelledby="stock-title">
+            <div class="stock-section-head">
+                <div>
+                    <h2 id="stock-title">📦 Stock de producción</h2>
+                    <p>Actualizá las unidades disponibles. Al entregar un pedido, el sistema descuenta automáticamente sus productos.</p>
+                </div>
+                <span id="stock-updated" style="font-size:.8rem;color:var(--text-muted);">Cargando stock…</span>
+            </div>
+            <div class="stock-grid" id="stock-grid">
+                <div class="empty-box"><p>Cargando inventario…</p></div>
+            </div>
+            <p class="stock-message" id="stock-message" hidden></p>
+        </section>
         <!-- Barra de Filtros y Búsqueda -->
         <section class="controls-bar">
             <div class="filter-tabs">
@@ -639,6 +666,7 @@
     <script>
         let todosLosPedidos = [];
         let filtroActual = 'todos';
+        let stockConfigurado = false;
 
         document.addEventListener("DOMContentLoaded", async () => {
             document.getElementById("auth-form").addEventListener("submit", ingresarAlPanel);
@@ -725,6 +753,7 @@
                 if (error) throw error;
 
                 todosLosPedidos = data || [];
+                cargarStock();
                 actualizarKPIs();
                 renderizarPedidos();
             } catch (err) {
@@ -750,6 +779,83 @@
             }
         }
 
+        const productosDeStock = [
+            { id: "prod-01", name: "Empanadas Árabes" },
+            { id: "prod-02", name: "Pollo al Horno con Papas" },
+            { id: "prod-03", name: "Puré de Papas con Solomillo a la Cerveza" },
+            { id: "prod-04", name: "Pollo Condimentado Pollita Lu" }
+        ];
+
+        async function cargarStock() {
+            const grid = document.getElementById("stock-grid");
+            const updated = document.getElementById("stock-updated");
+            const message = document.getElementById("stock-message");
+            if (!grid || !window.supabaseClient) return;
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from("production_stock")
+                    .select("product_id, product_name, quantity, updated_at")
+                    .order("product_id");
+                if (error) throw error;
+                stockConfigurado = (data || []).some(row => row.product_id === "__stock_trigger_v1__");
+                const stockById = new Map((data || []).map(row => [row.product_id, row]));
+                grid.innerHTML = productosDeStock.map(producto => {
+                    const stock = stockById.get(producto.id);
+                    const quantity = stock ? Number(stock.quantity) : 0;
+                    return `
+                        <article class="stock-item">
+                            <label class="stock-item-name" for="stock-${producto.id}">${escapeHtml(stock?.product_name || producto.name)}</label>
+                            <div class="stock-item-controls">
+                                <input class="stock-quantity-input" id="stock-${producto.id}" type="number" min="0" step="1" value="${quantity}" aria-label="Unidades disponibles de ${escapeHtml(producto.name)}">
+                                <button class="stock-save-button" type="button" onclick="guardarStock('${producto.id}')">Guardar</button>
+                            </div>
+                        </article>
+                    `;
+                }).join("");
+                if (message) {
+                    message.hidden = stockConfigurado;
+                    message.textContent = stockConfigurado ? "" : "Ejecutá stock-produccion.sql en Supabase antes de marcar pedidos como entregados.";
+                }
+                if (updated) updated.textContent = stockConfigurado ? ("Actualizado " + new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })) : "Configuración pendiente";
+                renderizarPedidos();
+            } catch (error) {
+                console.error("Error al cargar stock:", error);
+                stockConfigurado = false;
+                if (updated) updated.textContent = "Stock sin configurar";
+                if (message) {
+                    message.hidden = false;
+                    message.textContent = "Para activar el inventario, ejecutá una vez el archivo stock-produccion.sql en el SQL Editor de Supabase. " + (error.message || "");
+                }
+                grid.innerHTML = "";
+                renderizarPedidos();
+            }
+        }
+
+        async function guardarStock(productId) {
+            const input = document.getElementById("stock-" + productId);
+            const quantity = Number(input?.value);
+            if (!Number.isInteger(quantity) || quantity < 0) {
+                alert("Ingresá un número entero igual o mayor que cero.");
+                input?.focus();
+                return;
+            }
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from("production_stock")
+                    .update({ quantity, updated_at: new Date().toISOString() })
+                    .eq("product_id", productId)
+                    .select("product_id")
+                    .maybeSingle();
+                if (error) throw error;
+                if (!data) throw new Error("No existe el producto en el stock. Ejecutá stock-produccion.sql en Supabase.");
+                const producto = productosDeStock.find(item => item.id === productId);
+                mostrarToast("Stock actualizado: " + (producto?.name || "producto"));
+                await cargarStock();
+            } catch (error) {
+                console.error("Error al guardar stock:", error);
+                alert("No se pudo guardar el stock: " + (error.message || "Error de conexión."));
+            }
+        }
         function actualizarKPIs() {
             document.getElementById("kpi-total").textContent = todosLosPedidos.length;
             document.getElementById("kpi-pending").textContent = todosLosPedidos.filter(p => !p.status || p.status === 'pendiente').length;
@@ -855,7 +961,7 @@
                                 <option value="pendiente" ${estado === 'pendiente' ? 'selected' : ''}>⏳ Pendiente (Recibido)</option>
                                 <option value="en_preparacion" ${estado === 'en_preparacion' ? 'selected' : ''}>🔥 En Cocina / Preparación</option>
                                 <option value="en_camino" ${estado === 'en_camino' ? 'selected' : ''}>🛵 En Reparto / Despachado</option>
-                                <option value="entregado" ${estado === 'entregado' ? 'selected' : ''}>✅ Entregado / Finalizado</option>
+                                <option value="entregado" ${estado === 'entregado' ? 'selected' : ''} ${stockConfigurado ? '' : 'disabled'}>✅ Entregado${stockConfigurado ? ' / Finalizado' : ' / configurar stock primero'}</option>
                                 <option value="cancelado" ${estado === 'cancelado' ? 'selected' : ''}>❌ Cancelado</option>
                             </select>
                         </div>
@@ -885,6 +991,7 @@
                 }
 
                 actualizarKPIs();
+                await cargarStock();
                 renderizarPedidos();
                 mostrarToast(`Estado actualizado a "${nuevoEstado.replace('_', ' ')}"`);
             } catch (err) {
