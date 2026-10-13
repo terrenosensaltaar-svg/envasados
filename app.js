@@ -15,6 +15,7 @@ localStorage.removeItem("env_config");
 
 let cart = JSON.parse(localStorage.getItem("env_cart")) || [];
 let deliveryMethod = "delivery"; // "delivery" o "pickup"
+let pedidoEnviando = false;
 
 function formatPrice(val) {
     return `$${Number(val).toLocaleString('es-AR')}`;
@@ -66,6 +67,7 @@ function renderProducts() {
 }
 
 function addToCart(id) {
+    sessionStorage.removeItem("env_order_completed");
     const item = cart.find(c => c.id === id);
     if (item) {
         item.qty += 1;
@@ -118,7 +120,16 @@ function updateCartUI() {
 
     if (cart.length === 0) {
         if (list) list.innerHTML = "";
-        if (emptyMsg) emptyMsg.style.display = "block";
+        if (emptyMsg) {
+            emptyMsg.style.display = "block";
+            const completionMessage = sessionStorage.getItem("env_order_completed") === "true";
+            const icon = document.getElementById("cart-empty-icon");
+            const message = document.getElementById("cart-empty-message");
+            if (icon) icon.textContent = completionMessage ? "✅" : "🍽️";
+            if (message) message.textContent = completionMessage
+                ? "Gracias por su compra, su pedido está siendo preparado."
+                : "Tu pedido está vacío.";
+        }
         if (checkoutBox) checkoutBox.style.display = "none";
         if (drawerFooter) drawerFooter.style.display = "none";
     } else {
@@ -189,7 +200,7 @@ function toggleCart(open) {
 }
 
 async function sendWhatsApp() {
-    if (cart.length === 0) return;
+    if (cart.length === 0 || pedidoEnviando) return;
 
     const name = (document.getElementById("cust-name")?.value || "").trim();
     const address = (document.getElementById("cust-address")?.value || "").trim();
@@ -246,50 +257,56 @@ async function sendWhatsApp() {
     const url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`;
     const submitButton = document.querySelector(".btn-whatsapp-send");
 
+    pedidoEnviando = true;
     if (submitButton) {
         submitButton.disabled = true;
         submitButton.setAttribute("aria-busy", "true");
     }
 
-    // Registrar el pedido antes de abrir WhatsApp y comprobar también los errores
-    // devueltos por PostgREST (no siempre se rechaza la promesa).
-    if (window.supabaseClient) {
-        try {
-            const { error } = await window.supabaseClient.from("store_orders").insert({
-                customer_name: name,
-                delivery_method: deliveryMethod,
-                delivery_address: deliveryMethod === "delivery" ? address : "",
-                payment_method: payment,
-                notes,
-                items: cart.map(item => {
-                    const product = PRODUCTS.find(prod => prod.id === item.id);
-                    return {
-                        product_id: item.id,
-                        name: product ? product.name : "Producto",
-                        quantity: item.qty,
-                        unit_price: product ? product.price : 0
-                    };
-                }),
-                subtotal,
-                shipping,
-                total
-            });
-            if (error) throw error;
-        } catch (error) {
-            console.warn("Aviso: no se pudo sincronizar con la base de datos de respaldo:", error);
-            alert("No pudimos guardar el pedido en el sistema. Podés continuar por WhatsApp, pero avisá que el pedido no quedó registrado en el panel.");
+    try {
+        // Abrir durante el gesto del usuario para que el navegador no bloquee WhatsApp.
+        window.open(url, "_blank");
+
+        if (!window.supabaseClient) {
+            throw new Error("No se pudo conectar con el sistema de pedidos.");
         }
-    } else {
-        console.warn("No se pudo sincronizar: el cliente de Supabase no está inicializado.");
-        alert("No pudimos conectar con el sistema de pedidos. Podés continuar por WhatsApp, pero avisá que el pedido no quedó registrado en el panel.");
-    }
 
-    // Abrir WhatsApp con el pedido generado
-    window.open(url, "_blank");
+        const { error } = await window.supabaseClient.from("store_orders").insert({
+            customer_name: name,
+            delivery_method: deliveryMethod,
+            delivery_address: deliveryMethod === "delivery" ? address : "",
+            payment_method: payment,
+            notes,
+            items: cart.map(item => {
+                const product = PRODUCTS.find(prod => prod.id === item.id);
+                return {
+                    product_id: item.id,
+                    name: product ? product.name : "Producto",
+                    quantity: item.qty,
+                    unit_price: product ? product.price : 0
+                };
+            }),
+            subtotal,
+            shipping,
+            total
+        });
+        if (error) throw error;
 
-    if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.removeAttribute("aria-busy");
+        sessionStorage.setItem("env_order_completed", "true");
+        cart = [];
+        saveCart();
+        renderProducts();
+        updateCartUI();
+        mostrarToast("Pedido registrado correctamente.");
+    } catch (error) {
+        console.warn("No se pudo sincronizar el pedido con Supabase:", error);
+        alert("WhatsApp se abrió, pero no se pudo registrar el pedido en el panel. Confirmá el pedido directamente por WhatsApp.");
+    } finally {
+        pedidoEnviando = false;
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.removeAttribute("aria-busy");
+        }
     }
 }
 
