@@ -384,6 +384,8 @@ function updateCartUI() {
         if (totalCount > 0) floatBtn.classList.add("show");
         else floatBtn.classList.remove("show");
     }
+
+    syncDrawerViewport();
 }
 
 function setDeliveryMethod(method) {
@@ -395,14 +397,65 @@ function setDeliveryMethod(method) {
     updateCartUI();
 }
 
+function syncDrawerViewport() {
+    const drawer = document.getElementById("drawer");
+    if (!drawer) return;
+    const vv = window.visualViewport;
+    const height = vv ? Math.round(vv.height) : window.innerHeight;
+    const offsetTop = vv ? Math.round(vv.offsetTop) : 0;
+    if (height > 0) {
+        drawer.style.height = `${height}px`;
+        drawer.style.maxHeight = `${height}px`;
+        drawer.style.top = `${offsetTop}px`;
+        drawer.style.bottom = "auto";
+    }
+}
+
+function initDrawerViewportSync() {
+    syncDrawerViewport();
+    window.addEventListener("resize", syncDrawerViewport, { passive: true });
+    window.addEventListener("orientationchange", () => {
+        setTimeout(syncDrawerViewport, 100);
+        setTimeout(syncDrawerViewport, 350);
+    }, { passive: true });
+
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", syncDrawerViewport, { passive: true });
+        window.visualViewport.addEventListener("scroll", syncDrawerViewport, { passive: true });
+    }
+
+    const drawer = document.getElementById("drawer");
+    if (!drawer) return;
+
+    drawer.addEventListener("focusin", (e) => {
+        setTimeout(syncDrawerViewport, 60);
+        setTimeout(() => {
+            syncDrawerViewport();
+            if (e.target && typeof e.target.scrollIntoView === "function") {
+                e.target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            }
+        }, 260);
+    });
+
+    drawer.addEventListener("focusout", () => {
+        setTimeout(syncDrawerViewport, 80);
+        setTimeout(syncDrawerViewport, 300);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", initDrawerViewportSync);
+
 function toggleCart(open) {
     const drawer = document.getElementById("drawer");
     const overlay = document.getElementById("drawer-overlay");
     if (!drawer || !overlay) return;
 
+    syncDrawerViewport();
+
     if (open) {
         drawer.classList.add("active");
         overlay.classList.add("active");
+        setTimeout(syncDrawerViewport, 50);
     } else {
         drawer.classList.remove("active");
         overlay.classList.remove("active");
@@ -470,12 +523,12 @@ async function sendWhatsApp() {
 
     const cleanPhone = STORE_CONFIG.whatsappPhone;
     const url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`;
-    const submitButton = document.querySelector(".btn-whatsapp-send");
+    const submitButtons = document.querySelectorAll(".btn-whatsapp-send");
 
-    if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.setAttribute("aria-busy", "true");
-    }
+    submitButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.setAttribute("aria-busy", "true");
+    });
 
     // Registrar el pedido antes de abrir WhatsApp y comprobar también los errores
     // devueltos por PostgREST (no siempre se rechaza la promesa).
@@ -515,10 +568,10 @@ async function sendWhatsApp() {
     // Abrir WhatsApp con el pedido generado
     window.open(url, "_blank");
 
-    if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.removeAttribute("aria-busy");
-    }
+    submitButtons.forEach(btn => {
+        btn.disabled = false;
+        btn.removeAttribute("aria-busy");
+    });
 }
 
 function consultPollitaLu(flavorName = "") {

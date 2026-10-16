@@ -252,8 +252,8 @@
             <button class="btn-close" type="button" onclick="toggleCart(false)" aria-label="Cerrar pedido">✕</button>
         </div>
 
-        <div class="drawer-body">
-            <div id="cart-empty" style="text-align: center; color: var(--text-muted); padding: 40px 10px;">
+        <div class="drawer-body" id="drawer-body">
+            <div id="cart-empty" style="text-align: center; color: var(--text-muted); padding: 32px 10px;">
                 <p style="font-size: 2rem; margin-bottom: 8px;" aria-hidden="true">🍽️</p>
                 <p>Tu pedido está vacío.</p>
                 <p style="font-size:.82rem;margin-top:6px">Elegí tus platos de la carta para empezar.</p>
@@ -267,14 +267,25 @@
             <div class="cart-items" id="cart-items"></div>
 
             <div class="checkout-box" id="checkout-box" style="display: none;">
-                <h3 style="font-size:.95rem;margin-bottom:12px">Datos para el envío</h3>
+                <h3 style="font-size:.92rem;margin-bottom:10px">Datos para el envío</h3>
 
-                <div class="form-group">
-                    <label class="form-label" for="delivery-method">Modalidad de entrega</label>
-                    <select class="form-select" id="delivery-method" onchange="setDeliveryMethod(this.value)">
-                        <option value="delivery">Envío a domicilio</option>
-                        <option value="pickup">Retiro en local ($0)</option>
-                    </select>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="form-label" for="delivery-method">Modalidad de entrega</label>
+                        <select class="form-select" id="delivery-method" onchange="setDeliveryMethod(this.value)">
+                            <option value="delivery">Envío a domicilio</option>
+                            <option value="pickup">Retiro en local ($0)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="cust-payment">Medio de pago</label>
+                        <select class="form-select" id="cust-payment">
+                            <option value="Transferencia">Transferencia bancaria</option>
+                            <option value="Efectivo contra entrega">Efectivo contra entrega</option>
+                            <option value="Link de pago / Tarjeta">Link de pago / Tarjeta</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -287,34 +298,27 @@
                     <input type="text" id="cust-address" class="form-input" placeholder="Calle y número" autocomplete="street-address">
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="cust-payment">Medio de pago</label>
-                    <select class="form-select" id="cust-payment">
-                        <option value="Transferencia">Transferencia bancaria</option>
-                        <option value="Efectivo contra entrega">Efectivo contra entrega</option>
-                        <option value="Link de pago / Tarjeta">Link de pago / Tarjeta</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 10px;">
                     <label class="form-label" for="cust-notes">Notas o comentarios</label>
                     <input type="text" id="cust-notes" class="form-input" placeholder="Ej: Punto de entrega, horario preferido...">
                 </div>
+
+                <button class="btn-whatsapp-send btn-whatsapp-inline" type="button" onclick="sendWhatsApp()">
+                    <span>💬 Enviar Pedido por WhatsApp</span>
+                </button>
             </div>
         </div>
 
         <div class="drawer-footer" id="drawer-footer">
-            <div class="price-row">
-                <span>Subtotal:</span>
-                <span id="subtotal-val">$0</span>
-            </div>
-            <div class="price-row">
-                <span>Envío:</span>
-                <span id="shipping-val">$2.500</span>
-            </div>
-            <div class="price-row total">
-                <span>Total a pagar:</span>
-                <span id="total-val">$0</span>
+            <div class="price-summary-compact">
+                <div class="price-row">
+                    <span>Subtotal: <strong id="subtotal-val">$0</strong></span>
+                    <span>Envío: <strong id="shipping-val">$2.500</strong></span>
+                </div>
+                <div class="price-row total">
+                    <span>Total a pagar:</span>
+                    <span id="total-val">$0</span>
+                </div>
             </div>
 
             <button class="btn-whatsapp-send" id="btn-whatsapp-send" type="button" onclick="sendWhatsApp()">
