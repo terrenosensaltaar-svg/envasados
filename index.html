@@ -4,29 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Envasados al Vacío Gourmet | Sé tu propio Chef</title>
+    <!-- Metadatos Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Envasados al Vacío Gourmet | Sé tu propio Chef">
+    <meta property="og:description" content="Cortes seleccionados, marinados frescos y platos de olla envasados al vacío. Listos en minutos con calidad de restaurante.">
+    <meta property="og:image" content="banner_gourmet_chef.jpg">
     <!-- Preconnect y carga ultra-rápida de tipografía con swap para no bloquear render -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap"></noscript>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="supabase-config.js" defer></script>
     <script src="products.js" defer></script>
     <script src="app.js" defer></script>
     <style>
-        .catalog-hero{position:relative;overflow:hidden;margin:0 auto 32px;border-radius:22px;background:#f4f1e9;box-shadow:0 14px 36px rgba(22,31,24,.14);isolation:isolate}
-        .catalog-hero-viewport{position:relative;aspect-ratio:2/1;min-height:260px}
-        .catalog-hero-slide{position:absolute;inset:0;display:grid;place-items:center;opacity:0;visibility:hidden;transition:opacity .5s ease}
-        .catalog-hero-slide.is-active{opacity:1;visibility:visible}
-        .catalog-hero-slide img{display:block;width:100%;height:100%;object-fit:contain}
-        .catalog-hero-arrow{position:absolute;z-index:2;top:50%;display:grid;place-items:center;width:46px;height:46px;padding:0;border:0;border-radius:50%;background:rgba(20,30,23,.68);color:#fff;font-size:32px;line-height:1;cursor:pointer;transform:translateY(-50%);transition:background .2s}
-        .catalog-hero-arrow:hover{background:#1b3828}.catalog-hero-prev{left:16px}.catalog-hero-next{right:16px}
-        .catalog-hero-dots{position:absolute;z-index:2;bottom:14px;left:50%;display:flex;gap:9px;transform:translateX(-50%)}
-        .catalog-hero-dots button{width:10px;height:10px;padding:0;border:1px solid #fff;border-radius:50%;background:rgba(30,40,32,.48);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.3)}
-        .catalog-hero-dots button.is-active{width:26px;border-radius:8px;background:#efb82e;border-color:#efb82e}
-        @media(max-width:640px){.catalog-hero{margin:0 0 24px;border-radius:16px}.catalog-hero-viewport{aspect-ratio:4/3;min-height:0}.catalog-hero-arrow{width:38px;height:38px;font-size:27px}.catalog-hero-prev{left:9px}.catalog-hero-next{right:9px}.catalog-hero-dots{bottom:10px}}
-        @media(prefers-reduced-motion:reduce){.catalog-hero-slide{transition:none}}
+
+        .card-img-placeholder{width:100%;height:100%;display:grid;place-items:center;background:radial-gradient(circle at 30% 25%,#fffdf6 0,#f2e8ce 45%,#d9c89c 100%);position:relative;overflow:hidden}
+        .card-img-placeholder:before,.card-img-placeholder:after{content:"";position:absolute;width:190px;height:190px;border:1px solid rgba(112,83,31,.13);border-radius:50%}
+        .card-img-placeholder:after{width:145px;height:145px}
+        .card-img-placeholder span{position:relative;z-index:1;font-size:4rem;filter:drop-shadow(0 5px 7px rgba(45,35,20,.18))}
+        .btn-add:disabled{opacity:.6;cursor:not-allowed;transform:none}
     </style>
 </head>
 <body>
@@ -62,27 +63,24 @@
 
     <!-- Grid de los 4 platos principales -->
     <main class="main-content">
-        <section class="catalog-hero" id="catalogHeroCarousel" aria-label="Promociones destacadas">
-            <div class="catalog-hero-viewport">
-                <div class="catalog-hero-slide is-active" aria-hidden="false">
-                    <img src="banner_pollita_chef.jpg" alt="Pollita Lu: congelados al vacío, el sabor del campo" fetchpriority="high">
-                </div>
-                <div class="catalog-hero-slide" aria-hidden="true">
-                    <img src="snacks.jpg" alt="Snacks Fuerza Natural: pollo, cerdo, toro y mix especiado" loading="lazy" decoding="async">
-                </div>
-            </div>
-            <button class="catalog-hero-arrow catalog-hero-prev" type="button" aria-label="Imagen anterior">&#8249;</button>
-            <button class="catalog-hero-arrow catalog-hero-next" type="button" aria-label="Imagen siguiente">&#8250;</button>
-            <div class="catalog-hero-dots" role="group" aria-label="Elegir imagen">
-                <button class="is-active" type="button" aria-label="Mostrar banner Pollita Lu" aria-pressed="true"></button>
-                <button type="button" aria-label="Mostrar banner Fuerza Natural" aria-pressed="false"></button>
-            </div>
-        </section>
         <div class="section-head">
             <div>
-                
-                <p class="section-subtitle">Platos listos para regenerar y cortes listos para cocer en minutos</p>
+                <h2 class="section-title">Nuestra Carta y Productos</h2>
+                <p class="section-subtitle">Patas muslo marinadas saborizadas y platos caseros listos para regenerar</p>
             </div>
+        </div>
+
+        <!-- Filtros de categoría -->
+        <div class="category-tabs" role="tablist" aria-label="Filtrar por línea de producto">
+            <button class="cat-tab is-active" data-cat="all" onclick="filterCategory('all', this)" role="tab" aria-selected="true">
+                ✨ Todos los productos (9)
+            </button>
+            <button class="cat-tab" data-cat="pollita" onclick="filterCategory('pollita', this)" role="tab" aria-selected="false">
+                🍗 Línea Pollita Lu · Patas Muslo (5)
+            </button>
+            <button class="cat-tab" data-cat="gourmet" onclick="filterCategory('gourmet', this)" role="tab" aria-selected="false">
+                👨‍🍳 Línea Gourmet · Platos Caseros (4)
+            </button>
         </div>
 
         <div class="products-grid" id="products-grid">
@@ -126,66 +124,58 @@
     <!-- ================= SECCIÓN POLLITA LU (AL FINAL DEL LANDING) ================= -->
     <section class="pollita-showcase">
         <div class="pollita-container">
-            
+
             <!-- Caja explicativa y variedades de sabores -->
             <div class="pollita-content-box">
                 <div class="pollita-header-row">
                     <div class="pollita-head-left">
-                        <h3>Línea Pollita Lu: El sabor del campo en tu mesa</h3>
-                        <p>Cortes marinados al vacío listos para cocinar. Solo sacas de la bolsa, doras y sirves como un chef profesional.</p>
+                        <h3>Línea Pollita Lu: Patas muslo saborizadas</h3>
+                        <p>Presas de pollo marinadas al vacío x 1Kg listas para cocinar. Sacas de la bolsa, doras a la parrilla, plancha u horno y sirves con sabor profesional.</p>
                     </div>
-                    <button class="btn-consult-flavors" onclick="consultPollitaLu('Línea Pollita Lu')">
+                    <button class="btn-consult-flavors" onclick="consultPollitaLu('Patas muslo saborizadas')">
                         <span>💬 Pedir Variedades por WhatsApp</span>
                     </button>
                 </div>
 
-                <!-- 6 Variedades gourmet de marinado -->
+                <!-- 5 Variedades de Patas Muslo Saborizadas -->
                 <div class="flavors-pills-grid">
                     <div class="flavor-item">
-                        <div class="flavor-icon">🔥</div>
+                        <img src="patas_muslo_parrillera_vacio.jpg" alt="Parrillera al vacío" class="flavor-thumb" width="62" height="62" loading="lazy">
                         <div class="flavor-text">
-                            <strong>Estilo Parrillero</strong>
-                            <span>Sabor intenso, ahumado y jugoso para parrilla o plancha.</span>
+                            <strong>Parrillera · $10.000 (1Kg)</strong>
+                            <span>Limón, ajo y chimichurri artesanal. Sabor a brasas ideal para parrilla u horno.</span>
                         </div>
                     </div>
 
                     <div class="flavor-item">
-                        <div class="flavor-icon">🍯</div>
+                        <img src="patas_muslo_honey_vacio.jpg" alt="Honey al vacío" class="flavor-thumb" width="62" height="62" loading="lazy">
                         <div class="flavor-text">
-                            <strong>Mostaza Ajo y Miel</strong>
-                            <span>Toque dulce y suave, caramelizado dorado irresistible.</span>
+                            <strong>Honey · $12.500 (1Kg)</strong>
+                            <span>Mostaza, ajo y miel natural. Toque agridulce suave y caramelizado dorado.</span>
                         </div>
                     </div>
 
                     <div class="flavor-item">
-                        <div class="flavor-icon">🌶️</div>
+                        <img src="patas_muslo_oriental_vacio.jpg" alt="Oriental Árabe al vacío" class="flavor-thumb" width="62" height="62" loading="lazy">
                         <div class="flavor-text">
-                            <strong>Pimentón Ahumado</strong>
-                            <span>Ajo confitado y especias con fondo ahumado y picor justo.</span>
+                            <strong>Oriental Árabe · $12.000 (1Kg)</strong>
+                            <span>Salsa de soja, pimienta árabe, comino y limón. Exótico y muy aromático.</span>
                         </div>
                     </div>
 
                     <div class="flavor-item">
-                        <div class="flavor-icon">🌿</div>
+                        <img src="patas_muslo_ahumada_vacio.jpg" alt="Ahumada al vacío" class="flavor-thumb" width="62" height="62" loading="lazy">
                         <div class="flavor-text">
-                            <strong>Curry & Nuez Moscada</strong>
-                            <span>Sabor exótico, aromático y especiado de gran perfil.</span>
+                            <strong>Ahumada · $12.000 (1Kg)</strong>
+                            <span>Pimentón ahumado, comino, ajo confitado y reducción de vino blanco.</span>
                         </div>
                     </div>
 
                     <div class="flavor-item">
-                        <div class="flavor-icon">🌱</div>
+                        <img src="patas_muslo_barbacoa_vacio.jpg" alt="Barbacoa Smoky al vacío" class="flavor-thumb" width="62" height="62" loading="lazy">
                         <div class="flavor-text">
-                            <strong>Finas Hierbas</strong>
-                            <span>Fresco y muy natural con romero, tomillo y orégano de huerta.</span>
-                        </div>
-                    </div>
-
-                    <div class="flavor-item">
-                        <div class="flavor-icon">🧄</div>
-                        <div class="flavor-text">
-                            <strong>Provenzal Clásico</strong>
-                            <span>Ajo picado y perejil fresco. El gran clásico infaltable.</span>
+                            <strong>Barbacoa Smoky · $12.500 (1Kg)</strong>
+                            <span>Salsa barbacoa, azúcar mascabo o miel, salsa inglesa, pimentón y vinagre.</span>
                         </div>
                     </div>
                 </div>
@@ -242,7 +232,7 @@
 
                 <div class="form-group" id="address-group">
                     <label class="form-label">Dirección de entrega *</label>
-                    <input type="text" id="cust-address" class="form-input" placeholder="Calle, número y comuna/barrio">
+                    <input type="text" id="cust-address" class="form-input" placeholder="Calle y número">
                 </div>
 
                 <div class="form-group">
@@ -281,37 +271,6 @@
         </div>
     </aside>
 
-<script>
-(function() {
-    var carousel = document.getElementById('catalogHeroCarousel');
-    if (!carousel) return;
-    var slides = Array.prototype.slice.call(carousel.querySelectorAll('.catalog-hero-slide'));
-    var dots = Array.prototype.slice.call(carousel.querySelectorAll('.catalog-hero-dots button'));
-    var index = 0;
-    var timer;
-    function show(next) {
-        index = (next + slides.length) % slides.length;
-        slides.forEach(function(slide, i) {
-            var active = i === index;
-            slide.classList.toggle('is-active', active);
-            slide.setAttribute('aria-hidden', active ? 'false' : 'true');
-        });
-        dots.forEach(function(dot, i) {
-            var active = i === index;
-            dot.classList.toggle('is-active', active);
-            dot.setAttribute('aria-pressed', active ? 'true' : 'false');
-        });
-    }
-    function start() { window.clearInterval(timer); timer = window.setInterval(function() { show(index + 1); }, 5500); }
-    carousel.querySelector('.catalog-hero-prev').addEventListener('click', function() { show(index - 1); start(); });
-    carousel.querySelector('.catalog-hero-next').addEventListener('click', function() { show(index + 1); start(); });
-    dots.forEach(function(dot, i) { dot.addEventListener('click', function() { show(i); start(); }); });
-    carousel.addEventListener('mouseenter', function() { window.clearInterval(timer); });
-    carousel.addEventListener('mouseleave', start);
-    carousel.addEventListener('focusin', function() { window.clearInterval(timer); });
-    carousel.addEventListener('focusout', start);
-    start();
-}());
-</script>
+
 </body>
 </html>

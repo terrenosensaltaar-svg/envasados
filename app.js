@@ -13,31 +13,169 @@ const STORE_CONFIG = Object.freeze({
 // Limpiar configuraciones previas de localStorage para garantizar el número fijo
 localStorage.removeItem("env_config");
 
-let cart = JSON.parse(localStorage.getItem("env_cart")) || [];
+const CART_STORAGE_KEY = "env_cart";
+const CART_SESSION_KEY = "env_cart_backup";
+
+function readCartFromStorage(storage, key) {
+    try {
+        const raw = storage.getItem(key);
+        if (raw === null) return null;
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return null;
+        return parsed.filter(item => item && typeof item.id === "string" && Number.isInteger(item.qty) && item.qty > 0);
+    } catch (_) {
+        return null;
+    }
+}
+
+function loadCart() {
+    let savedCart = readCartFromStorage(localStorage, CART_STORAGE_KEY);
+    if (savedCart === null) {
+        const sessionCart = readCartFromStorage(sessionStorage, CART_SESSION_KEY);
+        if (sessionCart !== null) {
+            try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(sessionCart)); } catch (_) {}
+            savedCart = sessionCart;
+        }
+    }
+    if (!savedCart) return [];
+
+    if (typeof LEGACY_ID_MAP !== "undefined") {
+        savedCart = savedCart.map(item => {
+            if (item && LEGACY_ID_MAP[item.id]) {
+                return Object.assign({}, item, { id: LEGACY_ID_MAP[item.id] });
+            }
+            return item;
+        });
+    }
+    return savedCart;
+}
+
+let cart = loadCart();
 let deliveryMethod = "delivery"; // "delivery" o "pickup"
+let currentCategoryFilter = "all";
+
+function filterCategory(cat, btn) {
+    currentCategoryFilter = cat;
+    document.querySelectorAll(".cat-tab").forEach(tab => {
+        const isActive = tab === btn || tab.getAttribute("data-cat") === cat;
+        tab.classList.toggle("is-active", isActive);
+        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+    });
+    renderProducts();
+}
 
 function formatPrice(val) {
     return `$${Number(val).toLocaleString('es-AR')}`;
 }
 
+// Orden aleatorio de productos por visita / carga de página
+let displayProducts = [];
+
+function shuffleProducts(array) {
+    const list = [...array];
+    for (let i = list.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = list[i];
+        list[i] = list[j];
+        list[j] = temp;
+    }
+    return list;
+}
+
+function initRandomProductOrder() {
+    displayProducts = shuffleProducts(PRODUCTS);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    initRandomProductOrder();
     renderProducts();
     updateCartUI();
 });
+
+// Placeholder con ícono cuando el producto no tiene imagen disponible.
+function productPlaceholder(product) {
+    const el = document.createElement("div");
+    el.className = "card-img-placeholder";
+    el.setAttribute("role", "img");
+    el.setAttribute("aria-label", product.name || "Producto");
+    const span = document.createElement("span");
+    span.textContent = product.icon || "🍽️";
+    el.appendChild(span);
+    return el;
+}
+
+// Reemplaza una imagen rota por el placeholder del producto (mismo id).
+function productPlaceholderById(id) {
+    const product = PRODUCTS.find(p => p.id === id) || {};
+    return productPlaceholder(product);
+}
+
+function productMediaMarkup(product) {
+    if (!product.image && !product.packImage) {
+        return `<div class="card-img-placeholder" role="img" aria-label="${product.name}"><span>${product.icon || "🍽️"}</span></div>`;
+    }
+
+    if (product.packImage) {
+        return `
+            <div class="card-media-wrapper" id="media-wrap-${product.id}">
+                <img src="${product.image}" alt="${product.name} - Plato preparado" class="card-img is-dish" id="img-dish-${product.id}" width="800" height="490" loading="lazy" decoding="async">
+                <img src="${product.packImage}" alt="${product.name} - Envasado al vacío" class="card-img is-pack" id="img-pack-${product.id}" width="800" height="490" loading="lazy" decoding="async" style="display: none;">
+                <div class="view-switcher" onclick="event.stopPropagation()">
+                    <button type="button" class="view-btn is-active" onclick="switchMediaView('${product.id}', 'dish', this)">🍽️ Servido</button>
+                    <button type="button" class="view-btn" onclick="switchMediaView('${product.id}', 'pack', this)">📦 Envasado</button>
+                </div>
+            </div>
+        `;
+    }
+
+    return `<img src="${product.image}" alt="${product.name}" class="card-img" width="800" height="490" loading="lazy" decoding="async" onerror="this.replaceWith(productPlaceholderById('${product.id}'))">`;
+}
+
+function switchMediaView(id, view, btn) {
+    const packImg = document.getElementById(`img-pack-${id}`);
+    const dishImg = document.getElementById(`img-dish-${id}`);
+    const switcher = btn.closest(".view-switcher");
+    if (switcher) {
+        switcher.querySelectorAll(".view-btn").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+    }
+    if (view === "pack") {
+        if (packImg) packImg.style.display = "block";
+        if (dishImg) dishImg.style.display = "none";
+    } else {
+        if (packImg) packImg.style.display = "none";
+        if (dishImg) dishImg.style.display = "block";
+    }
+}
 
 function renderProducts() {
     const grid = document.getElementById("products-grid");
     if (!grid) return;
 
-    grid.innerHTML = PRODUCTS.map(p => {
+    if (!displayProducts || displayProducts.length === 0) {
+        initRandomProductOrder();
+    }
+
+    const filtered = currentCategoryFilter === "all"
+        ? displayProducts
+        : displayProducts.filter(p => p.category === currentCategoryFilter);
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">No hay productos disponibles en esta categoría.</div>`;
+        return;
+    }
+
+    grid.innerHTML = filtered.map(p => {
         const item = cart.find(c => c.id === p.id);
         const qty = item ? item.qty : 0;
+        const isOutOfStock = p.outOfStock === true || p.available === false;
+        const canOrder = !isOutOfStock && Number.isFinite(p.price) && p.price > 0;
 
         return `
-            <article class="card">
+            <article class="card ${isOutOfStock ? "is-out-of-stock" : ""}">
                 <div class="card-img-wrap">
-                    <img src="${p.image}" alt="${p.name}" class="card-img" width="500" height="375" loading="lazy" decoding="async">
-                    <span class="card-badge">${p.badge}</span>
+                    ${productMediaMarkup(p)}
+                    <span class="card-badge ${isOutOfStock ? "badge-sin-stock" : ""}">${isOutOfStock ? "🚫 Sin Stock" : p.badge}</span>
                 </div>
                 <div class="card-body">
                     <span class="card-portion">${p.portion}</span>
@@ -48,16 +186,18 @@ function renderProducts() {
                         <span>${p.prep}</span>
                     </div>
                     <div class="card-footer">
-                        <span class="card-price">${formatPrice(p.price)}</span>
-                        ${qty > 0 ? `
+                        <span class="card-price">${Number.isFinite(p.price) ? formatPrice(p.price) : "Precio a confirmar"}</span>
+                        ${canOrder && qty > 0 ? `
                             <div class="qty-control">
                                 <button class="qty-btn" onclick="updateQty('${p.id}', ${qty - 1})">−</button>
                                 <span class="qty-val">${qty}</span>
                                 <button class="qty-btn" onclick="updateQty('${p.id}', ${qty + 1})">+</button>
                             </div>
-                        ` : `
+                        ` : canOrder ? `
                             <button class="btn-add" onclick="addToCart('${p.id}')">+ Agregar</button>
-                        `}
+                        ` : isOutOfStock ? `
+                            <button class="btn-add btn-sin-stock" type="button" disabled>🚫 Sin Stock</button>
+                        ` : `<button class="btn-add" type="button" disabled>Próximamente</button>`}
                     </div>
                 </div>
             </article>
@@ -66,6 +206,8 @@ function renderProducts() {
 }
 
 function addToCart(id) {
+    const product = PRODUCTS.find(p => p.id === id);
+    if (!product || product.available === false || product.outOfStock === true || !Number.isFinite(product.price) || product.price <= 0) return;
     const item = cart.find(c => c.id === id);
     if (item) {
         item.qty += 1;
@@ -91,7 +233,9 @@ function updateQty(id, qty) {
 }
 
 function saveCart() {
-    localStorage.setItem("env_cart", JSON.stringify(cart));
+    const snapshot = JSON.stringify(cart);
+    try { localStorage.setItem(CART_STORAGE_KEY, snapshot); } catch (error) { console.warn("No se pudo guardar el carrito localmente:", error); }
+    try { sessionStorage.setItem(CART_SESSION_KEY, snapshot); } catch (error) { console.warn("No se pudo guardar la copia de sesión del carrito:", error); }
 }
 
 function updateCartUI() {
@@ -284,6 +428,8 @@ async function sendWhatsApp() {
         alert("No pudimos conectar con el sistema de pedidos. Podés continuar por WhatsApp, pero avisá que el pedido no quedó registrado en el panel.");
     }
 
+    // Conservamos el carrito al salir a WhatsApp para que siga disponible al regresar.
+    saveCart();
     // Abrir WhatsApp con el pedido generado
     window.open(url, "_blank");
 

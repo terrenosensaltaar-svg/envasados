@@ -3,315 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Envasados al Vacío Gourmet | Sé tu propio Chef</title>
-    <!-- Preconnect y carga ultra-rápida de tipografía con swap para no bloquear render -->
+    <meta name="description" content="Nuevos platos gourmet de Envasados al Vacío: recetas creadas a partir de cinco bases de producción.">
+    <title>Nuevos platos gourmet | Envasados al Vacío</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap"></noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="supabase-config.js" defer></script>
-    <script src="products.js" defer></script>
-    <script src="app.js" defer></script>
     <style>
-        .catalog-hero{position:relative;overflow:hidden;margin:0 auto 32px;border-radius:22px;background:#f4f1e9;box-shadow:0 14px 36px rgba(22,31,24,.14);isolation:isolate}
-        .catalog-hero-viewport{position:relative;aspect-ratio:2/1;min-height:260px}
-        .catalog-hero-slide{position:absolute;inset:0;display:grid;place-items:center;opacity:0;visibility:hidden;transition:opacity .5s ease}
-        .catalog-hero-slide.is-active{opacity:1;visibility:visible}
-        .catalog-hero-slide img{display:block;width:100%;height:100%;object-fit:contain}
-        .catalog-hero-arrow{position:absolute;z-index:2;top:50%;display:grid;place-items:center;width:46px;height:46px;padding:0;border:0;border-radius:50%;background:rgba(20,30,23,.68);color:#fff;font-size:32px;line-height:1;cursor:pointer;transform:translateY(-50%);transition:background .2s}
-        .catalog-hero-arrow:hover{background:#1b3828}.catalog-hero-prev{left:16px}.catalog-hero-next{right:16px}
-        .catalog-hero-dots{position:absolute;z-index:2;bottom:14px;left:50%;display:flex;gap:9px;transform:translateX(-50%)}
-        .catalog-hero-dots button{width:10px;height:10px;padding:0;border:1px solid #fff;border-radius:50%;background:rgba(30,40,32,.48);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.3)}
-        .catalog-hero-dots button.is-active{width:26px;border-radius:8px;background:#efb82e;border-color:#efb82e}
-        @media(max-width:640px){.catalog-hero{margin:0 0 24px;border-radius:16px}.catalog-hero-viewport{aspect-ratio:4/3;min-height:0}.catalog-hero-arrow{width:38px;height:38px;font-size:27px}.catalog-hero-prev{left:9px}.catalog-hero-next{right:9px}.catalog-hero-dots{bottom:10px}}
-        @media(prefers-reduced-motion:reduce){.catalog-hero-slide{transition:none}}
+        .new-hero{max-width:1060px;margin:28px auto 30px;padding:clamp(28px,5vw,56px);border-radius:var(--radius-lg);background:radial-gradient(ellipse at 90% 10%,rgba(228,187,102,.25),transparent 34%),linear-gradient(120deg,#173d28,#266b3b 68%,#315c37);color:#fff;box-shadow:var(--shadow-hover);overflow:hidden;position:relative}
+        .new-hero:after{content:"✦";position:absolute;right:6%;bottom:-95px;font-size:280px;line-height:1;color:rgba(255,255,255,.055);pointer-events:none}
+        .new-hero .hero-pill{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24);color:#fff;margin:0 0 16px}
+        .new-hero h1{max-width:700px;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.045em;line-height:1.08}
+        .new-hero h1 span{color:#f1d38e}
+        .new-hero p{max-width:680px;margin-top:16px;color:rgba(255,255,255,.86);font-size:1rem;line-height:1.7}
+        .hero-meta{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}.hero-meta span{padding:7px 12px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(255,255,255,.08);font-size:.78rem;font-weight:700}
+        .new-main{max-width:1060px;margin:auto;padding:0 20px 54px}
+        .intro-row{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:24px}.intro-row h2{font-size:1.5rem;letter-spacing:-.03em}.intro-row p{margin-top:5px;color:var(--text-muted);font-size:.9rem}.dish-total{flex:none;padding:8px 13px;border-radius:999px;background:var(--gold-soft);color:#795b1c;border:1px solid var(--gold-border);font-weight:800;font-size:.8rem}
+        .base-section{margin-top:36px;scroll-margin-top:90px}.base-head{display:flex;align-items:center;gap:13px;margin-bottom:15px}.base-icon{width:44px;height:44px;display:grid;place-items:center;flex:none;border-radius:14px;background:var(--accent-soft);font-size:1.4rem}.base-head h3{font-size:1.16rem;letter-spacing:-.02em}.base-head p{color:var(--text-muted);font-size:.82rem;margin-top:2px}
+        .dish-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}.gourmet-card{position:relative;display:flex;flex-direction:column;min-height:295px;padding:21px;border-radius:var(--radius-lg);border:1px solid var(--border);background:linear-gradient(150deg,#fff 0%,#fff 62%,#f8f6ef 100%);box-shadow:var(--shadow-soft);overflow:hidden;transition:transform .22s,box-shadow .22s,border-color .22s}.gourmet-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover);border-color:var(--accent-border)}
+        .dish-art{height:74px;width:74px;display:grid;place-items:center;margin-bottom:15px;border-radius:23px;background:radial-gradient(circle at 34% 28%,#fff 0,#f6eed9 47%,#e5d7b6 100%);box-shadow:inset 0 0 0 1px rgba(134,101,40,.12);font-size:2.35rem}.dish-category{color:#8a6b2f;font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.gourmet-card h4{margin-top:6px;font-size:1.06rem;line-height:1.35;letter-spacing:-.015em}.gourmet-card>p{margin-top:9px;color:var(--text-muted);font-size:.82rem;line-height:1.6;flex:1}.dish-technique{display:flex;align-items:center;gap:7px;margin-top:17px;padding-top:12px;border-top:1px solid var(--border-light);color:var(--accent);font-size:.75rem;font-weight:700}.dish-technique:before{content:"✦";color:var(--gold)}
+        .closing-note{margin-top:34px;padding:17px 19px;border:1px solid var(--gold-border);border-radius:var(--radius-md);background:var(--gold-soft);color:#5e4a1e;font-size:.84rem;line-height:1.6}.new-footer{padding:22px 20px;border-top:1px solid var(--border);color:var(--text-muted);text-align:center;font-size:.82rem}
+        @media(max-width:760px){.new-hero{margin:18px 14px 24px}.dish-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.intro-row{align-items:flex-start;flex-direction:column}}
+        @media(max-width:520px){.new-main{padding:0 14px 42px}.dish-grid{grid-template-columns:1fr}.gourmet-card{min-height:0}.new-hero{padding:28px 20px}.new-hero:after{right:-30px;font-size:210px}.base-section{margin-top:29px}}
+        @media(prefers-reduced-motion:reduce){.gourmet-card{transition:none}}
     </style>
 </head>
 <body>
-
-    <!-- Header con logo y acceso al carrito -->
     <header class="header">
         <div class="header-inner">
-            <a href="#" class="brand-link">
-                <img src="logo.png" alt="Envasados al Vacío" class="brand-logo" width="160" height="44" fetchpriority="high">
-                <span class="brand-sub">Catálogo</span>
+            <a href="index.html" class="brand-link" aria-label="Volver al catálogo principal">
+                <img src="logo.png" alt="Envasados al Vacío Gourmet" class="brand-logo" width="160" height="44">
+                <span class="brand-sub">Nuevos platos</span>
             </a>
-            <div class="header-right">
-                <button class="btn-cart" onclick="toggleCart(true)">
-                    <span>🛒 Mi Pedido</span>
-                    <span class="cart-pill cart-count">0</span>
-                </button>
-            </div>
+            <div class="header-right"><a class="btn-cart" href="index.html" style="text-decoration:none">← Catálogo principal</a></div>
         </div>
     </header>
 
-    <!-- Hero con enfoque: Sé tu propio chef en casa -->
-    <section class="hero">
-        <div class="hero-pill">👨‍🍳 Experiencia de cocina en tu hogar</div>
-        <h1>Envasados al Vacío Gourmet,<br><span>conviértete en tu propio chef</span></h1>
-        <p>Cortes seleccionados, marinados frescos y platos de olla envasados al vacío. Sin conservantes y listos para regenerar o cocinar en minutos con sabor y textura de restaurante.</p>
-        <div class="hero-badges">
-            <span>⏱️ Listo en 10-15 min</span>
-            <span>🌿 100% Sabor natural</span>
-            <span>❄️ Conservación al vacío</span>
-            <span>🛵 Envío refrigerado</span>
-        </div>
+    <section class="new-hero">
+        <div class="hero-pill">✦ Cocina de autor, producción inteligente</div>
+        <h1>Una buena base.<br><span>Muchos platos memorables.</span></h1>
+        <p>Una selección de recetas gourmet pensadas para aprovechar preparaciones compartidas y llevar a la mesa platos abundantes, caseros y llenos de sabor.</p>
+        <div class="hero-meta"><span>5 bases versátiles</span><span>15 ideas de platos</span><span>Inspiración para el menú</span></div>
     </section>
 
-    <!-- Grid de los 4 platos principales -->
-    <main class="main-content">
-        <section class="catalog-hero" id="catalogHeroCarousel" aria-label="Promociones destacadas">
-            <div class="catalog-hero-viewport">
-                <div class="catalog-hero-slide is-active" aria-hidden="false">
-                    <img src="banner_pollita_chef.jpg" alt="Pollita Lu: congelados al vacío, el sabor del campo" fetchpriority="high">
-                </div>
-                <div class="catalog-hero-slide" aria-hidden="true">
-                    <img src="snacks.jpg" alt="Snacks Fuerza Natural: pollo, cerdo, toro y mix especiado" loading="lazy" decoding="async">
-                </div>
-            </div>
-            <button class="catalog-hero-arrow catalog-hero-prev" type="button" aria-label="Imagen anterior">&#8249;</button>
-            <button class="catalog-hero-arrow catalog-hero-next" type="button" aria-label="Imagen siguiente">&#8250;</button>
-            <div class="catalog-hero-dots" role="group" aria-label="Elegir imagen">
-                <button class="is-active" type="button" aria-label="Mostrar banner Pollita Lu" aria-pressed="true"></button>
-                <button type="button" aria-label="Mostrar banner Fuerza Natural" aria-pressed="false"></button>
+    <main class="new-main">
+        <div class="intro-row">
+            <div><h2>Descubrí la nueva carta</h2><p>Platos sugeridos a partir de las bases de producción del negocio.</p></div>
+            <span class="dish-total">15 platos · 5 bases</span>
+        </div>
+
+        <section class="base-section" id="pure">
+            <div class="base-head"><span class="base-icon" aria-hidden="true">🥔</span><div><h3>Puré de papas</h3><p>Cremoso y reconfortante, ideal para carnes y recetas con salsa.</p></div></div>
+            <div class="dish-grid">
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🥩</div><span class="dish-category">De cocción lenta</span><h4>Solomillo braseado con puré cremoso</h4><p>Solomillo de cerdo tierno, servido sobre un puré suave que recoge cada jugo de la cocción.</p><div class="dish-technique">Braseado lento · textura sedosa</div></article>
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🍽️</div><span class="dish-category">Clásico renovado</span><h4>Milanesa de ternera con puré rústico</h4><p>Ternera dorada y crocante junto a una guarnición cremosa: un clásico abundante con presentación cuidada.</p><div class="dish-technique">Dorado al momento · contraste de texturas</div></article>
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🍲</div><span class="dish-category">Sabor de hogar</span><h4>Albóndigas con salsa y puré</h4><p>Albóndigas jugosas bañadas en salsa de tomate, acompañadas por puré para un plato cálido y completo.</p><div class="dish-technique">Salsa de tomate · servido bien caliente</div></article>
             </div>
         </section>
-        <div class="section-head">
-            <div>
-                
-                <p class="section-subtitle">Platos listos para regenerar y cortes listos para cocer en minutos</p>
-            </div>
-        </div>
 
-        <div class="products-grid" id="products-grid">
-            <!-- Cargado dinámicamente desde products.js -->
-        </div>
+        <section class="base-section" id="papas">
+            <div class="base-head"><span class="base-icon" aria-hidden="true">🥔</span><div><h3>Papas doradas</h3><p>Bordes dorados y centro tierno para acompañar carnes y marinados.</p></div></div>
+            <div class="dish-grid">
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🍗</div><span class="dish-category">Aromático y ahumado</span><h4>Pollo al pimentón con papas doradas</h4><p>Pollo jugoso de perfil ahumado, acompañado de papas doradas para un plato de sabores intensos y equilibrados.</p><div class="dish-technique">Pimentón ahumado · acabado dorado</div></article>
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🍋</div><span class="dish-category">Fresco y cítrico</span><h4>Pollo al limón y ajo con papas</h4><p>La frescura del limón y el perfume del ajo realzan el pollo; las papas completan una combinación simple y elegante.</p><div class="dish-technique">Limón y ajo · notas frescas</div></article>
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🍖</div><span class="dish-category">Horno de domingo</span><h4>Cerdo al horno con papas doradas</h4><p>Cerdo horneado hasta quedar tierno, con papas doradas que absorben sus jugos y concentran todo el sabor.</p><div class="dish-technique">Horneado lento · jugos concentrados</div></article>
+            </div>
+        </section>
+
+        <section class="base-section" id="primavera">
+            <div class="base-head"><span class="base-icon" aria-hidden="true">🍚</span><div><h3>Arroz primavera</h3><p>Una guarnición colorida que combina con carnes suaves, horno y salteados.</p></div></div>
+            <div class="dish-grid">
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🍗</div><span class="dish-category">Equilibrado y casero</span><h4>Pollo al horno con arroz primavera</h4><p>Pollo de cocción pareja junto a arroz primavera, una combinación colorida, abundante y fácil de disfrutar.</p><div class="dish-technique">Horno · guarnición de estación</div></article>
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🥩</div><span class="dish-category">Tradición gourmet</span><h4>Carne vacuna al jugo con arroz primavera</h4><p>Carne tierna con su propio jugo y arroz primavera: sabores familiares presentados como un plato completo.</p><div class="dish-technique">Cocción lenta · jugo sabroso</div></article>
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🍲</div><span class="dish-category">Un favorito de siempre</span><h4>Albóndigas con arroz primavera</h4><p>Albóndigas con salsa servidas junto a arroz primavera, en una combinación generosa y llena de color.</p><div class="dish-technique">Salsa casera · plato completo</div></article>
+            </div>
+        </section>
+
+        <section class="base-section" id="tomate">
+            <div class="base-head"><span class="base-icon" aria-hidden="true">🍅</span><div><h3>Salsa de tomate</h3><p>Una preparación versátil que da unidad a pastas y recetas de horno.</p></div></div>
+            <div class="dish-grid">
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🍝</div><span class="dish-category">Horneado artesanal</span><h4>Lasaña casera con salsa de tomate</h4><p>Capas de pasta y salsa de tomate en una receta de horno reconfortante, con espíritu de cocina hecha en casa.</p><div class="dish-technique">Al horno · capas de sabor</div></article>
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🥟</div><span class="dish-category">Pasta rellena</span><h4>Sorrentinos o ravioles con salsa</h4><p>Pasta rellena acompañada de salsa de tomate: una opción clásica, generosa y lista para lucirse en la mesa.</p><div class="dish-technique">Pasta rellena · salsa de tomate</div></article>
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🍝</div><span class="dish-category">Clásico italiano</span><h4>Fideos con salsa de tomate</h4><p>Fideos servidos con salsa de tomate de sabor casero, una propuesta simple que invita a repetir.</p><div class="dish-technique">Salsa abundante · terminado al servir</div></article>
+            </div>
+        </section>
+
+        <section class="base-section" id="carne-picada">
+            <div class="base-head"><span class="base-icon" aria-hidden="true">🥘</span><div><h3>Carne picada preparada</h3><p>Una base rendidora que se transforma en platos clásicos y prácticos.</p></div></div>
+            <div class="dish-grid">
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🍲</div><span class="dish-category">Casero y reconfortante</span><h4>Albóndigas de carne con salsa</h4><p>Carne picada preparada en albóndigas tiernas, terminadas en salsa para un plato clásico de sabor profundo.</p><div class="dish-technique">Porciones generosas · salsa casera</div></article>
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🥧</div><span class="dish-category">Favorito argentino</span><h4>Pastel de papa con carne</h4><p>Una capa sabrosa de carne picada bajo un puré suave, gratinado hasta lograr una superficie dorada.</p><div class="dish-technique">Gratinado al horno · interior jugoso</div></article>
+                <article class="gourmet-card"><div class="dish-art" aria-hidden="true">🥟</div><span class="dish-category">Para compartir</span><h4>Empanadas de carne</h4><p>Relleno de carne preparado para empanadas bien sabrosas, ideales para una comida informal o para compartir.</p><div class="dish-technique">Relleno listo para producción</div></article>
+            </div>
+        </section>
+
+        <p class="closing-note"><strong>Propuestas de carta:</strong> estos platos desarrollan las combinaciones de la lista compartida. Las porciones, recetas estandarizadas, costos y precios deberán definirse antes de publicarlos como productos disponibles.</p>
     </main>
-
-    <!-- Beneficios del chef en casa -->
-    <section class="chef-tips-section">
-        <div class="section-head" style="justify-content: center; text-align: center;">
-            <div>
-                <h3 class="section-title">¿Por qué cocinar con envasados al vacío?</h3>
-                <p class="section-subtitle">Técnica culinaria profesional adaptada para que disfrutes en tu casa sin complicaciones</p>
-            </div>
-        </div>
-
-        <div class="tips-grid">
-            <div class="tip-card">
-                <div class="tip-icon">🫕</div>
-                <h4>Jugosidad 100% Concentrada</h4>
-                <p>Al cocinarse o marinarse al vacío, los jugos y aromas no se evaporan, logrando carnes ultra tiernas y sabrosas.</p>
-            </div>
-            <div class="tip-card">
-                <div class="tip-icon">⏱️</div>
-                <h4>Ahorro de Tiempo Real</h4>
-                <p>Olvídate de picar, marinar por horas o ensuciar múltiples ollas. Abres la bolsa, regeneras y emplatas en minutos.</p>
-            </div>
-            <div class="tip-card">
-                <div class="tip-icon">❄️</div>
-                <h4>Frescura Prolongada</h4>
-                <p>La ausencia de oxígeno conserva de forma completamente natural en tu refrigerador sin necesidad de químicos.</p>
-            </div>
-            <div class="tip-card">
-                <div class="tip-icon">⭐</div>
-                <h4>Resultado Gourmet Siempre</h4>
-                <p>Punto de cocción parejo y controlado en cada plato para que sorprendas a tu familia e invitados.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- ================= SECCIÓN POLLITA LU (AL FINAL DEL LANDING) ================= -->
-    <section class="pollita-showcase">
-        <div class="pollita-container">
-            
-            <!-- Caja explicativa y variedades de sabores -->
-            <div class="pollita-content-box">
-                <div class="pollita-header-row">
-                    <div class="pollita-head-left">
-                        <h3>Línea Pollita Lu: El sabor del campo en tu mesa</h3>
-                        <p>Cortes marinados al vacío listos para cocinar. Solo sacas de la bolsa, doras y sirves como un chef profesional.</p>
-                    </div>
-                    <button class="btn-consult-flavors" onclick="consultPollitaLu('Línea Pollita Lu')">
-                        <span>💬 Pedir Variedades por WhatsApp</span>
-                    </button>
-                </div>
-
-                <!-- 6 Variedades gourmet de marinado -->
-                <div class="flavors-pills-grid">
-                    <div class="flavor-item">
-                        <div class="flavor-icon">🔥</div>
-                        <div class="flavor-text">
-                            <strong>Estilo Parrillero</strong>
-                            <span>Sabor intenso, ahumado y jugoso para parrilla o plancha.</span>
-                        </div>
-                    </div>
-
-                    <div class="flavor-item">
-                        <div class="flavor-icon">🍯</div>
-                        <div class="flavor-text">
-                            <strong>Mostaza Ajo y Miel</strong>
-                            <span>Toque dulce y suave, caramelizado dorado irresistible.</span>
-                        </div>
-                    </div>
-
-                    <div class="flavor-item">
-                        <div class="flavor-icon">🌶️</div>
-                        <div class="flavor-text">
-                            <strong>Pimentón Ahumado</strong>
-                            <span>Ajo confitado y especias con fondo ahumado y picor justo.</span>
-                        </div>
-                    </div>
-
-                    <div class="flavor-item">
-                        <div class="flavor-icon">🌿</div>
-                        <div class="flavor-text">
-                            <strong>Curry & Nuez Moscada</strong>
-                            <span>Sabor exótico, aromático y especiado de gran perfil.</span>
-                        </div>
-                    </div>
-
-                    <div class="flavor-item">
-                        <div class="flavor-icon">🌱</div>
-                        <div class="flavor-text">
-                            <strong>Finas Hierbas</strong>
-                            <span>Fresco y muy natural con romero, tomillo y orégano de huerta.</span>
-                        </div>
-                    </div>
-
-                    <div class="flavor-item">
-                        <div class="flavor-icon">🧄</div>
-                        <div class="flavor-text">
-                            <strong>Provenzal Clásico</strong>
-                            <span>Ajo picado y perejil fresco. El gran clásico infaltable.</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <footer class="footer">
-        <p>© 2026 Envasados al Vacío & Pollita Lu · Salta, Argentina</p>
-        <p style="margin-top: 4px; font-size: 0.8rem; color: var(--accent); font-weight: 600;">Pedidos directos por WhatsApp: 387 228 3546</p>
-    </footer>
-
-    <!-- Botón flotante para móviles -->
-    <div class="cart-float" id="cart-float" onclick="toggleCart(true)">
-        <div>
-            <span>🛒</span>
-            <span style="font-weight: 700; margin-left: 6px;">Ver pedido (<span class="cart-count">0</span>)</span>
-        </div>
-        <div style="font-weight: 800;" id="float-total">$0</div>
-    </div>
-
-    <!-- Drawer de Pedido -->
-    <div class="drawer-overlay" id="drawer-overlay" onclick="toggleCart(false)"></div>
-    <aside class="drawer" id="drawer">
-        <div class="drawer-header">
-            <h3>Tu Pedido Gourmet</h3>
-            <button class="btn-close" onclick="toggleCart(false)">✕</button>
-        </div>
-
-        <div class="drawer-body">
-            <div id="cart-empty" style="text-align: center; color: var(--text-muted); padding: 40px 10px;">
-                <p style="font-size: 2rem; margin-bottom: 8px;">🍽️</p>
-                <p>Tu pedido está vacío.</p>
-            </div>
-
-            <div class="cart-items" id="cart-items"></div>
-
-            <div class="checkout-box" id="checkout-box" style="display: none;">
-                <h4>Datos para el envío</h4>
-
-                <div class="form-group">
-                    <label class="form-label">Modalidad de entrega</label>
-                    <select class="form-select" onchange="setDeliveryMethod(this.value)">
-                        <option value="delivery">Envío a domicilio</option>
-                        <option value="pickup">Retiro en local ($0)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Nombre y apellido *</label>
-                    <input type="text" id="cust-name" class="form-input" placeholder="Tu nombre">
-                </div>
-
-                <div class="form-group" id="address-group">
-                    <label class="form-label">Dirección de entrega *</label>
-                    <input type="text" id="cust-address" class="form-input" placeholder="Calle, número y comuna/barrio">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Medio de pago</label>
-                    <select class="form-select" id="cust-payment">
-                        <option value="Transferencia">Transferencia bancaria</option>
-                        <option value="Efectivo contra entrega">Efectivo contra entrega</option>
-                        <option value="Link de pago / Tarjeta">Link de pago / Tarjeta</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Notas o comentarios</label>
-                    <input type="text" id="cust-notes" class="form-input" placeholder="Ej: Punto de entrega, horario preferido...">
-                </div>
-            </div>
-        </div>
-
-        <div class="drawer-footer" id="drawer-footer" style="display: none;">
-            <div class="price-row">
-                <span>Subtotal:</span>
-                <span id="subtotal-val">$0</span>
-            </div>
-            <div class="price-row">
-                <span>Envío:</span>
-                <span id="shipping-val">$2.500</span>
-            </div>
-            <div class="price-row total">
-                <span>Total a pagar:</span>
-                <span id="total-val">$0</span>
-            </div>
-
-            <button class="btn-whatsapp-send" onclick="sendWhatsApp()">
-                <span>💬 Enviar Pedido por WhatsApp</span>
-            </button>
-        </div>
-    </aside>
-
-<script>
-(function() {
-    var carousel = document.getElementById('catalogHeroCarousel');
-    if (!carousel) return;
-    var slides = Array.prototype.slice.call(carousel.querySelectorAll('.catalog-hero-slide'));
-    var dots = Array.prototype.slice.call(carousel.querySelectorAll('.catalog-hero-dots button'));
-    var index = 0;
-    var timer;
-    function show(next) {
-        index = (next + slides.length) % slides.length;
-        slides.forEach(function(slide, i) {
-            var active = i === index;
-            slide.classList.toggle('is-active', active);
-            slide.setAttribute('aria-hidden', active ? 'false' : 'true');
-        });
-        dots.forEach(function(dot, i) {
-            var active = i === index;
-            dot.classList.toggle('is-active', active);
-            dot.setAttribute('aria-pressed', active ? 'true' : 'false');
-        });
-    }
-    function start() { window.clearInterval(timer); timer = window.setInterval(function() { show(index + 1); }, 5500); }
-    carousel.querySelector('.catalog-hero-prev').addEventListener('click', function() { show(index - 1); start(); });
-    carousel.querySelector('.catalog-hero-next').addEventListener('click', function() { show(index + 1); start(); });
-    dots.forEach(function(dot, i) { dot.addEventListener('click', function() { show(i); start(); }); });
-    carousel.addEventListener('mouseenter', function() { window.clearInterval(timer); });
-    carousel.addEventListener('mouseleave', start);
-    carousel.addEventListener('focusin', function() { window.clearInterval(timer); });
-    carousel.addEventListener('focusout', start);
-    start();
-}());
-</script>
+    <footer class="new-footer">Envasados al Vacío Gourmet · Salta, Argentina</footer>
 </body>
 </html>
