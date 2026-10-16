@@ -119,7 +119,6 @@
         if (!grid) return;
         const flavors = PRODUCTS.filter((p) => p.category === "pollita");
         grid.innerHTML = flavors.map((p) => {
-            const canBuy = p.available !== false && !p.outOfStock;
             const thumb = p.packImage || p.image;
             return `
                 <div class="flavor-item">
@@ -128,8 +127,6 @@
                         <strong>${p.name.replace("Patas Muslo ", "")} · ${money(p.price)} (1Kg)</strong>
                         <span>${p.desc.replace(/ x 1Kg\./, ".")}</span>
                     </div>
-                    <button type="button" class="flavor-add" ${canBuy ? "" : "disabled"}
-                        aria-label="Agregar ${p.name} al pedido" onclick="addToCart('${p.id}')">${canBuy ? "+ Agregar" : "Sin stock"}</button>
                 </div>`;
         }).join("");
     }
