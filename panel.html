@@ -867,11 +867,11 @@
             document.getElementById("panel-header").hidden = false;
             document.getElementById("panel-content").hidden = false;
             cargarPedidos();
-            // Refresco automático cada 45 segundos
+            // Mantener el panel actualizado mientras llegan pedidos nuevos.
             setInterval(() => {
                 cargarPedidos();
                 if (!document.getElementById("finance-view").hidden) cargarFinanzas();
-            }, 45000);
+            }, 10000);
         }
 
         function cambiarVistaPanel(vista) {
