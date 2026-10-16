@@ -110,43 +110,114 @@ function productPlaceholderById(id) {
     return productPlaceholder(product);
 }
 
+// Estado del carrusel por producto (0 = primera vista, 1 = segunda vista)
+const productSlideState = {};
+const productSlidePausedUntil = {};
+let productCarouselTimer = null;
+
+function getProductSlides(product) {
+    if (!product.image && !product.packImage) return [];
+    if (product.packImage) {
+        return [
+            { src: product.image, alt: `${product.name} - Plato servido`, label: "🍽️ Servido", mode: "dish" },
+            { src: product.packImage, alt: `${product.name} - Envasado al vacío`, label: "📦 Envasado", mode: "pack" }
+        ];
+    }
+    return [
+        { src: product.image, alt: `${product.name} - Presentación`, label: "🍽️ Plato", mode: "dish" },
+        { src: product.image, alt: `${product.name} - Detalle gourmet`, label: "🔎 Detalle", mode: "detail" }
+    ];
+}
+
 function productMediaMarkup(product) {
-    if (!product.image && !product.packImage) {
+    const slides = getProductSlides(product);
+    if (slides.length === 0) {
         return `<div class="card-img-placeholder" role="img" aria-label="${product.name}"><span>${product.icon || "🍽️"}</span></div>`;
     }
 
-    if (product.packImage) {
-        return `
-            <div class="card-media-wrapper" id="media-wrap-${product.id}">
-                <img src="${product.image}" alt="${product.name} - Plato preparado" class="card-img is-dish" id="img-dish-${product.id}" width="800" height="490" loading="lazy" decoding="async">
-                <img src="${product.packImage}" alt="${product.name} - Envasado al vacío" class="card-img is-pack" id="img-pack-${product.id}" width="800" height="490" loading="lazy" decoding="async" style="display: none;">
-                <div class="view-switcher" onclick="event.stopPropagation()">
-                    <button type="button" class="view-btn is-active" onclick="switchMediaView('${product.id}', 'dish', this)">🍽️ Servido</button>
-                    <button type="button" class="view-btn" onclick="switchMediaView('${product.id}', 'pack', this)">📦 Envasado</button>
-                </div>
+    const activeIdx = productSlideState[product.id] ? 1 : 0;
+
+    return `
+        <div class="card-media-wrapper card-carousel" id="media-wrap-${product.id}" data-product-id="${product.id}" data-slide="${activeIdx}"
+             onmouseenter="pauseProductCarousel('${product.id}', true)"
+             onmouseleave="pauseProductCarousel('${product.id}', false)">
+            <div class="card-carousel-track" id="carousel-track-${product.id}" style="transform: translateX(-${activeIdx * 50}%);">
+                ${slides.map((s, idx) => `
+                    <div class="card-carousel-slide ${idx === activeIdx ? "is-current" : ""}" data-slide-idx="${idx}">
+                        <img src="${s.src}" alt="${s.alt}" class="card-img is-${s.mode}" width="800" height="490" loading="lazy" decoding="async"
+                             onerror="this.replaceWith(productPlaceholderById('${product.id}'))">
+                    </div>
+                `).join("")}
             </div>
-        `;
-    }
-
-    return `<img src="${product.image}" alt="${product.name}" class="card-img" width="800" height="490" loading="lazy" decoding="async" onerror="this.replaceWith(productPlaceholderById('${product.id}'))">`;
+            <div class="carousel-dots" aria-hidden="true">
+                ${slides.map((_, idx) => `<span class="carousel-dot ${idx === activeIdx ? "is-active" : ""}" onclick="event.stopPropagation(); setProductSlide('${product.id}', ${idx}, true)"></span>`).join("")}
+            </div>
+            <div class="view-switcher" onclick="event.stopPropagation()">
+                ${slides.map((s, idx) => `
+                    <button type="button" class="view-btn ${idx === activeIdx ? "is-active" : ""}" data-slide-btn="${idx}"
+                            onclick="setProductSlide('${product.id}', ${idx}, true)">${s.label}</button>
+                `).join("")}
+            </div>
+        </div>
+    `;
 }
 
-function switchMediaView(id, view, btn) {
-    const packImg = document.getElementById(`img-pack-${id}`);
-    const dishImg = document.getElementById(`img-dish-${id}`);
-    const switcher = btn.closest(".view-switcher");
-    if (switcher) {
-        switcher.querySelectorAll(".view-btn").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
+function setProductSlide(id, slideIndex, manual = false) {
+    const idx = slideIndex ? 1 : 0;
+    productSlideState[id] = idx;
+
+    if (manual) {
+        productSlidePausedUntil[id] = Date.now() + 6000;
     }
-    if (view === "pack") {
-        if (packImg) packImg.style.display = "block";
-        if (dishImg) dishImg.style.display = "none";
+
+    const wrap = document.getElementById(`media-wrap-${id}`);
+    if (!wrap) return;
+    wrap.setAttribute("data-slide", String(idx));
+
+    const track = document.getElementById(`carousel-track-${id}`);
+    if (track) {
+        track.style.transform = `translateX(-${idx * 50}%)`;
+        track.querySelectorAll(".card-carousel-slide").forEach((slide, i) => {
+            slide.classList.toggle("is-current", i === idx);
+        });
+    }
+
+    wrap.querySelectorAll(".view-btn").forEach((btn, i) => {
+        btn.classList.toggle("is-active", i === idx);
+    });
+
+    wrap.querySelectorAll(".carousel-dot").forEach((dot, i) => {
+        dot.classList.toggle("is-active", i === idx);
+    });
+}
+
+function switchMediaView(id, view) {
+    setProductSlide(id, view === "pack" || view === "detail" ? 1 : 0, true);
+}
+
+function pauseProductCarousel(id, paused) {
+    if (paused) {
+        productSlidePausedUntil[id] = Infinity;
     } else {
-        if (packImg) packImg.style.display = "none";
-        if (dishImg) dishImg.style.display = "block";
+        productSlidePausedUntil[id] = Date.now() + 1200;
     }
 }
+
+function startProductCarousels() {
+    if (productCarouselTimer) clearInterval(productCarouselTimer);
+    productCarouselTimer = setInterval(() => {
+        const now = Date.now();
+        const wraps = document.querySelectorAll(".card-carousel[data-product-id]");
+        wraps.forEach((wrap) => {
+            const id = wrap.getAttribute("data-product-id");
+            if (!id) return;
+            if ((productSlidePausedUntil[id] || 0) > now) return;
+            const current = productSlideState[id] ? 1 : 0;
+            setProductSlide(id, current === 0 ? 1 : 0, false);
+        });
+    }, 3200);
+}
+
 
 function renderProducts() {
     const grid = document.getElementById("products-grid");
@@ -203,6 +274,10 @@ function renderProducts() {
             </article>
         `;
     }).join("");
+
+    if (!productCarouselTimer) {
+        startProductCarousels();
+    }
 }
 
 function addToCart(id) {
@@ -260,15 +335,17 @@ function updateCartUI() {
     const checkoutBox = document.getElementById("checkout-box");
     const drawerFooter = document.getElementById("drawer-footer");
 
+    if (drawerFooter) {
+        drawerFooter.style.display = "block";
+    }
+
     if (cart.length === 0) {
         if (list) list.innerHTML = "";
         if (emptyMsg) emptyMsg.style.display = "block";
         if (checkoutBox) checkoutBox.style.display = "none";
-        if (drawerFooter) drawerFooter.style.display = "none";
     } else {
         if (emptyMsg) emptyMsg.style.display = "none";
         if (checkoutBox) checkoutBox.style.display = "block";
-        if (drawerFooter) drawerFooter.style.display = "block";
 
         if (list) {
             list.innerHTML = cart.map(item => {
@@ -333,7 +410,12 @@ function toggleCart(open) {
 }
 
 async function sendWhatsApp() {
-    if (cart.length === 0) return;
+    if (cart.length === 0) {
+        showToast("Agregá al menos un plato de la carta para enviar tu pedido");
+        toggleCart(false);
+        document.getElementById("carta")?.scrollIntoView({ behavior: "smooth" });
+        return;
+    }
 
     const name = (document.getElementById("cust-name")?.value || "").trim();
     const address = (document.getElementById("cust-address")?.value || "").trim();

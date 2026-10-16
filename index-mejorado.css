@@ -274,18 +274,81 @@ section[id], main[id] { scroll-margin-top: 84px; }
     color: var(--text-light);
 }
 
-/* ---------- Drawer abierto ---------- */
+/* ---------- Drawer abierto y visibilidad garantizada del botón WhatsApp ---------- */
 body.drawer-open { overflow: hidden; }
 body.drawer-open .cart-float { display: none !important; }
+
+.drawer {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer-header {
+    flex: 0 0 auto;
+}
+
+.drawer-body {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.drawer-footer {
+    flex: 0 0 auto;
+    display: block !important;
+    background: #ffffff;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.07);
+    padding: 12px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+    position: relative;
+    z-index: 5;
+}
+
+.btn-whatsapp-send {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    min-height: 48px;
+    background-color: #25D366 !important;
+    color: #ffffff !important;
+    font-size: 0.96rem;
+    font-weight: 800;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    margin-top: 10px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(37, 211, 102, 0.35);
+    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.btn-whatsapp-send:hover {
+    background-color: #1fb855 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(37, 211, 102, 0.45);
+}
 
 /* ---------- Barra de envío gratis (drawer) ---------- */
 .ship-progress {
     background: var(--gold-soft);
     border: 1px solid var(--gold-border);
     border-radius: var(--radius-md);
-    padding: 12px 14px;
+    padding: 10px 14px;
     font-size: 0.82rem;
     color: #5e4a1e;
+    flex-shrink: 0;
 }
 .ship-progress[hidden] { display: none; }
 .ship-progress strong { color: var(--accent); }
@@ -312,5 +375,4 @@ body.drawer-open .cart-float { display: none !important; }
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     .reveal { opacity: 1; transform: none; transition: none; }
-    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
