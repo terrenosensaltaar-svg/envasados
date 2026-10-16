@@ -14,6 +14,7 @@
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
+    <script src="products.js"></script>
 
     <style>
         /* Estilos específicos del Dashboard adaptados a la paleta Gourmet de styles.css */
@@ -219,6 +220,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 20px;
+            margin-bottom: 32px;
         }
 
         @media (max-width: 640px) {
@@ -504,7 +506,7 @@
         [hidden] { display: none !important; }
 
         /* Inventario de producción */
-        .stock-section { margin: 0 0 28px; padding: clamp(18px, 2.6vw, 28px); background: linear-gradient(135deg, var(--bg-surface), var(--bg-subtle)); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-soft); }
+        .stock-section { margin: 32px 0 28px; padding: clamp(18px, 2.6vw, 28px); background: linear-gradient(135deg, var(--bg-surface), var(--bg-subtle)); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-soft); }
         .stock-section-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; }
         .stock-eyebrow { display: inline-block; margin-bottom: 7px; color: var(--accent); font-size: .68rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
         .stock-section-head h2 { margin: 0 0 6px; color: var(--text-main); font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: 850; }
@@ -689,29 +691,6 @@
             </div>
         </section>
 
-        <!-- Stock de Producción -->
-        <section class="stock-section" data-panel-view="operaciones" aria-labelledby="stock-title">
-            <div class="stock-section-head">
-                <div>
-                    <span class="stock-eyebrow">Control de cocina</span>
-                    <h2 id="stock-title">Stock de producción</h2>
-                    <p>Consultá las unidades disponibles y ajustá la cantidad producida. El valor confirmado se mantiene visible aunque el panel sincronice los pedidos.</p>
-                </div>
-                <span class="stock-sync-status" id="stock-updated" role="status" aria-live="polite">
-                    <span class="stock-sync-dot" aria-hidden="true"></span>
-                    <span id="stock-updated-text">Cargando stock…</span>
-                </span>
-            </div>
-            <div class="stock-summary-row" aria-label="Resumen de inventario">
-                <div class="stock-summary-card"><span>Productos controlados</span><strong id="stock-products-count">4</strong></div>
-                <div class="stock-summary-card"><span>Unidades disponibles</span><strong id="stock-total-units">—</strong></div>
-                <div class="stock-summary-card"><span>Sincronización</span><strong style="font-size:.92rem">Cada 45 segundos</strong></div>
-            </div>
-            <div class="stock-grid" id="stock-grid" aria-live="polite">
-                <div class="empty-box"><p>Cargando inventario…</p></div>
-            </div>
-            <p class="stock-message" id="stock-message" role="status" hidden></p>
-        </section>
         <!-- Barra de Filtros y Búsqueda -->
         <section class="controls-bar" data-panel-view="operaciones">
             <div class="filter-tabs">
@@ -740,6 +719,30 @@
                 <h3>Cargando pedidos...</h3>
                 <p>Conectando con Supabase para cargar los pedidos.</p>
             </div>
+        </section>
+
+        <!-- Stock de Producción -->
+        <section class="stock-section" data-panel-view="operaciones" aria-labelledby="stock-title">
+            <div class="stock-section-head">
+                <div>
+                    <span class="stock-eyebrow">Control de cocina</span>
+                    <h2 id="stock-title">Stock de producción</h2>
+                    <p>Consultá las unidades disponibles y ajustá la cantidad producida. El valor confirmado se mantiene visible aunque el panel sincronice los pedidos.</p>
+                </div>
+                <span class="stock-sync-status" id="stock-updated" role="status" aria-live="polite">
+                    <span class="stock-sync-dot" aria-hidden="true"></span>
+                    <span id="stock-updated-text">Cargando stock…</span>
+                </span>
+            </div>
+            <div class="stock-summary-row" aria-label="Resumen de inventario">
+                <div class="stock-summary-card"><span>Productos controlados</span><strong id="stock-products-count">11</strong></div>
+                <div class="stock-summary-card"><span>Unidades disponibles</span><strong id="stock-total-units">—</strong></div>
+                <div class="stock-summary-card"><span>Sincronización</span><strong style="font-size:.92rem">Cada 45 segundos</strong></div>
+            </div>
+            <div class="stock-grid" id="stock-grid" aria-live="polite">
+                <div class="empty-box"><p>Cargando inventario…</p></div>
+            </div>
+            <p class="stock-message" id="stock-message" role="status" hidden></p>
         </section>
 
         <section class="finance-view" id="finance-view" data-panel-view="finanzas" hidden aria-label="Ingresos y gastos">
@@ -1057,18 +1060,42 @@
             }
         }
 
+        const catalogoBase = (typeof PRODUCTS !== "undefined" && Array.isArray(PRODUCTS)) ? PRODUCTS : [];
         const productosDeStock = [
-            { id: "prod-01", name: "Empanadas Árabes", icon: "🥟" },
+            // Línea Pollita Lu (Patas Muslo saborizadas al vacío)
+            { id: "pl-01", name: "Patas Muslo Parrillera", icon: "🍗", legacyIds: ["prod-04"] },
+            { id: "pl-02", name: "Patas Muslo Honey", icon: "🍯" },
+            { id: "pl-03", name: "Patas Muslo Oriental Árabe", icon: "🍋" },
+            { id: "pl-04", name: "Patas Muslo Ahumada", icon: "🔥" },
+            { id: "pl-05", name: "Patas Muslo Barbacoa Smoky", icon: "🍖" },
+
+            // Línea Gourmet (Platos Caseros al vacío)
+            { id: "gm-01", name: "Empanadas Árabes", icon: "🥟", legacyIds: ["prod-01"] },
+            { id: "gm-02", name: "Empanadas de Carne", icon: "🥟", legacyIds: ["prod-19"] },
+            { id: "gm-03", name: "Lazaña de Novillo", icon: "🍝", legacyIds: ["prod-14"] },
+            { id: "gm-04", name: "Pastel de Papa", icon: "🥧", legacyIds: ["prod-18"] },
+
+            // Platos de producción adicionales
             { id: "prod-02", name: "Pollo al Horno con Papas", icon: "🍗" },
-            { id: "prod-03", name: "Puré de Papas con Solomillo a la Cerveza", icon: "🍽️" },
-            { id: "prod-04", name: "Pollo Condimentado Pollita Lu", icon: "🍗" }
+            { id: "prod-03", name: "Puré de Papas con Solomillo a la Cerveza", icon: "🍽️" }
         ];
+
+        // Sincronizar dinámicamente si products.js incluye otros productos en el futuro
+        catalogoBase.forEach(prod => {
+            if (!productosDeStock.some(item => item.id === prod.id)) {
+                productosDeStock.push({
+                    id: prod.id,
+                    name: prod.name,
+                    icon: prod.icon || "🍽️"
+                });
+            }
+        });
 
         function registrarBorradorStock(productId, value) {
             stockBorradores.set(productId, value);
             const button = document.getElementById("stock-save-" + productId);
             const quantity = Number(value);
-            if (button) button.disabled = !stockConfigurado || !stockRegistros.has(productId) || value.trim() === "" || !Number.isInteger(quantity) || quantity < 0 || stockGuardando.has(productId);
+            if (button) button.disabled = !stockConfigurado || value.trim() === "" || !Number.isInteger(quantity) || quantity < 0 || stockGuardando.has(productId);
         }
 
         function pintarStock(registros = [...stockRegistros.values()]) {
@@ -1079,7 +1106,7 @@
             if (!grid) return;
 
             const byId = new Map(registros.map(row => [row.product_id, row]));
-            stockConfigurado = byId.has("__stock_trigger_v1__");
+            stockConfigurado = byId.has("__stock_trigger_v1__") || registros.length > 0;
             stockRegistros.clear();
             byId.forEach((row, id) => stockRegistros.set(id, row));
 
@@ -1109,7 +1136,15 @@
             let totalUnidades = 0;
             let productosActivos = 0;
             productosDeStock.forEach(producto => {
-                const row = byId.get(producto.id);
+                let row = byId.get(producto.id);
+                if (!row && producto.legacyIds) {
+                    for (const legId of producto.legacyIds) {
+                        if (byId.has(legId)) {
+                            row = byId.get(legId);
+                            break;
+                        }
+                    }
+                }
                 const current = document.getElementById("stock-current-" + producto.id);
                 const input = document.getElementById("stock-" + producto.id);
                 const button = document.getElementById("stock-save-" + producto.id);
@@ -1137,13 +1172,13 @@
                         level.classList.remove("is-available", "is-empty");
                     }
                     if (input && draft === undefined && document.activeElement !== input) input.value = "";
-                    if (note) note.textContent = "Este producto aún no tiene un registro de stock.";
+                    if (note) note.textContent = "Ingresá la cantidad para inicializar el stock de este producto.";
                 }
-                if (input) input.disabled = !stockConfigurado || !row || isSaving;
+                if (input) input.disabled = !stockConfigurado || isSaving;
                 if (button) {
                     button.textContent = isSaving ? "Guardando…" : "Guardar";
                     const value = input ? Number(input.value) : NaN;
-                    button.disabled = !stockConfigurado || !row || isSaving || !input.value.trim() || !Number.isInteger(value) || value < 0;
+                    button.disabled = !stockConfigurado || isSaving || !input?.value?.trim() || !Number.isInteger(value) || value < 0;
                 }
             });
 
@@ -1204,6 +1239,7 @@
         }
 
         async function guardarStock(productId) {
+            const producto = productosDeStock.find(item => item.id === productId);
             const input = document.getElementById("stock-" + productId);
             const button = document.getElementById("stock-save-" + productId);
             const message = document.getElementById("stock-message");
@@ -1216,10 +1252,10 @@
                 input?.focus();
                 return;
             }
-            if (!stockConfigurado || !stockRegistros.has(productId)) {
+            if (!stockConfigurado) {
                 if (message) {
                     message.hidden = false;
-                    message.textContent = "No hay un registro de stock listo para este producto. Actualizá el panel y volvé a intentar.";
+                    message.textContent = "El módulo de stock aún no está habilitado en la base de datos.";
                 }
                 return;
             }
@@ -1230,18 +1266,44 @@
             stockCargaVersion += 1;
             pintarStock([...stockRegistros.values()]);
             try {
-                const { data, error } = await window.supabaseClient
+                let targetId = productId;
+                if (!stockRegistros.has(productId) && producto?.legacyIds) {
+                    const existingLegacy = producto.legacyIds.find(id => stockRegistros.has(id));
+                    if (existingLegacy) targetId = existingLegacy;
+                }
+
+                // Intento 1: actualizar registro existente en la base de datos
+                let { data, error } = await window.supabaseClient
                     .from("production_stock")
                     .update({ quantity, updated_at: new Date().toISOString() })
-                    .eq("product_id", productId)
+                    .eq("product_id", targetId)
                     .select("product_id, product_name, quantity, updated_at")
                     .maybeSingle();
+
                 if (error) throw error;
+
+                // Intento 2: si no existía fila en la tabla, crearla mediante upsert
+                if (!data) {
+                    const upsertRes = await window.supabaseClient
+                        .from("production_stock")
+                        .upsert({
+                            product_id: productId,
+                            product_name: producto?.name || productId,
+                            quantity: quantity,
+                            updated_at: new Date().toISOString()
+                        })
+                        .select("product_id, product_name, quantity, updated_at")
+                        .maybeSingle();
+                    if (upsertRes.error) throw upsertRes.error;
+                    data = upsertRes.data;
+                }
+
                 if (!data) throw new Error("Supabase no confirmó el cambio. Verificá tu acceso de administrador y volvé a intentar.");
+
                 stockErrorMessage = "";
-                stockRegistros.set(productId, data);
+                stockRegistros.set(targetId, data);
+                if (targetId !== productId) stockRegistros.set(productId, data);
                 stockBorradores.delete(productId);
-                const producto = productosDeStock.find(item => item.id === productId);
                 mostrarToast("Stock guardado: " + (producto?.name || "producto"));
             } catch (error) {
                 console.error("Error al guardar stock:", error);
