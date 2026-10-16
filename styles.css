@@ -226,6 +226,41 @@ body {
     margin-top: 2px;
 }
 
+.category-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.cat-tab {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 9px 18px;
+    border-radius: var(--radius-full);
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+}
+
+.cat-tab:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.cat-tab.is-active {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+    box-shadow: 0 4px 14px rgba(38, 107, 59, 0.25);
+}
+
 .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -280,6 +315,63 @@ body {
     padding: 4px 10px;
     border-radius: var(--radius-full);
     border: 1px solid var(--accent-border);
+}
+
+.card-media-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.view-switcher {
+    position: absolute;
+    bottom: 9px;
+    right: 9px;
+    display: inline-flex;
+    background: rgba(18, 26, 20, 0.82);
+    backdrop-filter: blur(6px);
+    border-radius: var(--radius-full);
+    padding: 3px;
+    gap: 3px;
+    z-index: 4;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.view-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+.view-btn.is-active {
+    background: var(--accent);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.view-btn:hover:not(.is-active) {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.flavor-thumb {
+    width: 62px;
+    height: 62px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border);
+    background: #f7f9f7;
 }
 
 .card-body {
@@ -355,6 +447,50 @@ body {
     background: var(--accent);
     color: #fff;
     border-color: var(--accent);
+}
+
+/* Platos sin stock */
+.card.is-out-of-stock {
+    opacity: 0.78;
+    background: #f7f9f7;
+    border-color: #d6ded8;
+}
+
+.card.is-out-of-stock:hover {
+    transform: none;
+    box-shadow: var(--shadow-soft);
+    border-color: #d6ded8;
+}
+
+.card.is-out-of-stock .card-img-wrap img {
+    filter: grayscale(100%) contrast(0.95);
+    opacity: 0.85;
+}
+
+.card.is-out-of-stock .card-title {
+    color: #637066;
+}
+
+.card.is-out-of-stock .card-desc {
+    color: #828f85;
+}
+
+.card-badge.badge-sin-stock {
+    background: #4a544c !important;
+    color: #ffffff !important;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.btn-add.btn-sin-stock {
+    background: #e2e8e4 !important;
+    color: #6b7970 !important;
+    border: 1px solid #c9d4cd !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+    font-weight: 700;
 }
 
 .qty-control {
