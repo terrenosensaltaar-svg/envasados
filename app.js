@@ -68,7 +68,58 @@ function formatPrice(val) {
     return `$${Number(val).toLocaleString('es-AR')}`;
 }
 
-// Orden aleatorio de productos por visita / carga de página
+// Ruta de la versión liviana generada por optimizar-imagenes.ps1 (img-opt/<nombre>-640.jpg o -160.jpg).
+function optimizedImage(src, size) {
+    if (!src || !/\.jpe?g$/i.test(src) || /^(https?:)?\/\//i.test(src)) return src;
+    return "img-opt/" + src.replace(/\.jpe?g$/i, `-${size}.jpg`);
+}
+
+// El SDK de Supabase (~170 KB) solo se necesita al confirmar el pedido. Se descarga en segundo
+// plano cuando el navegador está libre, así no retrasa la primera pantalla en conexiones lentas.
+let supabaseLoading = null;
+
+function loadScriptOnce(src) {
+    return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.head.appendChild(script);
+    });
+}
+
+function loadSupabase() {
+    if (window.supabaseClient) return Promise.resolve(window.supabaseClient);
+    if (supabaseLoading) return supabaseLoading;
+    supabaseLoading = (async () => {
+        if (!window.supabase) {
+            await loadScriptOnce("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+        }
+        if (!window.supabaseClient) {
+            if (typeof SUPABASE_URL === "undefined") {
+                await loadScriptOnce("supabase-config.js");
+            } else if (window.supabase && typeof window.supabase.createClient === "function") {
+                // La configuración ya se había cargado (reintento tras un fallo del CDN).
+                window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        }
+        return window.supabaseClient || null;
+    })();
+    // Si falló, permitimos reintentar en el próximo pedido.
+    supabaseLoading.then((client) => { if (!client) supabaseLoading = null; });
+    return supabaseLoading;
+}
+
+window.addEventListener("load", () => {
+    const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1500));
+    idle(() => { loadSupabase(); });
+});
+
+// Orden aleatorio de productos por visita / carga de página:
+// 1º Empanadas con stock (aleatorio)
+// 2º Pollita Lu con stock (aleatorio)
+// 3º Otros productos con stock (aleatorio)
+// 4º Productos sin stock al final
 let displayProducts = [];
 
 function shuffleProducts(array) {
@@ -83,7 +134,33 @@ function shuffleProducts(array) {
 }
 
 function initRandomProductOrder() {
-    displayProducts = shuffleProducts(PRODUCTS);
+    const isOutOfStock = (p) => p.outOfStock === true || p.available === false;
+    const isEmpanada = (p) => (p.name && p.name.toLowerCase().includes("empanada")) || p.id === "gm-01" || p.id === "gm-02";
+    const isPollita = (p) => p.category === "pollita" || p.id.startsWith("pl-");
+
+    const inStockEmpanadas = [];
+    const inStockPollita = [];
+    const inStockOther = [];
+    const outOfStock = [];
+
+    PRODUCTS.forEach((p) => {
+        if (isOutOfStock(p)) {
+            outOfStock.push(p);
+        } else if (isEmpanada(p)) {
+            inStockEmpanadas.push(p);
+        } else if (isPollita(p)) {
+            inStockPollita.push(p);
+        } else {
+            inStockOther.push(p);
+        }
+    });
+
+    displayProducts = [
+        ...shuffleProducts(inStockEmpanadas),
+        ...shuffleProducts(inStockPollita),
+        ...shuffleProducts(inStockOther),
+        ...outOfStock
+    ];
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -110,6 +187,16 @@ function productPlaceholderById(id) {
     return productPlaceholder(product);
 }
 
+// Si falta la versión liviana (img-opt/), reintenta con la foto original; si tampoco existe, muestra el ícono.
+function productImgError(img, id) {
+    const orig = img.getAttribute("data-orig");
+    if (orig && img.getAttribute("src") !== orig) {
+        img.src = orig;
+        return;
+    }
+    img.replaceWith(productPlaceholderById(id));
+}
+
 // Estado del carrusel por producto (0 = primera vista, 1 = segunda vista)
 const productSlideState = {};
 const productSlidePausedUntil = {};
@@ -129,7 +216,7 @@ function getProductSlides(product) {
     ];
 }
 
-function productMediaMarkup(product) {
+function productMediaMarkup(product, cardIndex = 99) {
     const slides = getProductSlides(product);
     if (slides.length === 0) {
         return `<div class="card-img-placeholder" role="img" aria-label="${product.name}"><span>${product.icon || "🍽️"}</span></div>`;
@@ -142,12 +229,16 @@ function productMediaMarkup(product) {
              onmouseenter="pauseProductCarousel('${product.id}', true)"
              onmouseleave="pauseProductCarousel('${product.id}', false)">
             <div class="card-carousel-track" id="carousel-track-${product.id}" style="transform: translateX(-${activeIdx * 50}%);">
-                ${slides.map((s, idx) => `
+                ${slides.map((s, idx) => {
+                    // Las dos primeras tarjetas (lo que se ve al abrir la página) cargan de inmediato; el resto, bajo demanda.
+                    const eager = cardIndex < 2 && idx === 0;
+                    return `
                     <div class="card-carousel-slide ${idx === activeIdx ? "is-current" : ""}" data-slide-idx="${idx}">
-                        <img src="${s.src}" alt="${s.alt}" class="card-img is-${s.mode}" width="800" height="490" loading="lazy" decoding="async"
-                             onerror="this.replaceWith(productPlaceholderById('${product.id}'))">
-                    </div>
-                `).join("")}
+                        <img src="${optimizedImage(s.src, 640)}" data-orig="${s.src}" alt="${s.alt}" class="card-img is-${s.mode}" width="640" height="480"
+                             ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async"
+                             onerror="productImgError(this, '${product.id}')">
+                    </div>`;
+                }).join("")}
             </div>
             <div class="carousel-dots" aria-hidden="true">
                 ${slides.map((_, idx) => `<span class="carousel-dot ${idx === activeIdx ? "is-active" : ""}" onclick="event.stopPropagation(); setProductSlide('${product.id}', ${idx}, true)"></span>`).join("")}
@@ -203,14 +294,40 @@ function pauseProductCarousel(id, paused) {
     }
 }
 
+// Solo animamos las tarjetas que están realmente en pantalla: mover 12 carruseles a la vez
+// cada pocos segundos castiga la batería y la fluidez en celulares de gama baja.
+const visibleCarousels = new Set();
+let carouselObserver = null;
+const prefersReducedMotion = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+function observeCarousels() {
+    if (!("IntersectionObserver" in window)) return;
+    if (!carouselObserver) {
+        carouselObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                const id = entry.target.getAttribute("data-product-id");
+                if (!id) return;
+                if (entry.isIntersecting) visibleCarousels.add(id);
+                else visibleCarousels.delete(id);
+            });
+        }, { threshold: 0.35 });
+    }
+    carouselObserver.disconnect();
+    visibleCarousels.clear();
+    document.querySelectorAll(".card-carousel[data-product-id]").forEach((el) => carouselObserver.observe(el));
+}
+
 function startProductCarousels() {
     if (productCarouselTimer) clearInterval(productCarouselTimer);
+    if (prefersReducedMotion) return;
     productCarouselTimer = setInterval(() => {
+        if (document.hidden) return;
         const now = Date.now();
         const wraps = document.querySelectorAll(".card-carousel[data-product-id]");
         wraps.forEach((wrap) => {
             const id = wrap.getAttribute("data-product-id");
             if (!id) return;
+            if (carouselObserver && !visibleCarousels.has(id)) return;
             if ((productSlidePausedUntil[id] || 0) > now) return;
             const current = productSlideState[id] ? 1 : 0;
             setProductSlide(id, current === 0 ? 1 : 0, false);
@@ -218,6 +335,48 @@ function startProductCarousels() {
     }, 3200);
 }
 
+
+// Pie de la tarjeta (precio + botón agregar / selector de cantidad).
+// Se genera aparte para poder refrescarlo solo, sin reconstruir la grilla completa.
+function cardFooterMarkup(p) {
+    const item = cart.find(c => c.id === p.id);
+    const qty = item ? item.qty : 0;
+    const isOutOfStock = p.outOfStock === true || p.available === false;
+    const canOrder = !isOutOfStock && Number.isFinite(p.price) && p.price > 0;
+
+    return `
+        <span class="card-price">${Number.isFinite(p.price) ? formatPrice(p.price) : "Precio a confirmar"}</span>
+        ${canOrder && qty > 0 ? `
+            <div class="qty-control">
+                <button class="qty-btn" type="button" data-act="dec" aria-label="Quitar una unidad de ${p.name}" onclick="updateQty('${p.id}', ${qty - 1})">−</button>
+                <span class="qty-val" aria-live="polite">${qty}</span>
+                <button class="qty-btn" type="button" data-act="inc" aria-label="Agregar una unidad de ${p.name}" onclick="updateQty('${p.id}', ${qty + 1})">+</button>
+            </div>
+        ` : canOrder ? `
+            <button class="btn-add" type="button" data-act="add" aria-label="Agregar ${p.name} al pedido" onclick="addToCart('${p.id}')">+ Agregar</button>
+        ` : isOutOfStock ? `
+            <button class="btn-add btn-sin-stock" type="button" disabled>🚫 Sin Stock</button>
+        ` : `<button class="btn-add" type="button" disabled>Próximamente</button>`}
+    `;
+}
+
+// Actualiza solo el pie de una tarjeta y conserva el foco del teclado. Devuelve false si la tarjeta no está en pantalla.
+function refreshCardFooter(id) {
+    const product = PRODUCTS.find(p => p.id === id);
+    const footer = document.getElementById(`card-footer-${id}`);
+    if (!product || !footer) return false;
+
+    const active = document.activeElement;
+    const focusAct = active && footer.contains(active) ? active.getAttribute("data-act") : null;
+    footer.innerHTML = cardFooterMarkup(product);
+
+    if (focusAct) {
+        const target = footer.querySelector(`[data-act="${focusAct === "add" ? "inc" : focusAct}"]`)
+            || footer.querySelector("button:not([disabled])");
+        if (target) target.focus({ preventScroll: true });
+    }
+    return true;
+}
 
 function renderProducts() {
     const grid = document.getElementById("products-grid");
@@ -236,16 +395,13 @@ function renderProducts() {
         return;
     }
 
-    grid.innerHTML = filtered.map(p => {
-        const item = cart.find(c => c.id === p.id);
-        const qty = item ? item.qty : 0;
+    grid.innerHTML = filtered.map((p, cardIndex) => {
         const isOutOfStock = p.outOfStock === true || p.available === false;
-        const canOrder = !isOutOfStock && Number.isFinite(p.price) && p.price > 0;
 
         return `
             <article class="card ${isOutOfStock ? "is-out-of-stock" : ""}">
                 <div class="card-img-wrap">
-                    ${productMediaMarkup(p)}
+                    ${productMediaMarkup(p, cardIndex)}
                     <span class="card-badge ${isOutOfStock ? "badge-sin-stock" : ""}">${isOutOfStock ? "🚫 Sin Stock" : p.badge}</span>
                 </div>
                 <div class="card-body">
@@ -256,27 +412,22 @@ function renderProducts() {
                         <span>👨‍🍳</span>
                         <span>${p.prep}</span>
                     </div>
-                    <div class="card-footer">
-                        <span class="card-price">${Number.isFinite(p.price) ? formatPrice(p.price) : "Precio a confirmar"}</span>
-                        ${canOrder && qty > 0 ? `
-                            <div class="qty-control">
-                                <button class="qty-btn" onclick="updateQty('${p.id}', ${qty - 1})">−</button>
-                                <span class="qty-val">${qty}</span>
-                                <button class="qty-btn" onclick="updateQty('${p.id}', ${qty + 1})">+</button>
-                            </div>
-                        ` : canOrder ? `
-                            <button class="btn-add" onclick="addToCart('${p.id}')">+ Agregar</button>
-                        ` : isOutOfStock ? `
-                            <button class="btn-add btn-sin-stock" type="button" disabled>🚫 Sin Stock</button>
-                        ` : `<button class="btn-add" type="button" disabled>Próximamente</button>`}
+                    <div class="card-footer" id="card-footer-${p.id}">
+                        ${cardFooterMarkup(p)}
                     </div>
                 </div>
             </article>
         `;
     }).join("");
 
+    observeCarousels();
+
     if (!productCarouselTimer) {
         startProductCarousels();
+    }
+
+    if (typeof window.updateCarouselStatus === "function") {
+        window.updateCarouselStatus();
     }
 }
 
@@ -290,7 +441,7 @@ function addToCart(id) {
         cart.push({ id, qty: 1 });
     }
     saveCart();
-    renderProducts();
+    if (!refreshCardFooter(id)) renderProducts();
     updateCartUI();
     showToast("Agregado al pedido de Chef");
 }
@@ -303,7 +454,7 @@ function updateQty(id, qty) {
         if (item) item.qty = qty;
     }
     saveCart();
-    renderProducts();
+    if (!refreshCardFooter(id)) renderProducts();
     updateCartUI();
 }
 
@@ -353,7 +504,8 @@ function updateCartUI() {
                 if (!p) return "";
                 return `
                     <div class="cart-item">
-                        <img src="${p.image}" class="cart-item-img" alt="${p.name}">
+                        <img src="${optimizedImage(p.image, 160)}" class="cart-item-img" alt="${p.name}" width="46" height="46" loading="lazy" decoding="async"
+                             onerror="if(this.dataset.fb!=='1'){this.dataset.fb='1';this.src='${p.image}'}">
                         <div class="cart-item-info">
                             <div class="cart-item-title">${p.name}</div>
                             <div class="cart-item-price">${formatPrice(p.price)} c/u</div>
@@ -397,7 +549,10 @@ function setDeliveryMethod(method) {
     updateCartUI();
 }
 
-function syncDrawerViewport() {
+let drawerSyncFrame = 0;
+
+function applyDrawerViewport() {
+    drawerSyncFrame = 0;
     const drawer = document.getElementById("drawer");
     if (!drawer) return;
     const vv = window.visualViewport;
@@ -409,6 +564,19 @@ function syncDrawerViewport() {
         drawer.style.top = `${offsetTop}px`;
         drawer.style.bottom = "auto";
     }
+}
+
+// Con el drawer cerrado no hay nada que ajustar: evitamos recalcular estilos en cada
+// resize/scroll del visualViewport (la barra de direcciones del celular los dispara todo el tiempo).
+function syncDrawerViewport(force = false) {
+    const drawer = document.getElementById("drawer");
+    if (!drawer) return;
+    if (force !== true && !drawer.classList.contains("active")) return;
+    if (force === true) {
+        applyDrawerViewport();
+        return;
+    }
+    if (!drawerSyncFrame) drawerSyncFrame = requestAnimationFrame(applyDrawerViewport);
 }
 
 function initDrawerViewportSync() {
@@ -450,12 +618,11 @@ function toggleCart(open) {
     const overlay = document.getElementById("drawer-overlay");
     if (!drawer || !overlay) return;
 
-    syncDrawerViewport();
-
     if (open) {
         drawer.classList.add("active");
         overlay.classList.add("active");
-        setTimeout(syncDrawerViewport, 50);
+        syncDrawerViewport(true);
+        setTimeout(() => syncDrawerViewport(true), 50);
     } else {
         drawer.classList.remove("active");
         overlay.classList.remove("active");
@@ -532,6 +699,8 @@ async function sendWhatsApp() {
 
     // Registrar el pedido antes de abrir WhatsApp y comprobar también los errores
     // devueltos por PostgREST (no siempre se rechaza la promesa).
+    // Supabase se descarga en segundo plano (ver loadSupabase); aquí nos aseguramos de tenerlo listo.
+    await loadSupabase();
     if (window.supabaseClient) {
         try {
             const { error } = await window.supabaseClient.from("store_orders").insert({

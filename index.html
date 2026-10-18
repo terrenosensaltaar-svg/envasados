@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Envasados al Vacío Gourmet | Platos caseros y Pollita Lu en Salta</title>
     <meta name="description" content="Platos caseros gourmet y patas muslo marinadas Pollita Lu envasados al vacío. Pedí online, pagá como prefieras y recibí en tu casa en Salta o retirá sin cargo.">
     <meta name="theme-color" content="#266b3b">
@@ -23,7 +23,7 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"></noscript>
 
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="index-mejorado.css">
 
@@ -43,8 +43,8 @@
     }
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="supabase-config.js" defer></script>
+    <!-- Supabase se carga en segundo plano (loadSupabase en app.js); solo se necesita al enviar el pedido -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <script src="products.js" defer></script>
     <script src="app.js" defer></script>
     <script src="index-mejorado.js" defer></script>
@@ -56,7 +56,7 @@
     <header class="header">
         <div class="header-inner">
             <a href="#inicio" class="brand-link" aria-label="Envasados al Vacío, ir al inicio">
-                <img src="logo.png" alt="Envasados al Vacío" class="brand-logo" width="160" height="44" fetchpriority="high">
+                <img src="logo.png" alt="Envasados al Vacío" class="brand-logo" width="128" height="44" fetchpriority="high">
                 <span class="brand-sub">Catálogo</span>
             </a>
             <nav class="site-nav" aria-label="Secciones de la página">
@@ -77,29 +77,37 @@
 
     <!-- ================= HERO ================= -->
     <section class="hero" id="inicio">
-        <div class="hero-pill">👨‍🍳 Experiencia de cocina en tu hogar</div>
-        <h1>Envasados al Vacío Gourmet,<br><span>conviértete en tu propio chef</span></h1>
-        <p>Cortes seleccionados, marinados frescos y platos de olla envasados al vacío. Sin conservantes y listos para regenerar o cocinar en minutos con sabor y textura de restaurante.</p>
-        <div class="hero-badges">
-            <span>⏱️ Listo en 10-15 min</span>
-            <span>🌿 100% Sabor natural</span>
-            <span>❄️ Conservación al vacío</span>
-            <span>🛵 Envío refrigerado</span>
-        </div>
-        <div class="hero-actions">
-            <a class="btn-hero primary" href="#carta">Ver la carta</a>
-            <button class="btn-hero ghost" type="button" onclick="contactWhatsApp()">
-                <span aria-hidden="true">💬</span> Consultar por WhatsApp
-            </button>
+        <div class="hero-content">
+            <div class="hero-pill">👨‍🍳 Experiencia gastronómica en tu hogar</div>
+            <h1>Envasados al Vacío Gourmet,<br><span>el toque de un chef en tu propia mesa</span></h1>
+            <div class="hero-badges">
+                <span>⏱️ Listo en 10-15 min</span>
+                <span>🌿 100% Sabor natural</span>
+                <span>❄️ Conservación al vacío</span>
+                <span>🛵 Envío refrigerado</span>
+            </div>
+            <div class="hero-actions">
+                <a class="btn-hero primary" href="#carta">Ver la carta</a>
+                <button class="btn-hero ghost" type="button" onclick="contactWhatsApp()">
+                    <span aria-hidden="true">💬</span> Consultar por WhatsApp
+                </button>
+            </div>
         </div>
     </section>
 
-    <!-- ================= FRANJA DE CONFIANZA ================= -->
-    <section class="trust-strip" aria-label="Ventajas de comprar con nosotros">
-        <div class="trust-item"><span class="ti-icon" aria-hidden="true">🛵</span><div><strong>Envío a domicilio</strong><span><span data-fee></span> · gratis desde <span data-free-from></span></span></div></div>
-        <div class="trust-item"><span class="ti-icon" aria-hidden="true">🏪</span><div><strong>Retiro en local</strong><span>Sin costo de envío</span></div></div>
-        <div class="trust-item"><span class="ti-icon" aria-hidden="true">💳</span><div><strong>Pagá como prefieras</strong><span>Transferencia, efectivo o tarjeta</span></div></div>
-        <div class="trust-item"><span class="ti-icon" aria-hidden="true">💬</span><div><strong>Pedido por WhatsApp</strong><span>Atención personal y directa</span></div></div>
+    <!-- ================= CÓMO PEDIR ================= -->
+    <section class="how-section" id="como-pedir" aria-labelledby="como-pedir-title">
+        <div class="section-head" style="justify-content:center;text-align:center">
+            <div>
+                <h2 class="section-title" id="como-pedir-title">Pedir es muy simple</h2>
+                <p class="section-subtitle">Tres pasos y listo para cocinar</p>
+            </div>
+        </div>
+        <div class="steps-grid">
+            <article class="step-card"><h3>Elegí tus platos</h3><p>Sumá a tu pedido los productos que quieras desde la carta. Podés modificar cantidades cuando quieras.</p></article>
+            <article class="step-card"><h3>Completá tus datos</h3><p>Indicá tu nombre, si preferís envío o retiro y el medio de pago. Te mostramos el total antes de enviar.</p></article>
+            <article class="step-card"><h3>Confirmá por WhatsApp</h3><p>Se abre WhatsApp con tu pedido ya armado. Lo confirmamos y coordinamos la entrega.</p></article>
+        </div>
     </section>
 
     <!-- ================= CARTA ================= -->
@@ -123,24 +131,34 @@
             </button>
         </div>
 
-        <div class="products-grid" id="products-grid" aria-live="polite">
+        <!-- Barra de navegación y controles del Carrusel -->
+        <div class="carousel-bar" id="carousel-bar">
+            <div class="carousel-hint">
+                <span class="carousel-hint-icon" aria-hidden="true">👈👉</span>
+                <span class="carousel-hint-text">Deslizá para descubrir los platos</span>
+            </div>
+            <div class="carousel-controls">
+                <button type="button" class="carousel-arrow" id="carousel-prev" onclick="scrollProductsCarousel(-1)" aria-label="Ver plato anterior" title="Anterior">‹</button>
+                <span class="carousel-counter" id="carousel-counter" aria-live="polite">1 / 9</span>
+                <button type="button" class="carousel-arrow" id="carousel-next" onclick="scrollProductsCarousel(1)" aria-label="Ver plato siguiente" title="Siguiente">›</button>
+                <button type="button" class="btn-view-toggle" id="btn-view-toggle" onclick="toggleProductsViewMode()" title="Cambiar vista a cuadrícula o carrusel">
+                    <span id="view-mode-icon" aria-hidden="true">⊞</span>
+                    <span id="view-mode-text">Cuadrícula</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="products-grid is-carousel" id="products-grid" aria-live="polite">
             <noscript><p style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted)">Activá JavaScript para ver la carta o escribinos por WhatsApp al 387 228 3546.</p></noscript>
         </div>
     </main>
 
-    <!-- ================= CÓMO PEDIR ================= -->
-    <section class="how-section" id="como-pedir" aria-labelledby="como-pedir-title">
-        <div class="section-head" style="justify-content:center;text-align:center">
-            <div>
-                <h2 class="section-title" id="como-pedir-title">Pedir es muy simple</h2>
-                <p class="section-subtitle">Tres pasos y listo para cocinar</p>
-            </div>
-        </div>
-        <div class="steps-grid">
-            <article class="step-card"><h3>Elegí tus platos</h3><p>Sumá a tu pedido los productos que quieras desde la carta. Podés modificar cantidades cuando quieras.</p></article>
-            <article class="step-card"><h3>Completá tus datos</h3><p>Indicá tu nombre, si preferís envío o retiro y el medio de pago. Te mostramos el total antes de enviar.</p></article>
-            <article class="step-card"><h3>Confirmá por WhatsApp</h3><p>Se abre WhatsApp con tu pedido ya armado. Lo confirmamos y coordinamos la entrega.</p></article>
-        </div>
+    <!-- ================= FRANJA DE CONFIANZA ================= -->
+    <section class="trust-strip" aria-label="Ventajas de comprar con nosotros">
+        <div class="trust-item"><span class="ti-icon" aria-hidden="true">🛵</span><div><strong>Envío a domicilio</strong><span><span data-fee></span> · gratis desde <span data-free-from></span></span></div></div>
+        <div class="trust-item"><span class="ti-icon" aria-hidden="true">🏪</span><div><strong>Retiro en local</strong><span>Sin costo de envío</span></div></div>
+        <div class="trust-item"><span class="ti-icon" aria-hidden="true">💳</span><div><strong>Pagá como prefieras</strong><span>Transferencia, efectivo o tarjeta</span></div></div>
+        <div class="trust-item"><span class="ti-icon" aria-hidden="true">💬</span><div><strong>Pedido por WhatsApp</strong><span>Atención personal y directa</span></div></div>
     </section>
 
     <!-- ================= POR QUÉ AL VACÍO ================= -->
@@ -149,6 +167,13 @@
             <div>
                 <h2 class="section-title" id="vacio-title">¿Por qué cocinar con envasados al vacío?</h2>
                 <p class="section-subtitle">Técnica culinaria profesional adaptada para que disfrutes en tu casa sin complicaciones</p>
+            </div>
+        </div>
+
+        <div class="vacio-banner-highlight">
+            <span class="vbh-icon" aria-hidden="true">💎</span>
+            <div class="vbh-content">
+                <strong>Calidad gastronómica sin conservantes:</strong> Cortes seleccionados, marinados frescos y platos de olla envasados al vacío. Listos para regenerar o cocinar en minutos con sabor, jugo y textura de restaurante.
             </div>
         </div>
         <div class="tips-grid">

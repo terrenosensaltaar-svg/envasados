@@ -101,7 +101,86 @@
     window.filterCategory = function (cat, btn) {
         originalFilterCategory(cat, btn);
         $$(".cat-tab").forEach((tab) => tab.setAttribute("aria-pressed", String(tab.dataset.cat === cat)));
+        setTimeout(() => {
+            const grid = $("#products-grid");
+            if (grid && grid.classList.contains("is-carousel")) {
+                grid.scrollLeft = 0;
+            }
+            updateCarouselStatus();
+        }, 60);
     };
+
+    /* ---------- Navegación del Carrusel de Productos ---------- */
+    window.scrollProductsCarousel = function (direction) {
+        const grid = $("#products-grid");
+        if (!grid) return;
+        const card = grid.querySelector(".card");
+        const step = card ? card.offsetWidth + 18 : 300;
+        grid.scrollBy({ left: direction * step, behavior: "smooth" });
+    };
+
+    window.toggleProductsViewMode = function () {
+        const grid = $("#products-grid");
+        const icon = $("#view-mode-icon");
+        const text = $("#view-mode-text");
+        const hint = $(".carousel-hint");
+        if (!grid) return;
+        const isNowGrid = grid.classList.toggle("is-grid-view");
+        if (isNowGrid) {
+            grid.classList.remove("is-carousel");
+            if (icon) icon.textContent = "🎠";
+            if (text) text.textContent = "Carrusel";
+            if (hint) hint.style.visibility = "hidden";
+        } else {
+            grid.classList.add("is-carousel");
+            if (icon) icon.textContent = "⊞";
+            if (text) text.textContent = "Cuadrícula";
+            if (hint) hint.style.visibility = "visible";
+            grid.scrollLeft = 0;
+        }
+        updateCarouselStatus();
+    };
+
+    function updateCarouselStatus() {
+        const grid = $("#products-grid");
+        const counter = $("#carousel-counter");
+        const prevBtn = $("#carousel-prev");
+        const nextBtn = $("#carousel-next");
+        if (!grid || !counter) return;
+
+        const cards = $$(".card", grid);
+        if (cards.length === 0) {
+            counter.textContent = "-";
+            if (prevBtn) prevBtn.disabled = true;
+            if (nextBtn) nextBtn.disabled = true;
+            return;
+        }
+
+        if (!grid.classList.contains("is-carousel")) {
+            counter.textContent = `${cards.length} platos`;
+            if (prevBtn) prevBtn.disabled = true;
+            if (nextBtn) nextBtn.disabled = true;
+            return;
+        }
+
+        const cardWidth = (cards[0]?.offsetWidth || 285) + 18;
+        const current = Math.min(cards.length, Math.max(1, Math.round(grid.scrollLeft / cardWidth) + 1));
+        counter.textContent = `${current} / ${cards.length}`;
+        if (prevBtn) prevBtn.disabled = grid.scrollLeft <= 6;
+        if (nextBtn) nextBtn.disabled = grid.scrollLeft + grid.clientWidth >= grid.scrollWidth - 12;
+    }
+    window.updateCarouselStatus = updateCarouselStatus;
+
+    function setupCarousel() {
+        const grid = $("#products-grid");
+        if (!grid) return;
+        grid.addEventListener("scroll", () => {
+            window.requestAnimationFrame(updateCarouselStatus);
+        }, { passive: true });
+        window.addEventListener("resize", updateCarouselStatus, { passive: true });
+        setTimeout(updateCarouselStatus, 150);
+        setTimeout(updateCarouselStatus, 500);
+    }
 
     /* ---------- Contadores de las pestañas de categoría ---------- */
     function updateTabCounts() {
@@ -122,7 +201,8 @@
             const thumb = p.packImage || p.image;
             return `
                 <div class="flavor-item">
-                    <img src="${thumb}" alt="${p.name} al vacío" class="flavor-thumb" width="62" height="62" loading="lazy" decoding="async">
+                    <img src="${optimizedImage(thumb, 160)}" alt="${p.name} al vacío" class="flavor-thumb" width="62" height="62" loading="lazy" decoding="async"
+                         onerror="if(this.dataset.fb!=='1'){this.dataset.fb='1';this.src='${thumb}'}">
                     <div class="flavor-text">
                         <strong>${p.name.replace("Patas Muslo ", "")} · ${money(p.price)} (1Kg)</strong>
                         <span>${p.desc.replace(/ x 1Kg\./, ".")}</span>
@@ -163,6 +243,7 @@
         fillShippingTexts();
         updateShipProgress();
         setupScrollEffects();
+        setupCarousel();
         // Los botones de pestaña de categoría exponen su estado real a lectores de pantalla.
         $$(".cat-tab").forEach((tab) => tab.setAttribute("aria-controls", "products-grid"));
     });
