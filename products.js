@@ -1,7 +1,39 @@
 // Catálogo Oficial de Productos Gourmet & Pollita Lu al Vacío
 const PRODUCTS = [
     // =========================================================================
-    // LÍNEA POLLITA LU: PATAS MUSLO SABORIZADAS
+    // 1. EMPANADAS GOURMET (LISTAS PARA HORNEAR)
+    // =========================================================================
+    {
+        id: "gm-01",
+        name: "Empanadas Árabes",
+        category: "gourmet",
+        price: 10000,
+        portion: "Media docena (6 unidades) · Listas para hornear",
+        badge: "Línea Gourmet · Pack x 6 u.",
+        desc: "Pack de 6 empanadas abiertas triangulares (fatay) rellenas con carne molida magra seleccionada, cebolla dulce, tomate fresco, limón y especias tradicionales árabes. Masa crujiente y dorada.",
+        prep: "12-15 min en horno a 180°C o airfryer.",
+        image: "empanadas_arabes.jpg",
+        packImage: "empanadas_arabes_vacio.jpg",
+        icon: "🥟",
+        available: true
+    },
+    {
+        id: "gm-02",
+        name: "Empanadas de Carne",
+        category: "gourmet",
+        price: 10000,
+        portion: "Media docena (6 unidades) · Listas para hornear",
+        badge: "Línea Gourmet · Pack x 6 u.",
+        desc: "Pack de 6 empanadas criollas tradicionales con carne vacuna seleccionada cortada a cuchillo, cebolla de verdeo, pimientos, huevo duro y condimentos caseros.",
+        prep: "12-15 min en horno a 200°C hasta dorar.",
+        image: "empanadas_de_carne.jpg",
+        packImage: "empanadas_de_carne_vacio.jpg",
+        icon: "🥟",
+        available: true
+    },
+
+    // =========================================================================
+    // 2. LÍNEA POLLITA LU: PATAS MUSLO SABORIZADAS AL VACÍO
     // =========================================================================
     {
         id: "pl-01",
@@ -75,36 +107,8 @@ const PRODUCTS = [
     },
 
     // =========================================================================
-    // LÍNEA GOURMET: PLATOS Y ESPECIALIDADES CASERAS
+    // 3. PRODUCTOS SIN STOCK (AL FINAL)
     // =========================================================================
-    {
-        id: "gm-01",
-        name: "Empanadas Árabes",
-        category: "gourmet",
-        price: 10000,
-        portion: "Media docena (6 unidades) · Listas para hornear",
-        badge: "Línea Gourmet · Pack x 6 u.",
-        desc: "Pack de 6 empanadas abiertas triangulares (fatay) rellenas con carne molida magra seleccionada, cebolla dulce, tomate fresco, limón y especias tradicionales árabes. Masa crujiente y dorada.",
-        prep: "12-15 min en horno a 180°C o airfryer.",
-        image: "empanadas_arabes.jpg",
-        packImage: "empanadas_arabes_vacio.jpg",
-        icon: "🥟",
-        available: true
-    },
-    {
-        id: "gm-02",
-        name: "Empanadas de Carne",
-        category: "gourmet",
-        price: 10000,
-        portion: "Media docena (6 unidades) · Listas para hornear",
-        badge: "Línea Gourmet · Pack x 6 u.",
-        desc: "Pack de 6 empanadas criollas tradicionales con carne vacuna seleccionada cortada a cuchillo, cebolla de verdeo, pimientos, huevo duro y condimentos caseros.",
-        prep: "12-15 min en horno a 200°C hasta dorar.",
-        image: "empanadas_de_carne.jpg",
-        packImage: "empanadas_de_carne_vacio.jpg",
-        icon: "🥟",
-        available: true
-    },
     {
         id: "gm-03",
         name: "Lazaña de Novillo",

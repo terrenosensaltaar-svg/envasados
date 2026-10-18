@@ -1,0 +1,367 @@
+/* ==========================================================
+   INDEX MEJORADO - capa de estilos sobre styles.css
+   ========================================================== */
+
+html { scroll-behavior: smooth; }
+section[id], main[id] { scroll-margin-top: 84px; }
+
+/* ---------- Accesibilidad ---------- */
+.skip-link {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 300;
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 0.88rem;
+    text-decoration: none;
+    transform: translateY(-160%);
+    transition: transform 0.2s;
+}
+.skip-link:focus { transform: translateY(0); }
+
+:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* ---------- Header + navegación ---------- */
+.header { transition: box-shadow 0.25s; }
+.header.is-scrolled { box-shadow: 0 6px 22px rgba(0, 0, 0, 0.07); }
+
+.site-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    margin-right: 6px;
+}
+.site-nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 700;
+    padding: 8px 13px;
+    border-radius: var(--radius-full);
+    transition: all 0.2s;
+}
+.site-nav a:hover { color: var(--accent); background: var(--accent-soft); }
+@media (max-width: 860px) {
+    .site-nav { display: none; }
+    .brand-sub { display: none; }
+}
+
+/* ---------- Hero ---------- */
+.hero { max-width: 820px; padding-top: 52px; }
+.hero-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 26px;
+}
+.btn-hero {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 26px;
+    border-radius: var(--radius-full);
+    border: 1px solid transparent;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-hero.primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(38, 107, 59, 0.28);
+}
+.btn-hero.primary:hover { background: var(--accent-hover); transform: translateY(-2px); }
+.btn-hero.ghost {
+    background: var(--bg-surface);
+    color: var(--text-main);
+    border-color: var(--border);
+}
+.btn-hero.ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+/* ---------- Franja de confianza ---------- */
+.trust-strip {
+    max-width: 1060px;
+    margin: 18px auto 10px;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+}
+.trust-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+}
+.trust-item .ti-icon {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    font-size: 1.25rem;
+}
+.trust-item strong { display: block; font-size: 0.88rem; line-height: 1.25; }
+.trust-item span { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ---------- Carta ---------- */
+.main-content { padding-top: 28px; }
+.cat-tab .tab-count {
+    background: rgba(0, 0, 0, 0.07);
+    padding: 1px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.74rem;
+}
+.cat-tab.is-active .tab-count { background: rgba(255, 255, 255, 0.25); }
+.card-title, .card-desc { overflow-wrap: anywhere; }
+.btn-add, .qty-btn, .btn-close, .btn-cart, .cat-tab { min-height: 40px; }
+.qty-btn { min-width: 40px; }
+
+/* ---------- Cómo pedir ---------- */
+.how-section {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 20px 20px 46px;
+}
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 18px;
+    counter-reset: step;
+    margin-top: 20px;
+}
+.step-card {
+    position: relative;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 22px 22px;
+    box-shadow: var(--shadow-soft);
+}
+.step-card::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    top: -16px;
+    left: 22px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 6px 14px rgba(38, 107, 59, 0.3);
+}
+.step-card h3 { font-size: 1rem; margin-bottom: 6px; }
+.step-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; }
+
+/* ---------- Pollita Lu (generada desde products.js) ---------- */
+.pollita-showcase .flavor-item { align-items: center; }
+.pollita-showcase .flavor-text { flex: 1; min-width: 0; }
+
+/* ---------- Preguntas frecuentes ---------- */
+.faq-section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 46px 20px;
+}
+.faq-list { margin-top: 20px; display: grid; gap: 10px; }
+.faq-list details {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0 18px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.faq-list details[open] { border-color: var(--accent-border); box-shadow: var(--shadow-soft); }
+.faq-list summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 16px 0;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-list summary::after {
+    content: "+";
+    flex: none;
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 800;
+    transition: transform 0.2s;
+}
+.faq-list details[open] summary::after { content: "−"; }
+.faq-list details p {
+    padding: 0 0 18px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+}
+
+/* ---------- Footer ---------- */
+.footer { padding: 40px 20px 30px; text-align: left; }
+.footer-grid {
+    max-width: 1060px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 28px;
+}
+.footer h4 { color: var(--text-main); font-size: 0.9rem; margin-bottom: 8px; }
+.footer p, .footer li { font-size: 0.84rem; line-height: 1.7; color: var(--text-muted); }
+.footer ul { list-style: none; }
+.footer a { color: var(--accent); font-weight: 700; text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+.footer-legal {
+    max-width: 1060px;
+    margin: 28px auto 0;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-light);
+}
+
+/* ---------- Drawer abierto y visibilidad garantizada del botón WhatsApp ---------- */
+body.drawer-open { overflow: hidden; }
+body.drawer-open .cart-float { display: none !important; }
+
+.drawer {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer-header {
+    flex: 0 0 auto;
+    padding: 12px 16px;
+}
+
+.drawer-body {
+    display: block !important;
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 16px 16px;
+}
+
+.drawer-footer {
+    flex: 0 0 auto;
+    display: block !important;
+    background: #ffffff;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.07);
+    padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    position: relative;
+    z-index: 5;
+}
+
+.btn-whatsapp-send {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    min-height: 46px;
+    background-color: #25D366 !important;
+    color: #ffffff !important;
+    font-size: 0.95rem;
+    font-weight: 800;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 11px 16px;
+    margin-top: 8px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(37, 211, 102, 0.35);
+    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.btn-whatsapp-send:hover {
+    background-color: #1fb855 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(37, 211, 102, 0.45);
+}
+
+/* ---------- Barra de envío gratis (drawer) ---------- */
+.ship-progress {
+    background: var(--gold-soft);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: #5e4a1e;
+    flex-shrink: 0;
+}
+.ship-progress[hidden] { display: none; }
+.ship-progress strong { color: var(--accent); }
+.ship-bar {
+    height: 8px;
+    margin-top: 8px;
+    border-radius: var(--radius-full);
+    background: rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+.ship-bar > span {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--gold), var(--accent));
+    transition: width 0.4s ease;
+}
+
+/* ---------- Animación de entrada ---------- */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.55s ease, transform 0.55s ease; }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+}

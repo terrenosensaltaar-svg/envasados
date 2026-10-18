@@ -2,18 +2,24 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#266b3b">
+    <meta name="robots" content="noindex, nofollow">
     <title>Panel de Pedidos | Envasados al Vacío Gourmet</title>
     
-    <!-- Tipografía idéntica a index.html -->
+    <!-- Tipografía idéntica a index.html (carga sin bloquear el render) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"></noscript>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="stylesheet" href="styles.css">
 
-    <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
+    <!-- Supabase Client (defer: se ejecuta antes de DOMContentLoaded, que es cuando el panel lo usa) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="supabase-config.js" defer></script>
     <script src="products.js"></script>
 
     <style>
@@ -616,6 +622,69 @@
         .finance-receipt { display:inline-block; margin-top:5px; color:var(--accent); font-size:.74rem; font-weight:800; }
         @media(max-width:760px) { .finance-columns { grid-template-columns:1fr; } }
         @media(max-width:520px) { .finance-summary { grid-template-columns:1fr; gap:9px; } .finance-card { padding:13px 15px; } .finance-day { min-height:58px; padding:5px; } .finance-day-total,.finance-day-expense { font-size:.56rem; } .panel-tabs { width:100%; } .panel-tab { flex:1; padding:10px 9px; } }
+        /* ===== Optimización para celulares ===== */
+        button, a, select, .filter-tab, .panel-tab { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        .search-container { min-width: min(100%, 260px); }
+        @media (hover: none) {
+            .kpi-card:hover, .order-card:hover, .btn-panel-action:hover, .stock-item:hover { transform: none; }
+        }
+        @media (max-width: 640px) {
+            .panel-container { padding: 18px max(14px, env(safe-area-inset-left, 0px)) 40px max(14px, env(safe-area-inset-right, 0px)); }
+            .header-inner { padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); }
+            .brand-logo { height: 36px; }
+            .header-right { gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+            .header-right .btn-panel-action { padding: 8px 12px; font-size: .78rem; min-height: 40px; }
+            .panel-title-area { margin-bottom: 18px; gap: 8px; }
+            .panel-title-area h1 { font-size: 1.45rem; }
+
+            .kpis-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+            .kpis-grid .kpi-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+            .kpi-card { padding: 12px 14px; }
+            .kpi-value { font-size: 1.5rem; }
+            .kpi-label { font-size: .68rem; }
+            .kpi-icon { width: 36px; height: 36px; font-size: 1.1rem; }
+
+            .controls-bar { padding: 12px; gap: 10px; margin-bottom: 16px; }
+            .filter-tabs { flex-wrap: nowrap; overflow-x: auto; margin: 0 -12px; padding: 2px 12px 6px; scrollbar-width: none; -webkit-overflow-scrolling: touch; width: calc(100% + 24px); }
+            .filter-tabs::-webkit-scrollbar { display: none; }
+            .filter-tab { flex: 0 0 auto; white-space: nowrap; min-height: 40px; padding: 8px 14px; }
+            .search-container { flex: 1 1 100%; max-width: none; min-width: 0; }
+            .search-input { min-height: 44px; font-size: 16px; }   /* 16px evita el zoom automático de iOS */
+
+            .orders-grid { gap: 14px; }
+            .order-card { padding: 16px; gap: 12px; }
+            .order-card-items { max-height: 200px; }
+            .order-status-select { min-height: 46px; font-size: 16px; }
+
+            /* Tableros de stock */
+            .stock-section { margin: 22px 0 20px; padding: 14px; }
+            .stock-sync-status { white-space: normal; }
+            .stock-board { padding: 14px; }
+            .stock-board-head { gap: 12px; }
+            .stock-board-kpis { width: 100%; }
+            .stock-board-kpi { flex: 1 1 0; text-align: left; }
+            .stock-board-bulk { padding: 12px; }
+            .stock-board-bulk-fields { flex: 1 1 100%; }
+            .stock-bulk-field, .stock-bulk-field--qty { flex: 1 1 100%; min-width: 0; }
+            .stock-bulk-select, .stock-bulk-input, .stock-quantity-input { min-height: 44px; font-size: 16px; }
+            .stock-board-bulk-actions { width: 100%; }
+            .stock-bulk-btn { flex: 1 1 calc(50% - 4px); min-height: 44px; white-space: normal; }
+            .stock-bulk-btn.is-primary { flex-basis: 100%; }
+            .stock-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .stock-item { padding: 12px; }
+            .stock-current strong { font-size: 1.6rem; }
+            .stock-step-btn { min-height: 32px; min-width: 38px; }
+            .stock-save-button { min-height: 44px; }
+
+            .toast-popup { left: 14px; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); justify-content: center; }
+        }
+        @media (max-width: 400px) {
+            .stock-grid { grid-template-columns: 1fr; }
+            .kpi-value { font-size: 1.35rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -642,7 +711,7 @@
     <header class="header" id="panel-header" hidden>
         <div class="header-inner">
             <a href="index.html" class="brand-link">
-                <img src="logo.png" alt="Envasados al Vacío" class="brand-logo" width="160" height="44">
+                <img src="logo.png" alt="Envasados al Vacío" class="brand-logo" width="128" height="44">
                 <span class="brand-sub">Panel de Control</span>
             </a>
             <div class="header-right">
@@ -898,11 +967,14 @@
             document.getElementById("panel-header").hidden = false;
             document.getElementById("panel-content").hidden = false;
             cargarPedidos();
-            // Mantener el panel actualizado mientras llegan pedidos nuevos.
-            setInterval(() => {
+            // Mantener el panel actualizado mientras llegan pedidos nuevos (en pausa si la pantalla está en segundo plano).
+            const refrescarPanel = () => {
+                if (document.hidden) return;
                 cargarPedidos();
                 if (!document.getElementById("finance-view").hidden) cargarFinanzas();
-            }, 10000);
+            };
+            setInterval(refrescarPanel, 10000);
+            document.addEventListener("visibilitychange", refrescarPanel);
         }
 
         function cambiarVistaPanel(vista) {
@@ -1613,9 +1685,17 @@
             document.getElementById("kpi-done").textContent = todosLosPedidos.filter(p => p.status === 'entregado').length;
         }
 
+        let firmaPedidosRenderizados = "";
+
         function renderizarPedidos() {
             const container = document.getElementById("orders-container");
             const busqueda = (document.getElementById("search-input")?.value || "").toLowerCase().trim();
+
+            // Si nada cambió no tocamos el DOM; y si el usuario está usando un selector de estado, esperamos.
+            const firma = JSON.stringify([todosLosPedidos, filtroActual, busqueda, stockConfigurado]);
+            if (firma === firmaPedidosRenderizados) return;
+            if (container.contains(document.activeElement) && document.activeElement.matches("select, input, textarea")) return;
+            firmaPedidosRenderizados = firma;
 
             let pedidosFiltrados = todosLosPedidos.filter(p => {
                 const estado = p.status || 'pendiente';
@@ -1720,6 +1800,7 @@
         }
 
         async function cambiarEstadoPedido(pedidoId, nuevoEstado) {
+            if (document.activeElement && typeof document.activeElement.blur === "function") document.activeElement.blur();
             try {
                 if (!window.supabaseClient) {
                     alert("No se encontró la conexión con Supabase");
@@ -1746,6 +1827,7 @@
             } catch (err) {
                 console.error("Error al actualizar estado:", err);
                 alert("No se pudo actualizar el estado: " + err.message);
+                firmaPedidosRenderizados = "";
                 cargarPedidos();
             }
         }
