@@ -519,19 +519,50 @@
         .stock-summary-card { display: flex; flex-direction: column; gap: 5px; padding: 13px 15px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--bg-surface) 88%, transparent); }
         .stock-summary-card span { color: var(--text-muted); font-size: .74rem; font-weight: 700; }
         .stock-summary-card strong { color: var(--text-main); font-size: 1.15rem; font-weight: 850; }
+        .stock-boards { display: grid; gap: 22px; }
+        .stock-board { padding: clamp(16px, 2.2vw, 22px); border: 1px solid var(--border); border-radius: var(--radius-md); background: color-mix(in srgb, var(--bg-surface) 94%, var(--bg-subtle)); box-shadow: var(--shadow-soft); }
+        .stock-board--pollita { border-left: 5px solid var(--accent); }
+        .stock-board--empanadas { border-left: 5px solid var(--gold); }
+        .stock-board-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--border-light); }
+        .stock-board-title-wrap { display: flex; align-items: flex-start; gap: 12px; }
+        .stock-board-badge-icon { display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 auto; border-radius: 14px; background: var(--accent-soft); font-size: 1.4rem; }
+        .stock-board--empanadas .stock-board-badge-icon { background: var(--gold-soft); }
+        .stock-board-title { margin: 0 0 4px; color: var(--text-main); font-size: 1.08rem; font-weight: 850; }
+        .stock-board-sub { margin: 0; color: var(--text-muted); font-size: .8rem; line-height: 1.45; }
+        .stock-board-kpis { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .stock-board-kpi { padding: 8px 13px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: var(--bg-surface); text-align: right; }
+        .stock-board-kpi span { display: block; color: var(--text-muted); font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+        .stock-board-kpi strong { color: var(--text-main); font-size: 1.2rem; font-weight: 900; }
+        .stock-board-bulk { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 14px; margin-bottom: 16px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: var(--bg-surface); }
+        .stock-board-bulk-fields { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; flex: 1 1 420px; }
+        .stock-bulk-field { display: flex; flex-direction: column; gap: 5px; min-width: 150px; flex: 1 1 170px; }
+        .stock-bulk-field--qty { flex: 0 1 140px; min-width: 120px; }
+        .stock-bulk-field label { color: var(--text-muted); font-size: .72rem; font-weight: 800; }
+        .stock-bulk-select, .stock-bulk-input { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-subtle); color: var(--text-main); font: inherit; font-size: .84rem; font-weight: 750; }
+        .stock-board-bulk-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .stock-bulk-btn { padding: 9px 13px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-subtle); color: var(--text-main); font: inherit; font-size: .78rem; font-weight: 850; cursor: pointer; transition: background .2s, border-color .2s, opacity .2s; white-space: nowrap; }
+        .stock-bulk-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+        .stock-bulk-btn.is-primary { border-color: var(--accent); background: var(--accent); color: #fff; }
+        .stock-bulk-btn.is-primary:hover:not(:disabled) { background: var(--accent-hover); color: #fff; }
+        .stock-bulk-btn:disabled { opacity: .55; cursor: not-allowed; }
         .stock-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr)); gap: 14px; }
         .stock-item { min-width: 0; padding: 16px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: var(--bg-surface); transition: border-color .2s, transform .2s, box-shadow .2s; }
         .stock-item:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: var(--shadow-soft); }
         .stock-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
         .stock-product-icon { display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 auto; border-radius: 12px; background: var(--accent-soft); font-size: 1.15rem; }
-        .stock-item-name { display: block; min-height: 2.6em; margin: 2px 0 12px; color: var(--text-main); font-size: .9rem; font-weight: 800; line-height: 1.35; }
-        .stock-current { display: flex; align-items: baseline; gap: 6px; margin: 4px 0 14px; }
+        .stock-item-name { display: block; min-height: 2.6em; margin: 2px 0 10px; color: var(--text-main); font-size: .9rem; font-weight: 800; line-height: 1.35; }
+        .stock-current { display: flex; align-items: baseline; gap: 6px; margin: 4px 0 12px; }
         .stock-current strong { color: var(--text-main); font-size: 1.9rem; font-weight: 900; line-height: 1; }
         .stock-current span { color: var(--text-muted); font-size: .78rem; }
         .stock-level { padding: 5px 8px; border-radius: 999px; background: var(--bg-subtle); color: var(--text-muted); font-size: .66rem; font-weight: 800; white-space: nowrap; }
         .stock-level.is-available { background: var(--accent-soft); color: var(--accent); }
         .stock-level.is-empty { background: var(--gold-soft); color: #775b19; }
-        .stock-field-label { display: block; margin-bottom: 6px; color: var(--text-muted); font-size: .73rem; font-weight: 750; }
+        .stock-field-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; }
+        .stock-field-label { display: block; margin: 0; color: var(--text-muted); font-size: .73rem; font-weight: 750; }
+        .stock-quick-pills { display: inline-flex; gap: 4px; }
+        .stock-step-btn { padding: 2px 7px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-subtle); color: var(--text-main); font: inherit; font-size: .68rem; font-weight: 800; cursor: pointer; }
+        .stock-step-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+        .stock-step-btn:disabled { opacity: .5; cursor: not-allowed; }
         .stock-item-controls { display: flex; align-items: stretch; gap: 8px; }
         .stock-quantity-input { width: 100%; min-width: 0; padding: 10px 11px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-subtle); color: var(--text-main); font: inherit; font-weight: 750; }
         .stock-quantity-input:focus { outline: 3px solid var(--accent-soft); border-color: var(--accent); }
@@ -1061,41 +1092,117 @@
         }
 
         const catalogoBase = (typeof PRODUCTS !== "undefined" && Array.isArray(PRODUCTS)) ? PRODUCTS : [];
+        const stockGruposConfig = [
+            {
+                key: "pollita",
+                title: "Tablero Conjunto · Línea Pollita Lu",
+                subtitle: "Todos los sabores de Patas Muslo al vacío (Bolsa x 1 Kg). Agregá o cambiá el stock de todo el conjunto o de un sabor determinado.",
+                icon: "🍗",
+                unitLabel: "bolsas disponibles",
+                allOptionLabel: "Todos los productos de Pollita Lu"
+            },
+            {
+                key: "empanadas",
+                title: "Tablero Conjunto · Empanadas Gourmet (Packs x 6 u.)",
+                subtitle: "Empanadas Árabes y de Carne envasadas al vacío. Agregá o cambiá el stock del conjunto de empanadas o por variedad.",
+                icon: "🥟",
+                unitLabel: "packs x 6 u. disponibles",
+                allOptionLabel: "Todas las variedades de Empanadas"
+            },
+            {
+                key: "otros",
+                title: "Tablero · Otros Platos de Producción",
+                subtitle: "Especialidades y platos caseros envasados al vacío.",
+                icon: "🍲",
+                unitLabel: "unidades disponibles",
+                allOptionLabel: "Todos los platos de esta sección"
+            }
+        ];
+
         const productosDeStock = [
             // Línea Pollita Lu (Patas Muslo saborizadas al vacío)
-            { id: "pl-01", name: "Patas Muslo Parrillera", icon: "🍗", legacyIds: ["prod-04"] },
-            { id: "pl-02", name: "Patas Muslo Honey", icon: "🍯" },
-            { id: "pl-03", name: "Patas Muslo Oriental Árabe", icon: "🍋" },
-            { id: "pl-04", name: "Patas Muslo Ahumada", icon: "🔥" },
-            { id: "pl-05", name: "Patas Muslo Barbacoa Smoky", icon: "🍖" },
+            { id: "pl-01", name: "Patas Muslo Parrillera", icon: "🍗", group: "pollita", legacyIds: ["prod-04"] },
+            { id: "pl-02", name: "Patas Muslo Honey", icon: "🍯", group: "pollita" },
+            { id: "pl-03", name: "Patas Muslo Oriental Árabe", icon: "🍋", group: "pollita" },
+            { id: "pl-04", name: "Patas Muslo Ahumada", icon: "🔥", group: "pollita" },
+            { id: "pl-05", name: "Patas Muslo Barbacoa Smoky", icon: "🍖", group: "pollita" },
 
-            // Línea Gourmet (Platos Caseros al vacío)
-            { id: "gm-01", name: "Empanadas Árabes", icon: "🥟", legacyIds: ["prod-01"] },
-            { id: "gm-02", name: "Empanadas de Carne", icon: "🥟", legacyIds: ["prod-19"] },
-            { id: "gm-03", name: "Lazaña de Novillo", icon: "🍝", legacyIds: ["prod-14"] },
-            { id: "gm-04", name: "Pastel de Papa", icon: "🥧", legacyIds: ["prod-18"] },
+            // Conjunto Empanadas Gourmet (Packs x 6 u.)
+            { id: "gm-01", name: "Empanadas Árabes (x 6 u.)", icon: "🥟", group: "empanadas", legacyIds: ["prod-01"] },
+            { id: "gm-02", name: "Empanadas de Carne (x 6 u.)", icon: "🥟", group: "empanadas", legacyIds: ["prod-19"] },
 
-            // Platos de producción adicionales
-            { id: "prod-02", name: "Pollo al Horno con Papas", icon: "🍗" },
-            { id: "prod-03", name: "Puré de Papas con Solomillo a la Cerveza", icon: "🍽️" }
+            // Otros Platos Gourmet y de producción
+            { id: "gm-03", name: "Lazaña de Novillo", icon: "🍝", group: "otros", legacyIds: ["prod-14"] },
+            { id: "gm-04", name: "Pastel de Papa", icon: "🥧", group: "otros", legacyIds: ["prod-18"] },
+            { id: "prod-02", name: "Pollo al Horno con Papas", icon: "🍗", group: "otros" },
+            { id: "prod-03", name: "Puré de Papas con Solomillo a la Cerveza", icon: "🍽️", group: "otros" }
         ];
 
         // Sincronizar dinámicamente si products.js incluye otros productos en el futuro
         catalogoBase.forEach(prod => {
             if (!productosDeStock.some(item => item.id === prod.id)) {
+                let group = "otros";
+                if (prod.category === "pollita" || String(prod.id).startsWith("pl-")) group = "pollita";
+                else if (/empanada/i.test(prod.name || "")) group = "empanadas";
                 productosDeStock.push({
                     id: prod.id,
                     name: prod.name,
-                    icon: prod.icon || "🍽️"
+                    icon: prod.icon || "🍽️",
+                    group
                 });
             }
         });
+
+        function obtenerFilaStockProducto(producto, mapa = stockRegistros) {
+            let row = mapa.get(producto.id);
+            if (!row && producto.legacyIds) {
+                for (const legId of producto.legacyIds) {
+                    if (mapa.has(legId)) {
+                        row = mapa.get(legId);
+                        break;
+                    }
+                }
+            }
+            return row || null;
+        }
 
         function registrarBorradorStock(productId, value) {
             stockBorradores.set(productId, value);
             const button = document.getElementById("stock-save-" + productId);
             const quantity = Number(value);
             if (button) button.disabled = !stockConfigurado || value.trim() === "" || !Number.isInteger(quantity) || quantity < 0 || stockGuardando.has(productId);
+            const prod = productosDeStock.find(item => item.id === productId);
+            if (prod) actualizarEstadoBotonesGrupo(prod.group);
+        }
+
+        function ajustarInputProducto(productId, delta) {
+            const input = document.getElementById("stock-" + productId);
+            if (!input || input.disabled) return;
+            const prod = productosDeStock.find(item => item.id === productId);
+            const row = prod ? obtenerFilaStockProducto(prod) : null;
+            const base = input.value.trim() !== "" ? Number(input.value) : Number(row?.quantity || 0);
+            const next = Math.max(0, (Number.isFinite(base) ? base : 0) + delta);
+            input.value = String(next);
+            registrarBorradorStock(productId, String(next));
+        }
+
+        function actualizarEstadoBotonesGrupo(groupKey) {
+            const productosGrupo = productosDeStock.filter(p => p.group === groupKey);
+            const savingGroup = productosGrupo.some(p => stockGuardando.has(p.id));
+            const addBtn = document.getElementById("stock-group-add-" + groupKey);
+            const setBtn = document.getElementById("stock-group-set-" + groupKey);
+            const saveAllBtn = document.getElementById("stock-group-saveall-" + groupKey);
+            const qtyInput = document.getElementById("stock-group-qty-" + groupKey);
+            const targetSelect = document.getElementById("stock-group-target-" + groupKey);
+
+            if (qtyInput) qtyInput.disabled = !stockConfigurado || savingGroup;
+            if (targetSelect) targetSelect.disabled = !stockConfigurado || savingGroup;
+            if (addBtn) addBtn.disabled = !stockConfigurado || savingGroup;
+            if (setBtn) setBtn.disabled = !stockConfigurado || savingGroup;
+            if (saveAllBtn) {
+                saveAllBtn.textContent = savingGroup ? "Guardando conjunto…" : "💾 Guardar tablero";
+                saveAllBtn.disabled = !stockConfigurado || savingGroup;
+            }
         }
 
         function pintarStock(registros = [...stockRegistros.values()]) {
@@ -1111,40 +1218,94 @@
             byId.forEach((row, id) => stockRegistros.set(id, row));
 
             if (!grid.dataset.cardsReady) {
-                grid.innerHTML = productosDeStock.map(producto => `
-                    <article class="stock-item" data-stock-card="${producto.id}">
-                        <div class="stock-card-top">
-                            <span class="stock-product-icon" aria-hidden="true">${producto.icon}</span>
-                            <span class="stock-level" id="stock-level-${producto.id}">Cargando</span>
-                        </div>
-                        <label class="stock-item-name" for="stock-${producto.id}">${escapeHtml(producto.name)}</label>
-                        <div class="stock-current" aria-live="polite">
-                            <strong id="stock-current-${producto.id}">—</strong>
-                            <span>unidades disponibles</span>
-                        </div>
-                        <label class="stock-field-label" for="stock-${producto.id}">Ajustar cantidad disponible</label>
-                        <div class="stock-item-controls">
-                            <input class="stock-quantity-input" id="stock-${producto.id}" type="number" min="0" step="1" inputmode="numeric" placeholder="Sin dato" aria-label="Ajustar stock de ${escapeHtml(producto.name)}" oninput="registrarBorradorStock('${producto.id}', this.value)">
-                            <button class="stock-save-button" id="stock-save-${producto.id}" type="button" onclick="guardarStock('${producto.id}')">Guardar</button>
-                        </div>
-                        <p class="stock-card-note" id="stock-note-${producto.id}">El contador muestra el último valor confirmado.</p>
-                    </article>
-                `).join("");
+                grid.className = "stock-boards";
+                grid.innerHTML = stockGruposConfig.map(grupo => {
+                    const itemsGrupo = productosDeStock.filter(p => p.group === grupo.key);
+                    if (!itemsGrupo.length) return "";
+                    return `
+                        <section class="stock-board stock-board--${grupo.key}" data-stock-group="${grupo.key}" aria-label="${escapeHtml(grupo.title)}">
+                            <div class="stock-board-head">
+                                <div class="stock-board-title-wrap">
+                                    <span class="stock-board-badge-icon" aria-hidden="true">${grupo.icon}</span>
+                                    <div>
+                                        <h3 class="stock-board-title">${escapeHtml(grupo.title)}</h3>
+                                        <p class="stock-board-sub">${escapeHtml(grupo.subtitle)}</p>
+                                    </div>
+                                </div>
+                                <div class="stock-board-kpis">
+                                    <div class="stock-board-kpi">
+                                        <span>Total del conjunto</span>
+                                        <strong id="stock-group-total-${grupo.key}">—</strong>
+                                    </div>
+                                    <div class="stock-board-kpi">
+                                        <span>Con stock</span>
+                                        <strong id="stock-group-active-${grupo.key}">0 / ${itemsGrupo.length}</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stock-board-bulk">
+                                <div class="stock-board-bulk-fields">
+                                    <div class="stock-bulk-field">
+                                        <label for="stock-group-target-${grupo.key}">Aplicar sobre</label>
+                                        <select class="stock-bulk-select" id="stock-group-target-${grupo.key}">
+                                            <option value="all">📦 ${escapeHtml(grupo.allOptionLabel)} (${itemsGrupo.length})</option>
+                                            ${itemsGrupo.map(p => `<option value="${p.id}">${p.icon} ${escapeHtml(p.name)}</option>`).join("")}
+                                        </select>
+                                    </div>
+                                    <div class="stock-bulk-field stock-bulk-field--qty">
+                                        <label for="stock-group-qty-${grupo.key}">Cantidad</label>
+                                        <input class="stock-bulk-input" id="stock-group-qty-${grupo.key}" type="number" min="0" step="1" inputmode="numeric" placeholder="Ej.: 10">
+                                    </div>
+                                </div>
+                                <div class="stock-board-bulk-actions">
+                                    <button class="stock-bulk-btn" id="stock-group-add-${grupo.key}" type="button" onclick="aplicarCambioConjunto('${grupo.key}', 'add')">➕ Agregar al stock</button>
+                                    <button class="stock-bulk-btn" id="stock-group-set-${grupo.key}" type="button" onclick="aplicarCambioConjunto('${grupo.key}', 'set')">✏️ Fijar cantidad</button>
+                                    <button class="stock-bulk-btn is-primary" id="stock-group-saveall-${grupo.key}" type="button" onclick="guardarTableroGrupo('${grupo.key}')">💾 Guardar tablero</button>
+                                </div>
+                            </div>
+
+                            <div class="stock-grid">
+                                ${itemsGrupo.map(producto => `
+                                    <article class="stock-item" data-stock-card="${producto.id}">
+                                        <div class="stock-card-top">
+                                            <span class="stock-product-icon" aria-hidden="true">${producto.icon}</span>
+                                            <span class="stock-level" id="stock-level-${producto.id}">Cargando</span>
+                                        </div>
+                                        <label class="stock-item-name" for="stock-${producto.id}">${escapeHtml(producto.name)}</label>
+                                        <div class="stock-current" aria-live="polite">
+                                            <strong id="stock-current-${producto.id}">—</strong>
+                                            <span>${escapeHtml(grupo.unitLabel)}</span>
+                                        </div>
+                                        <div class="stock-field-row">
+                                            <label class="stock-field-label" for="stock-${producto.id}">Cantidad</label>
+                                            <div class="stock-quick-pills" aria-label="Ajuste rápido de ${escapeHtml(producto.name)}">
+                                                <button class="stock-step-btn" type="button" data-step-for="${producto.id}" onclick="ajustarInputProducto('${producto.id}', -1)">−1</button>
+                                                <button class="stock-step-btn" type="button" data-step-for="${producto.id}" onclick="ajustarInputProducto('${producto.id}', 1)">+1</button>
+                                                <button class="stock-step-btn" type="button" data-step-for="${producto.id}" onclick="ajustarInputProducto('${producto.id}', 5)">+5</button>
+                                            </div>
+                                        </div>
+                                        <div class="stock-item-controls">
+                                            <input class="stock-quantity-input" id="stock-${producto.id}" type="number" min="0" step="1" inputmode="numeric" placeholder="Sin dato" aria-label="Ajustar stock de ${escapeHtml(producto.name)}" oninput="registrarBorradorStock('${producto.id}', this.value)">
+                                            <button class="stock-save-button" id="stock-save-${producto.id}" type="button" onclick="guardarStock('${producto.id}')">Guardar</button>
+                                        </div>
+                                        <p class="stock-card-note" id="stock-note-${producto.id}">El contador muestra el último valor confirmado.</p>
+                                    </article>
+                                `).join("")}
+                            </div>
+                        </section>
+                    `;
+                }).join("");
                 grid.dataset.cardsReady = "true";
             }
 
             let totalUnidades = 0;
             let productosActivos = 0;
+            const totalesPorGrupo = new Map();
+            const disponiblesPorGrupo = new Map();
+
             productosDeStock.forEach(producto => {
-                let row = byId.get(producto.id);
-                if (!row && producto.legacyIds) {
-                    for (const legId of producto.legacyIds) {
-                        if (byId.has(legId)) {
-                            row = byId.get(legId);
-                            break;
-                        }
-                    }
-                }
+                const row = obtenerFilaStockProducto(producto, byId);
                 const current = document.getElementById("stock-current-" + producto.id);
                 const input = document.getElementById("stock-" + producto.id);
                 const button = document.getElementById("stock-save-" + producto.id);
@@ -1157,6 +1318,10 @@
                     const quantity = Number(row.quantity);
                     totalUnidades += quantity;
                     productosActivos += 1;
+                    totalesPorGrupo.set(producto.group, (totalesPorGrupo.get(producto.group) || 0) + quantity);
+                    if (quantity > 0) {
+                        disponiblesPorGrupo.set(producto.group, (disponiblesPorGrupo.get(producto.group) || 0) + 1);
+                    }
                     if (current) current.textContent = String(quantity);
                     if (level) {
                         level.textContent = quantity > 0 ? "Disponible" : "Sin unidades";
@@ -1175,11 +1340,25 @@
                     if (note) note.textContent = "Ingresá la cantidad para inicializar el stock de este producto.";
                 }
                 if (input) input.disabled = !stockConfigurado || isSaving;
+                document.querySelectorAll(`[data-step-for="${producto.id}"]`).forEach(btn => {
+                    btn.disabled = !stockConfigurado || isSaving;
+                });
                 if (button) {
                     button.textContent = isSaving ? "Guardando…" : "Guardar";
                     const value = input ? Number(input.value) : NaN;
                     button.disabled = !stockConfigurado || isSaving || !input?.value?.trim() || !Number.isInteger(value) || value < 0;
                 }
+            });
+
+            stockGruposConfig.forEach(grupo => {
+                const itemsGrupo = productosDeStock.filter(p => p.group === grupo.key);
+                const totalEl = document.getElementById("stock-group-total-" + grupo.key);
+                const activeEl = document.getElementById("stock-group-active-" + grupo.key);
+                const sumaGrupo = totalesPorGrupo.get(grupo.key);
+                const conStock = disponiblesPorGrupo.get(grupo.key) || 0;
+                if (totalEl) totalEl.textContent = sumaGrupo !== undefined ? sumaGrupo.toLocaleString("es-AR") : "—";
+                if (activeEl) activeEl.textContent = `${conStock} / ${itemsGrupo.length}`;
+                actualizarEstadoBotonesGrupo(grupo.key);
             });
 
             const total = document.getElementById("stock-total-units");
@@ -1233,15 +1412,53 @@
                     message.hidden = false;
                     message.textContent = stockErrorMessage;
                 }
-                grid.querySelectorAll(".stock-quantity-input, .stock-save-button").forEach(control => control.disabled = true);
+                grid.querySelectorAll(".stock-quantity-input, .stock-save-button, .stock-bulk-btn, .stock-bulk-input, .stock-bulk-select, .stock-step-btn").forEach(control => control.disabled = true);
                 renderizarPedidos();
             }
+        }
+
+        async function persistirCantidadProducto(producto, quantity) {
+            let targetId = producto.id;
+            if (!stockRegistros.has(producto.id) && producto?.legacyIds) {
+                const existingLegacy = producto.legacyIds.find(id => stockRegistros.has(id));
+                if (existingLegacy) targetId = existingLegacy;
+            }
+
+            let { data, error } = await window.supabaseClient
+                .from("production_stock")
+                .update({ quantity, updated_at: new Date().toISOString() })
+                .eq("product_id", targetId)
+                .select("product_id, product_name, quantity, updated_at")
+                .maybeSingle();
+
+            if (error) throw error;
+
+            if (!data) {
+                const upsertRes = await window.supabaseClient
+                    .from("production_stock")
+                    .upsert({
+                        product_id: producto.id,
+                        product_name: producto?.name || producto.id,
+                        quantity: quantity,
+                        updated_at: new Date().toISOString()
+                    })
+                    .select("product_id, product_name, quantity, updated_at")
+                    .maybeSingle();
+                if (upsertRes.error) throw upsertRes.error;
+                data = upsertRes.data;
+            }
+
+            if (!data) throw new Error("Supabase no confirmó el cambio. Verificá tu acceso de administrador y volvé a intentar.");
+
+            stockRegistros.set(targetId, data);
+            if (targetId !== producto.id) stockRegistros.set(producto.id, data);
+            stockBorradores.delete(producto.id);
+            return data;
         }
 
         async function guardarStock(productId) {
             const producto = productosDeStock.find(item => item.id === productId);
             const input = document.getElementById("stock-" + productId);
-            const button = document.getElementById("stock-save-" + productId);
             const message = document.getElementById("stock-message");
             const quantity = Number(input?.value);
             if (!input?.value?.trim() || !Number.isInteger(quantity) || quantity < 0) {
@@ -1266,44 +1483,8 @@
             stockCargaVersion += 1;
             pintarStock([...stockRegistros.values()]);
             try {
-                let targetId = productId;
-                if (!stockRegistros.has(productId) && producto?.legacyIds) {
-                    const existingLegacy = producto.legacyIds.find(id => stockRegistros.has(id));
-                    if (existingLegacy) targetId = existingLegacy;
-                }
-
-                // Intento 1: actualizar registro existente en la base de datos
-                let { data, error } = await window.supabaseClient
-                    .from("production_stock")
-                    .update({ quantity, updated_at: new Date().toISOString() })
-                    .eq("product_id", targetId)
-                    .select("product_id, product_name, quantity, updated_at")
-                    .maybeSingle();
-
-                if (error) throw error;
-
-                // Intento 2: si no existía fila en la tabla, crearla mediante upsert
-                if (!data) {
-                    const upsertRes = await window.supabaseClient
-                        .from("production_stock")
-                        .upsert({
-                            product_id: productId,
-                            product_name: producto?.name || productId,
-                            quantity: quantity,
-                            updated_at: new Date().toISOString()
-                        })
-                        .select("product_id, product_name, quantity, updated_at")
-                        .maybeSingle();
-                    if (upsertRes.error) throw upsertRes.error;
-                    data = upsertRes.data;
-                }
-
-                if (!data) throw new Error("Supabase no confirmó el cambio. Verificá tu acceso de administrador y volvé a intentar.");
-
+                await persistirCantidadProducto(producto, quantity);
                 stockErrorMessage = "";
-                stockRegistros.set(targetId, data);
-                if (targetId !== productId) stockRegistros.set(productId, data);
-                stockBorradores.delete(productId);
                 mostrarToast("Stock guardado: " + (producto?.name || "producto"));
             } catch (error) {
                 console.error("Error al guardar stock:", error);
@@ -1314,6 +1495,111 @@
                 }
             } finally {
                 stockGuardando.delete(productId);
+                pintarStock([...stockRegistros.values()]);
+                if (stockGuardando.size === 0) await cargarStock();
+            }
+        }
+
+        async function aplicarCambioConjunto(groupKey, mode) {
+            const qtyInput = document.getElementById("stock-group-qty-" + groupKey);
+            const targetSelect = document.getElementById("stock-group-target-" + groupKey);
+            const message = document.getElementById("stock-message");
+            const rawVal = qtyInput?.value?.trim() || "";
+            const amount = Number(rawVal);
+
+            if (!rawVal || !Number.isInteger(amount) || amount < 0) {
+                if (message) {
+                    message.hidden = false;
+                    message.textContent = "Ingresá una cantidad entera válida en el control del tablero.";
+                }
+                qtyInput?.focus();
+                return;
+            }
+            if (!stockConfigurado) {
+                if (message) {
+                    message.hidden = false;
+                    message.textContent = "El módulo de stock aún no está habilitado en la base de datos.";
+                }
+                return;
+            }
+
+            const targetValue = targetSelect?.value || "all";
+            const itemsGrupo = productosDeStock.filter(p => p.group === groupKey && (targetValue === "all" || p.id === targetValue));
+            if (!itemsGrupo.length) return;
+
+            itemsGrupo.forEach(producto => {
+                const input = document.getElementById("stock-" + producto.id);
+                const row = obtenerFilaStockProducto(producto);
+                const currentQty = Number(row?.quantity || 0);
+                const newQty = mode === "add" ? currentQty + amount : amount;
+                if (input) input.value = String(newQty);
+                stockBorradores.set(producto.id, String(newQty));
+            });
+
+            await guardarListaProductosConjunto(itemsGrupo, groupKey, mode === "add" ? `+${amount} agregados` : `Stock fijado en ${amount}`);
+            if (qtyInput) qtyInput.value = "";
+        }
+
+        async function guardarTableroGrupo(groupKey) {
+            const message = document.getElementById("stock-message");
+            if (!stockConfigurado) {
+                if (message) {
+                    message.hidden = false;
+                    message.textContent = "El módulo de stock aún no está habilitado en la base de datos.";
+                }
+                return;
+            }
+            const itemsGrupo = productosDeStock.filter(p => p.group === groupKey);
+            const paraGuardar = [];
+
+            for (const producto of itemsGrupo) {
+                const input = document.getElementById("stock-" + producto.id);
+                const valStr = input?.value?.trim() || "";
+                if (!valStr) continue;
+                const qty = Number(valStr);
+                if (!Number.isInteger(qty) || qty < 0) {
+                    if (message) {
+                        message.hidden = false;
+                        message.textContent = `Cantidad inválida en ${producto.name}. Ingresá un entero mayor o igual a cero.`;
+                    }
+                    input?.focus();
+                    return;
+                }
+                stockBorradores.set(producto.id, String(qty));
+                paraGuardar.push(producto);
+            }
+
+            if (!paraGuardar.length) return;
+            await guardarListaProductosConjunto(paraGuardar, groupKey, "Tablero actualizado");
+        }
+
+        async function guardarListaProductosConjunto(listaProductos, groupKey, resumenAccion) {
+            const message = document.getElementById("stock-message");
+            const filtrados = listaProductos.filter(p => !stockGuardando.has(p.id));
+            if (!filtrados.length) return;
+
+            filtrados.forEach(p => stockGuardando.add(p.id));
+            stockCargaVersion += 1;
+            pintarStock([...stockRegistros.values()]);
+
+            try {
+                for (const producto of filtrados) {
+                    const input = document.getElementById("stock-" + producto.id);
+                    const qty = Number(stockBorradores.get(producto.id) ?? input?.value ?? 0);
+                    await persistirCantidadProducto(producto, qty);
+                }
+                stockErrorMessage = "";
+                const grupoInfo = stockGruposConfig.find(g => g.key === groupKey);
+                mostrarToast(`${resumenAccion} · ${grupoInfo ? grupoInfo.title.replace("Tablero Conjunto · ", "") : "Conjunto"}`);
+            } catch (error) {
+                console.error("Error al guardar conjunto de stock:", error);
+                stockErrorMessage = "No se pudo guardar todo el conjunto. Revisá los valores e intentá nuevamente. " + (error.message || "");
+                if (message) {
+                    message.hidden = false;
+                    message.textContent = stockErrorMessage;
+                }
+            } finally {
+                filtrados.forEach(p => stockGuardando.delete(p.id));
                 pintarStock([...stockRegistros.values()]);
                 if (stockGuardando.size === 0) await cargarStock();
             }
