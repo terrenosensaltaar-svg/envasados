@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Etiqueta · Empanadas Árabes · Good Food</title>
+  <style>
+    :root { --vino:#571b2a; --oro:#d5a62c; --tinta:#211a18; --crema:#fffdf8; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#eee9e2; color:var(--tinta); font-family:Arial,Helvetica,sans-serif; }
+    .toolbar { max-width:700px; margin:22px auto 14px; padding:0 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; color:#514943; font-size:14px; }
+    .toolbar button { border:0; border-radius:999px; padding:11px 18px; background:var(--vino); color:white; font-weight:700; cursor:pointer; }
+    .label { width:100mm; height:150mm; margin:0 auto 28px; padding:5mm; background:var(--crema); border:1.2mm solid var(--oro); border-radius:5mm; box-shadow:0 5px 22px #0002; position:relative; overflow:hidden; }
+    .inner { width:100%; height:100%; border:0.55mm solid var(--vino); border-radius:3mm; padding:3.2mm 4.2mm; display:flex; flex-direction:column; align-items:center; }
+    .logo { display:block; width:76mm; height:42mm; object-fit:contain; margin:-1mm 0 0; }
+    .eyebrow { margin:0.5mm 0 1mm; color:var(--oro); font-size:8pt; font-weight:800; letter-spacing:2px; text-transform:uppercase; }
+    h1 { margin:0; color:var(--vino); font-family:Georgia,'Times New Roman',serif; font-size:21pt; line-height:1.05; text-align:center; }
+    .rule { width:22mm; border-top:0.7mm solid var(--oro); margin:2.6mm 0 2.3mm; }
+    .steps { width:100%; display:grid; gap:1.7mm; }
+    .step { min-height:14mm; border:0.35mm solid #eadbb6; border-radius:2mm; display:grid; grid-template-columns:8mm 1fr; align-items:center; padding:1.5mm 2mm; background:#fffefa; }
+    .num { width:6.5mm; height:6.5mm; border-radius:50%; background:var(--vino); color:white; display:grid; place-items:center; font-weight:800; font-size:10pt; }
+    .step p { margin:0; font-size:9.1pt; line-height:1.24; }
+    .step strong { color:var(--vino); }
+    .date { width:100%; margin-top:auto; padding-top:2mm; }
+    .date-label { margin:0 0 1.5mm; color:var(--vino); text-align:center; text-transform:uppercase; letter-spacing:1.4px; font-weight:800; font-size:8pt; }
+    .write-space { height:12mm; border:0.4mm dashed #a48b67; border-radius:1.5mm; background:#fff; }
+    .footer { margin:2mm 0 0; font-size:7pt; color:#74675c; letter-spacing:.5px; }
+    @page { size:100mm 150mm; margin:0; }
+    @media print { body { background:white; } .toolbar { display:none; } .label { margin:0; border-radius:0; box-shadow:none; break-after:avoid; } }
+    @media screen and (max-width:420px) { .label { transform-origin:top center; } }
+  </style>
+</head>
+<body>
+  <div class="toolbar"><span>Etiqueta de 10 × 15 cm · Lista para imprimir</span><button onclick="window.print()">Imprimir etiqueta</button></div>
+  <main class="label" aria-label="Etiqueta Good Food para empanadas árabes">
+    <section class="inner">
+      <img class="logo" src="logo-good-food-etiqueta.png" alt="Good Food · Línea Gourmet">
+      <p class="eyebrow">Listas para disfrutar</p>
+      <h1>Empanadas Árabes</h1>
+      <div class="rule"></div>
+      <div class="steps">
+        <div class="step"><span class="num">1</span><p><strong>Retirá del refrigerador</strong> y prepará el horno.</p></div>
+        <div class="step"><span class="num">2</span><p><strong>Calentá 10 minutos</strong> en horno precalentado.</p></div>
+        <div class="step"><span class="num">3</span><p><strong>Emplatá y disfrutá</strong> bien calentitas.</p></div>
+      </div>
+      <div class="date">
+        <p class="date-label">Fecha de elaboración</p>
+        <div class="write-space" aria-label="Espacio para escribir la fecha de elaboración"></div>
+      </div>
+      <p class="footer">GOOD FOOD · LÍNEA GOURMET</p>
+    </section>
+  </main>
+</body>
+</html>

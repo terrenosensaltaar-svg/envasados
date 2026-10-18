@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis Territorial: Reserva Cerro Varnet & Guía Interactiva de Vaqueros | Salta</title>
+    <meta name="description" content="Análisis geoespacial de la Reserva Natural Privada Cerro Varnet (senderos, zonas de biodiversidad y relieve) y explorador interactivo de lugares para conocer en Vaqueros con Google Maps Platform.">
+
+    <!-- Tipografías inspiradas en la identidad de Cerro Varnet -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --varnet-deep: #081c15;
+            --varnet-forest: #1b4332;
+            --varnet-leaf: #2d6a4f;
+            --varnet-moss: #52b788;
+            --varnet-mint: #b7e4c7;
+            --varnet-sand: #f4f7f5;
+            --varnet-earth: #4a3728;
+            --amber: #d97706;
+            --coral: #e11d48;
+            --blue: #0284c7;
+            --border: rgba(27, 67, 50, 0.14);
+            --shadow: 0 18px 45px rgba(8, 28, 21, 0.10);
+            --radius: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background-color: var(--varnet-sand);
+            color: var(--varnet-deep);
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, .serif {
+            font-family: 'Fraunces', Georgia, serif;
+        }
+
+        /* Header */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(244, 247, 245, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--varnet-forest);
+        }
+
+        .brand-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--varnet-forest), var(--varnet-deep));
+            color: var(--varnet-mint);
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .brand-text strong {
+            display: block;
+            font-size: 1.05rem;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-text span {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--varnet-leaf);
+            font-weight: 700;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--varnet-forest);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--varnet-deep);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: var(--varnet-forest);
+            border-color: var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--varnet-moss);
+            background: #eef6f1;
+        }
+
+        /* Hero / Resumen Ejecutivo */
+        .hero {
+            background: linear-gradient(135deg, var(--varnet-deep) 0%, var(--varnet-forest) 100%);
+            color: #fff;
+            padding: 48px 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(183, 228, 199, 0.14);
+            border: 1px solid rgba(183, 228, 199, 0.3);
+            color: var(--varnet-mint);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 3.8vw, 3.25rem);
+            line-height: 1.08;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 em {
+            color: var(--varnet-mint);
+            font-style: italic;
+        }
+
+        .hero p {
+            color: rgba(244, 247, 245, 0.86);
+            font-size: 1rem;
+            line-height: 1.65;
+            max-width: 720px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(183, 228, 199, 0.2);
+            border-radius: 16px;
+            padding: 18px;
+            backdrop-filter: blur(8px);
+        }
+
+        .stat-card strong {
+            display: block;
+            font-family: 'Fraunces', serif;
+            font-size: 1.6rem;
+            color: var(--varnet-mint);
+            margin-bottom: 4px;
+        }
+
+        .stat-card span {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.82);
+            line-height: 1.4;
+            display: block;
+        }
+
+        /* Layout Principal: Panel + Mapa */
+        .workspace {
+            max-width: 1440px;
+            margin: 28px auto;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 430px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            box-shadow: var(--shadow);
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .panel-header h2 {
+            font-size: 1.2rem;
+            color: var(--varnet-forest);
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #e6f4ea;
+            color: var(--varnet-forest);
+        }
+
+        /* Filtros de Capas Reserva Cerro Varnet */
+        .layer-toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .chip {
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            border: 1px solid var(--border);
+            background: var(--varnet-sand);
+            color: var(--varnet-forest);
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .chip.active {
+            background: var(--varnet-forest);
+            color: #fff;
+            border-color: var(--varnet-forest);
+        }
+
+        /* Buscador de Lugares en Vaqueros (Places API New) */
+        .category-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .cat-btn {
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #f9fbfa;
+            color: var(--varnet-deep);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cat-btn:hover, .cat-btn.active {
+            background: var(--varnet-forest);
+            color: #fff;
+            border-color: var(--varnet-forest);
+        }
+
+        .autocomplete-wrapper {
+            margin-top: 14px;
+        }
+
+        .autocomplete-wrapper label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--varnet-leaf);
+            margin-bottom: 6px;
+        }
+
+        #autocomplete-container {
+            min-height: 42px;
+        }
+
+        /* Lista de resultados */
+        .poi-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 360px;
+            overflow-y: auto;
+            padding-right: 4px;
+            margin-top: 12px;
+        }
+
+        .poi-item {
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: #fcfdfd;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .poi-item:hover {
+            border-color: var(--varnet-moss);
+            background: #f2f9f5;
+            transform: translateX(2px);
+        }
+
+        .poi-item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .poi-item h4 {
+            font-size: 0.9rem;
+            color: var(--varnet-deep);
+            margin-bottom: 3px;
+        }
+
+        .poi-tag {
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .poi-item p {
+            font-size: 0.78rem;
+            color: #4b5563;
+            line-height: 1.45;
+        }
+
+        .poi-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .mini-btn {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--varnet-forest);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .mini-btn:hover {
+            background: var(--varnet-forest);
+            color: #fff;
+        }
+
+        /* Contenedor del Mapa (CF2: Explicit CSS Height) */
+        .map-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .map-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        /* CRITICAL REQUIREMENT (CF2): Explicit height on #map container */
+        #map {
+            width: 100%;
+            height: 680px;
+            min-height: 560px;
+            background: #e5ece8;
+        }
+
+        .map-toolbar {
+            padding: 14px 20px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .legend {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Banner de Ruta Activa (Routes API) */
+        #route-banner {
+            display: none;
+            padding: 14px 20px;
+            background: #ecfdf5;
+            border-top: 1px solid #a7f3d0;
+            color: var(--varnet-deep);
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* Sección de Análisis Detallado */
+        .analysis-section {
+            max-width: 1440px;
+            margin: 36px auto 60px;
+            padding: 0 24px;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+            margin-top: 20px;
+        }
+
+        .analysis-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 26px;
+            box-shadow: var(--shadow);
+        }
+
+        .analysis-card h3 {
+            font-size: 1.25rem;
+            color: var(--varnet-forest);
+            margin-bottom: 12px;
+        }
+
+        .analysis-card p {
+            font-size: 0.9rem;
+            line-height: 1.65;
+            color: #374151;
+            margin-bottom: 14px;
+        }
+
+        .analysis-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .analysis-list li {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            padding-left: 18px;
+            position: relative;
+        }
+
+        .analysis-list li::before {
+            content: "•";
+            color: var(--varnet-moss);
+            font-weight: 800;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Modal de Configuración de API Key (Sin claves hardcodeadas) */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 28, 21, 0.72);
+            backdrop-filter: blur(6px);
+            z-index: 200;
+            display: none;
+            place-items: center;
+            padding: 20px;
+        }
+
+        .modal-backdrop.open {
+            display: grid;
+        }
+
+        .modal-card {
+            background: #fff;
+            border-radius: 24px;
+            max-width: 580px;
+            width: 100%;
+            padding: 30px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--border);
+        }
+
+        .modal-card h3 {
+            font-size: 1.45rem;
+            color: var(--varnet-forest);
+            margin-bottom: 10px;
+        }
+
+        .modal-card p {
+            font-size: 0.88rem;
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+
+        .modal-steps {
+            background: var(--varnet-sand);
+            border-radius: 14px;
+            padding: 14px 18px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .modal-steps ol {
+            padding-left: 18px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .gmp-attribution-line {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--varnet-leaf);
+            margin-top: 8px;
+        }
+
+        footer {
+            background: var(--varnet-deep);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 36px 24px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+
+        .footer-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        footer a {
+            color: var(--varnet-mint);
+        }
+
+        @media (max-width: 1080px) {
+            .hero-inner {
+                grid-template-columns: 1fr;
+            }
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+            #map {
+                height: 520px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra Superior -->
+    <header class="topbar">
+        <a href="#inicio" class="brand">
+            <div class="brand-badge">CV</div>
+            <div class="brand-text">
+                <strong>Reserva Cerro Varnet &amp; Vaqueros</strong>
+                <span>Análisis Geoespacial · Salta, Argentina</span>
+            </div>
+        </a>
+        <div class="nav-actions">
+            <a href="#analisis" class="btn btn-outline">Diagnóstico de la Reserva</a>
+            <button type="button" class="btn btn-outline" onclick="fitToReserve()">Centrar en Cerro Varnet</button>
+            <button type="button" class="btn btn-outline" onclick="fitToVaqueros()">Ver Localidad de Vaqueros</button>
+            <button type="button" class="btn btn-primary" onclick="openApiKeyModal()">🔑 Configurar Google Maps API Key</button>
+        </div>
+    </header>
+
+    <!-- Hero / Síntesis -->
+    <section class="hero" id="inicio">
+        <div class="hero-inner">
+            <div>
+                <div class="kicker">🌿 Ecoturismo, Yungas y Corredor Vaqueros</div>
+                <h1>Análisis de la <em>Reserva Cerro Varnet</em> y Guía Interactiva de Vaqueros</h1>
+                <p>
+                    Relevamiento cartográfico basado en la cartografía oficial de la Reserva Natural Privada Cerro Varnet
+                    (límites del predio, red de senderos por dificultad, miradores, cascada y zonas de biodiversidad)
+                    integrado con búsqueda en vivo de atractivos, gastronomía, cultura y rutas desde <strong>Vaqueros</strong> mediante Google Maps Platform.
+                </p>
+                <div class="gmp-attribution-line" style="color: var(--varnet-mint);">
+                    Google Maps
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <strong>-24.6756, -65.3853</strong>
+                    <span>Coordenadas de Entrada Principal (Este de Vaqueros, Salta)</span>
+                </div>
+                <div class="stat-card">
+                    <strong>4 Niveles + 4 Senderos</strong>
+                    <span>Águila Poma, Pino Solitario, Circuito Cumbre (Lvl 1 a 4) y Acceso Parking</span>
+                </div>
+                <div class="stat-card">
+                    <strong>6 Hitos Naturales</strong>
+                    <span>Mirador del Pino Solitario, Acuífero Colgante, Cascada y 4 Zonas de Flora/Fauna</span>
+                </div>
+                <div class="stat-card">
+                    <strong>~15 min de Salta</strong>
+                    <span>Conexión directa desde Puente Wierna (RN 9, acceso a Vaqueros)</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Área Interactiva: Controles + Mapa -->
+    <main class="workspace">
+        <!-- Columna Lateral -->
+        <aside class="sidebar">
+            <!-- Panel 1: Capas Internas de Cerro Varnet -->
+            <section class="panel">
+                <div class="panel-header">
+                    <h2>1. Reserva Cerro Varnet</h2>
+                    <span class="badge">KML Oficial</span>
+                </div>
+                <p style="font-size: 0.82rem; color: #4b5563; margin-bottom: 12px;">
+                    Explorá el polígono perimetral, los senderos trazados y los puntos internos relevados en la reserva natural privada.
+                </p>
+                <div class="layer-toggles">
+                    <button type="button" class="chip active" id="toggle-polygon" onclick="toggleLayer('polygon')">Polígono Reserva</button>
+                    <button type="button" class="chip active" id="toggle-trails" onclick="toggleLayer('trails')">Senderos Internos</button>
+                    <button type="button" class="chip active" id="toggle-access" onclick="toggleLayer('access')">Acceso Puente Wierna</button>
+                    <button type="button" class="chip active" id="toggle-varnet-pois" onclick="toggleLayer('varnetPois')">Hitos y Biodiversidad</button>
+                </div>
+                <div class="poi-list" id="varnet-poi-list"></div>
+                <div class="gmp-attribution-line">Google Maps</div>
+            </section>
+
+            <!-- Panel 2: Lugares para conocer en Vaqueros (Places API New) -->
+            <section class="panel">
+                <div class="panel-header">
+                    <h2>2. Conocer en Vaqueros</h2>
+                    <span class="badge">Places API (New)</span>
+                </div>
+                <p style="font-size: 0.82rem; color: #4b5563;">
+                    Marcá en el mapa lugares reales de Vaqueros consultando en tiempo real la API de Google Places (sin datos pre-cargados ni alucinados).
+                </p>
+
+                <div class="category-grid">
+                    <button type="button" class="cat-btn" onclick="searchVaquerosCategory('turismo', this)">
+                        <span>🏞️</span> Atractivos y Río
+                    </button>
+                    <button type="button" class="cat-btn" onclick="searchVaquerosCategory('gastronomia', this)">
+                        <span>🥟</span> Gastronomía y Peñas
+                    </button>
+                    <button type="button" class="cat-btn" onclick="searchVaquerosCategory('cultura', this)">
+                        <span>🧶</span> Cultura y Artesanías
+                    </button>
+                    <button type="button" class="cat-btn" onclick="searchVaquerosCategory('alojamiento', this)">
+                        <span>🏡</span> Cabañas y Estadía
+                    </button>
+                </div>
+
+                <div class="autocomplete-wrapper">
+                    <label for="autocomplete-container">Buscador libre en Vaqueros y alrededores</label>
+                    <div id="autocomplete-container"></div>
+                </div>
+
+                <div id="vaqueros-status" style="margin-top: 10px; font-size: 0.8rem; color: var(--varnet-leaf); font-weight: 600;">
+                    Seleccioná una categoría o ingresá tu API Key para consultar lugares en vivo.
+                </div>
+                <div class="poi-list" id="vaqueros-poi-list"></div>
+                <div class="gmp-attribution-line">Google Maps</div>
+            </section>
+        </aside>
+
+        <!-- Columna del Mapa -->
+        <section class="map-section">
+            <div class="map-card">
+                <div class="map-toolbar">
+                    <div class="legend">
+                        <span class="legend-item"><span class="dot" style="background: #1b4332;"></span> Accesos e Hitos Varnet</span>
+                        <span class="legend-item"><span class="dot" style="background: #16a34a;"></span> Zonas de Flora y Fauna</span>
+                        <span class="legend-item"><span class="dot" style="background: #d97706;"></span> Niveles de Trekking (1-4)</span>
+                        <span class="legend-item"><span class="dot" style="background: #e11d48;"></span> Lugares en Vaqueros (Places API)</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="mini-btn" onclick="setMapType('hybrid')">Vista Satélite / Híbrida</button>
+                        <button type="button" class="mini-btn" onclick="setMapType('terrain')">Vista Relieve / Terreno</button>
+                        <button type="button" class="mini-btn" onclick="setMapType('roadmap')">Mapa Urbano</button>
+                    </div>
+                </div>
+
+                <div id="map" role="region" aria-label="Mapa interactivo de la Reserva Cerro Varnet y Vaqueros"></div>
+
+                <div id="route-banner">
+                    <div id="route-summary" style="font-size: 0.86rem; font-weight: 700;"></div>
+                    <button type="button" class="mini-btn" onclick="clearComputedRoute()">Limpiar ruta</button>
+                </div>
+            </div>
+            <div class="gmp-attribution-line">Google Maps</div>
+        </section>
+    </main>
+
+    <!-- Diagnóstico y Análisis Integral -->
+    <section class="analysis-section" id="analisis">
+        <div class="panel-header" style="margin-bottom: 6px;">
+            <h2 style="font-size: 1.8rem;">Diagnóstico Geoespacial y Ambiental: Reserva Cerro Varnet &amp; Entorno Vaqueros</h2>
+        </div>
+        <p style="color: #4b5563; font-size: 0.95rem;">
+            Síntesis técnica elaborada a partir de la geometría KML oficial de la reserva (<code>mid=1hNGZmpvYtX6vHf-j8pjVS_Pa_UiPKZI</code>) y su articulación territorial con el municipio de Vaqueros.
+        </p>
+
+        <div class="analysis-grid">
+            <article class="analysis-card">
+                <h3>1. Estructura Espacial y Zonificación de la Reserva</h3>
+                <p>
+                    La <strong>Reserva Natural Privada Cerro Varnet</strong> se ubica sobre las serranías orientales próximas a Vaqueros y al río Wierna, conformando un corredor de transición entre la selva pedemontana y montana de las Yungas y pastizales serranos.
+                </p>
+                <ul class="analysis-list">
+                    <li><strong>Acceso y Recepción:</strong> Ingreso principal en <code>-24.675661, -65.385324</code>, vinculado con área de estacionamiento propia (<code>-24.672799, -65.386639</code>) y nodo de inicio de senderos (<code>-24.674604, -65.380962</code>).</li>
+                    <li><strong>Hitos Hidrológicos y Panorámicos:</strong> Destacan el <em>Mirador del Pino Solitario</em> al norte (<code>-24.669582, -65.379061</code>), el <em>Acuífero Colgante</em> en el sector central (<code>-24.676878, -65.377679</code>) y la <em>Cascada Cerro Varnet</em> en la quebrada sur (<code>-24.683364, -65.383760</code>).</li>
+                    <li><strong>Micro-zonas de Biodiversidad:</strong> El relevamiento identifica cuatro áreas clave de avistaje y conservación: <em>Zona Corzuela</em>, <em>Zona Lapachos</em>, <em>Zona Pavas del Monte</em> y <em>Zona Liebres</em>.</li>
+                </ul>
+                <div class="gmp-attribution-line">Google Maps</div>
+            </article>
+
+            <article class="analysis-card">
+                <h3>2. Red de Senderos y Gradiente de Dificultad</h3>
+                <p>
+                    El diseño de circuitos responde a tres perfiles de visitantes (Trekking Consciente, Exploración Serrana y Desafío Varnet), distribuidos en cuatro niveles progresivos de exigencia física:
+                </p>
+                <ul class="analysis-list">
+                    <li><strong>Nivel 1 y Sendero Águila Poma:</strong> Recorrido de baja dificultad próximo al acceso y a las zonas de avistaje de fauna (Corzuela, Pavas y Liebres), ideal para educación ambiental y caminatas regenerativas.</li>
+                    <li><strong>Nivel 2 y Sendero del Pino Solitario:</strong> Dificultad media con ascenso hacia filos panorámicos y conexión con el Acuífero Colgante.</li>
+                    <li><strong>Niveles 3 y 4 (Desafío Varnet / Línea 4):</strong> Trazados de mayor pendiente y desnivel positivo que se internan hacia el este y sudeste del macizo serrano (hasta <code>-24.692595, -65.340035</code>), aptos para trail running y entrenamiento de montaña.</li>
+                </ul>
+                <div class="gmp-attribution-line">Google Maps</div>
+            </article>
+
+            <article class="analysis-card">
+                <h3>3. Sinergia Turística con Vaqueros y Gestión del Riesgo</h3>
+                <p>
+                    El trazado de vinculación vial parte desde el <strong>Puente Wierna (Ruta Nacional 9)</strong>, integrando a Cerro Varnet con el circuito turístico, gastronómico y artesanal de Vaqueros:
+                </p>
+                <ul class="analysis-list">
+                    <li><strong>Articulación con Vaqueros:</strong> Quienes visitan la reserva por la mañana pueden complementar su jornada en Vaqueros con gastronomía regional sobre la Av. San Martín / RN 9, paseos ribereños en los ríos Vaqueros y Wierna, ferias de artesanos y espacios culturales.</li>
+                    <li><strong>Prevención Ambiental e Incendios:</strong> Dado el historial de incendios de pastizales y monte en la interfaz urbano-forestal del cerro (especialmente en estación seca entre agosto y noviembre), la cartografía digital de accesos, ojos de agua y quebradas resulta crítica tanto para el senderismo responsable ("No deje rastro") como para la respuesta rápida de brigadistas.</li>
+                </ul>
+                <div class="gmp-attribution-line">Google Maps</div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Modal de Configuración de API Key -->
+    <div class="modal-backdrop" id="apikey-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-card">
+            <h3 id="modal-title">Configurar Google Maps Platform API Key</h3>
+            <p>
+                Por seguridad y cumplimiento de buenas prácticas, la clave no se almacena fija en el código fuente. Ingresá tu <code>GOOGLE_MAPS_API_KEY</code> para activar el mapa vectorial interactivo, los marcadores avanzados (<code>AdvancedMarkerElement</code>), la búsqueda en vivo de lugares en Vaqueros (<strong>Places API New</strong>) y el cálculo de rutas (<strong>Routes API</strong>).
+            </p>
+            <div class="modal-steps">
+                <strong>¿No tenés una clave lista? Podés usar la Maps Demo Key gratuita para prototipado:</strong>
+                <ol style="margin-top: 6px;">
+                    <li>Abrí <a href="https://mapsplatform.google.com/maps-demo-key?utm_campaign=gmp_git_agentskills_v1" target="_blank" rel="noopener noreferrer">mapsplatform.google.com/maps-demo-key</a>.</li>
+                    <li>Iniciá sesión con tu cuenta de Google (no requiere tarjeta ni cuenta de facturación).</li>
+                    <li>Aceptá los términos del proyecto de demostración y hacé clic para generar/revelar la clave.</li>
+                    <li>Copiá la clave y pegala aquí abajo (o usá una clave propia desde <a href="https://console.cloud.google.com/google/maps-apis/credentials?utm_campaign=gmp_git_agentskills_v1" target="_blank" rel="noopener noreferrer">Google Cloud Console</a> con <em>Maps JavaScript API</em>, <em>Places API (New)</em> y <em>Routes API</em> habilitadas).</li>
+                </ol>
+            </div>
+            <div class="input-group">
+                <input type="password" id="apikey-input" placeholder="Pegá aquí tu GOOGLE_MAPS_API_KEY (AIza...)" autocomplete="off">
+                <button type="button" class="btn btn-primary" onclick="saveAndLoadApiKey()">Activar Mapa</button>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                <span style="font-size: 0.75rem; color: #6b7280;">Se guardará localmente en tu navegador (<code>localStorage</code>) o en <code>?apiKey=</code>.</span>
+                <button type="button" class="mini-btn" onclick="closeApiKeyModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-inner">
+            <div>
+                <strong>Reserva Natural Privada Cerro Varnet · Explorador Territorial Vaqueros</strong><br>
+                <span>Implementado con Google Maps JavaScript API, Places API (New), Routes API y Advanced Markers.</span>
+                <div class="gmp-attribution-line" style="color: var(--varnet-mint);">Google Maps</div>
+            </div>
+            <div style="max-width: 620px; font-size: 0.76rem; color: rgba(255,255,255,0.72);">
+                El uso de este código está sujeto a los <a href="https://cloud.google.com/maps-platform/terms?utm_campaign=gmp_git_agentskills_v1" target="_blank" rel="noopener noreferrer">Términos del Servicio de Google Maps Platform</a>. Recordá restringir tus claves de API de producción por referente HTTP y por API desde <a href="https://docs.cloud.google.com/api-keys/docs/add-restrictions-api-keys?utm_campaign=gmp_git_agentskills_v1" target="_blank" rel="noopener noreferrer">Google Cloud Credentials</a>.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Datos geométricos oficiales extraídos del KML de Reserva Cerro Varnet (mid=1hNGZmpvYtX6vHf-j8pjVS_Pa_UiPKZI) -->
+    <script src="varnet-kml-data.js"></script>
+
+    <script>
+        /**
+         * Puntos internos oficiales relevados en el KML de Reserva Natural Privada Cerro Varnet
+         * Fuente: Google My Maps oficial de Cerro Varnet (mid=1hNGZmpvYtX6vHf-j8pjVS_Pa_UiPKZI)
+         */
+        const VARNET_OFFICIAL_POINTS = [
+            {
+                id: 'entrada-principal',
+                name: 'Entrada Principal — Reserva Cerro Varnet',
+                category: 'Acceso e Infraestructura',
+                badgeColor: '#1b4332',
+                glyph: 'CV',
+                position: { lat: -24.675661, lng: -65.385324 },
+                description: 'Ingreso principal a la Reserva Natural Privada Cerro Varnet. Punto de recepción para senderismo consciente y avistaje de aves.'
+            },
+            {
+                id: 'estacionamiento',
+                name: 'Estacionamiento de la Reserva',
+                category: 'Acceso e Infraestructura',
+                badgeColor: '#1b4332',
+                glyph: 'P',
+                position: { lat: -24.672799, lng: -65.3866394 },
+                description: 'Sector de estacionamiento vehicular vinculado al sendero de Acceso Parking.'
+            },
+            {
+                id: 'inicio-senderos',
+                name: 'Inicio de Senderos',
+                category: 'Acceso e Infraestructura',
+                badgeColor: '#1b4332',
+                glyph: 'S',
+                position: { lat: -24.674604, lng: -65.380962 },
+                description: 'Cabecera de partida de la red de senderos internos de trekking y trail running.'
+            },
+            {
+                id: 'mirador-pino',
+                name: 'Mirador del Pino Solitario',
+                category: 'Mirador y Atractivo Natural',
+                badgeColor: '#0284c7',
+                glyph: 'M',
+                position: { lat: -24.6695819, lng: -65.3790605 },
+                description: 'Punto panorámico en el sector norte de la reserva con vistas abiertas hacia el valle de Lerma y las serranías de Vaqueros.'
+            },
+            {
+                id: 'acuifero-colgante',
+                name: 'Acuífero Colgante',
+                category: 'Mirador y Atractivo Natural',
+                badgeColor: '#0284c7',
+                glyph: 'A',
+                position: { lat: -24.676878, lng: -65.377679 },
+                description: 'Hito hidrológico de montaña y cabecera del Sendero del Pino Solitario.'
+            },
+            {
+                id: 'cascada-varnet',
+                name: 'Cascada Cerro Varnet',
+                category: 'Mirador y Atractivo Natural',
+                badgeColor: '#0284c7',
+                glyph: 'C',
+                position: { lat: -24.6833639, lng: -65.3837601 },
+                description: 'Salto de agua ubicado en el límite sur del polígono de recorrido de la reserva natural.'
+            },
+            {
+                id: 'zona-corzuela',
+                name: 'Zona Corzuela',
+                category: 'Biodiversidad (Flora y Fauna)',
+                badgeColor: '#16a34a',
+                glyph: 'F',
+                position: { lat: -24.670756, lng: -65.38091 },
+                description: 'Hábitat de observación de corzuelas (Mazama gouazoubira) en transición de monte y pastizal.'
+            },
+            {
+                id: 'zona-lapachos',
+                name: 'Zona Lapachos',
+                category: 'Biodiversidad (Flora y Fauna)',
+                badgeColor: '#16a34a',
+                glyph: 'L',
+                position: { lat: -24.6717113, lng: -65.3786497 },
+                description: 'Sector de bosque nativo con presencia destacada de lapachos de las Yungas.'
+            },
+            {
+                id: 'zona-pavas',
+                name: 'Zona Pavas del Monte',
+                category: 'Biodiversidad (Flora y Fauna)',
+                badgeColor: '#16a34a',
+                glyph: 'B',
+                position: { lat: -24.675118, lng: -65.38041 },
+                description: 'Área de avistaje de pavas del monte (Penelope obscura) próxima al inicio de senderos.'
+            },
+            {
+                id: 'zona-liebres',
+                name: 'Zona Liebres',
+                category: 'Biodiversidad (Flora y Fauna)',
+                badgeColor: '#16a34a',
+                glyph: 'Z',
+                position: { lat: -24.675691, lng: -65.382411 },
+                description: 'Sector de pastizal y ladera baja frecuentado por fauna silvestre menor.'
+            },
+            {
+                id: 'sendero-lvl1',
+                name: 'Circuito Trekking — Nivel 1',
+                category: 'Circuitos por Nivel',
+                badgeColor: '#d97706',
+                glyph: '1',
+                position: { lat: -24.671214, lng: -65.3811951 },
+                description: 'Posta de circuito de dificultad baja (Trekking Consciente).'
+            },
+            {
+                id: 'sendero-lvl2-a',
+                name: 'Circuito Trekking — Nivel 2 (Sector Este)',
+                category: 'Circuitos por Nivel',
+                badgeColor: '#d97706',
+                glyph: '2',
+                position: { lat: -24.679867, lng: -65.376867 },
+                description: 'Posta de circuito de dificultad media (Exploración Serrana).'
+            },
+            {
+                id: 'sendero-lvl3-a',
+                name: 'Circuito Trekking — Nivel 3 (Filo Serrano)',
+                category: 'Circuitos por Nivel',
+                badgeColor: '#d97706',
+                glyph: '3',
+                position: { lat: -24.689901, lng: -65.362342 },
+                description: 'Posta de ascenso de media-alta exigencia hacia las cumbres orientales.'
+            },
+            {
+                id: 'sendero-lvl4-a',
+                name: 'Circuito Trekking — Nivel 4 (Desafío Varnet)',
+                category: 'Circuitos por Nivel',
+                badgeColor: '#d97706',
+                glyph: '4',
+                position: { lat: -24.6853226, lng: -65.3692816 },
+                description: 'Posta de alta exigencia física y desnivel positivo para trail running.'
+            }
+        ];
+
+        // Consultas en vivo para Places API (New) centradas en Vaqueros, Salta
+        const VAQUEROS_CENTER = { lat: -24.6875, lng: -65.4105 };
+        const VAQUEROS_QUERIES = {
+            turismo: {
+                label: 'Atractivos y Naturaleza en Vaqueros',
+                textQuery: 'atractivos turisticos miradores rio puente en Vaqueros, Salta, Argentina'
+            },
+            gastronomia: {
+                label: 'Gastronomía, Empanadas y Peñas en Vaqueros',
+                textQuery: 'restaurantes comida regional empanadas cafes en Vaqueros, Salta, Argentina'
+            },
+            cultura: {
+                label: 'Cultura, Museos y Artesanías en Vaqueros',
+                textQuery: 'museo feria artesanos cultura en Vaqueros, Salta, Argentina'
+            },
+            alojamiento: {
+                label: 'Cabañas y Alojamientos en Vaqueros',
+                textQuery: 'cabanas posadas alojamiento hotel en Vaqueros, Salta, Argentina'
+            }
+        };
+
+        let map = null;
+        let infoWindow = null;
+        let reservePolygon = null;
+        let trailPolylines = [];
+        let accessPolyline = null;
+        let varnetMarkers = [];
+        let vaquerosMarkers = [];
+        let activeRoutePolylines = [];
+        let activeRouteMarkers = [];
+
+        const layerState = {
+            polygon: true,
+            trails: true,
+            access: true,
+            varnetPois: true
+        };
+
+        // Renderiza la lista lateral de hitos de Cerro Varnet desde el inicio
+        function renderVarnetSidebarList() {
+            const container = document.getElementById('varnet-poi-list');
+            container.innerHTML = '';
+            VARNET_OFFICIAL_POINTS.forEach((pt) => {
+                const item = document.createElement('div');
+                item.className = 'poi-item';
+                item.innerHTML = `
+                    <div class="poi-item-top">
+                        <h4>${pt.name}</h4>
+                        <span class="poi-tag" style="background:${pt.badgeColor}18; color:${pt.badgeColor};">${pt.category}</span>
+                    </div>
+                    <p>${pt.description}</p>
+                    <div class="poi-actions">
+                        <button type="button" class="mini-btn" onclick="focusPoint(${pt.position.lat}, ${pt.position.lng}, '${pt.id}')">Ver en mapa</button>
+                        <button type="button" class="mini-btn" onclick="computeRouteFromVaqueros(${pt.position.lat}, ${pt.position.lng}, '${pt.name.replace(/'/g, "\\'")}')">Ruta desde Vaqueros</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Obtiene la API Key desde ?apiKey= o localStorage
+        function getConfiguredApiKey() {
+            const params = new URLSearchParams(window.location.search);
+            const fromUrl = params.get('apiKey');
+            if (fromUrl && fromUrl.trim()) {
+                localStorage.setItem('GOOGLE_MAPS_API_KEY', fromUrl.trim());
+                return fromUrl.trim();
+            }
+            const fromStorage = localStorage.getItem('GOOGLE_MAPS_API_KEY');
+            return fromStorage ? fromStorage.trim() : '';
+        }
+
+        function openApiKeyModal() {
+            const current = getConfiguredApiKey();
+            document.getElementById('apikey-input').value = current;
+            document.getElementById('apikey-modal').classList.add('open');
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('apikey-modal').classList.remove('open');
+        }
+
+        function saveAndLoadApiKey() {
+            const val = document.getElementById('apikey-input').value.trim();
+            if (!val) {
+                alert('Por favor ingresá una clave válida de Google Maps Platform.');
+                return;
+            }
+            localStorage.setItem('GOOGLE_MAPS_API_KEY', val);
+            closeApiKeyModal();
+            window.location.reload();
+        }
+
+        // Bootstrap oficial de Google Maps JavaScript API (Dynamic Library Import)
+        function loadGoogleMapsBootstrap(apiKey) {
+            (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+                key: apiKey,
+                v: "weekly",
+                language: "es",
+                region: "AR"
+            });
+        }
+
+        async function initApplication() {
+            renderVarnetSidebarList();
+
+            const apiKey = getConfiguredApiKey();
+            if (!apiKey) {
+                // Muestra estado informativo en el contenedor del mapa y abre el modal para ingresar la clave
+                const mapEl = document.getElementById('map');
+                mapEl.innerHTML = `
+                    <div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; text-align:center; color:#1b4332;">
+                        <h3 class="serif" style="font-size:1.5rem; margin-bottom:10px;">Mapa Interactivo Listo para Activar</h3>
+                        <p style="max-width:520px; font-size:0.92rem; line-height:1.6; margin-bottom:18px; color:#374151;">
+                            Para renderizar el mapa vectorial de <strong>Reserva Cerro Varnet</strong> y ejecutar consultas en vivo de lugares en <strong>Vaqueros</strong> mediante <em>Places API (New)</em> y <em>Routes API</em>, configurá tu <code>GOOGLE_MAPS_API_KEY</code> (o tu <em>Maps Demo Key</em> gratuita).
+                        </p>
+                        <button type="button" class="btn btn-primary" onclick="openApiKeyModal()">🔑 Ingresar GOOGLE_MAPS_API_KEY</button>
+                    </div>
+                `;
+                openApiKeyModal();
+                return;
+            }
+
+            loadGoogleMapsBootstrap(apiKey);
+
+            try {
+                // Importación dinámica de librerías modernas de Google Maps Platform
+                // Ref: https://developers.google.com/maps/documentation/javascript/load-maps-js-api?utm_campaign=gmp_git_agentskills_v1
+                const [{ Map, InfoWindow, Polygon, Polyline }, { AdvancedMarkerElement, PinElement }] = await Promise.all([
+                    google.maps.importLibrary('maps'),
+                    google.maps.importLibrary('marker')
+                ]);
+
+                // Inicialización del mapa con mapId obligatorio para AdvancedMarkerElement (CF9)
+                // e internalUsageAttributionIds obligatorio (gmp_git_agentskills_v1)
+                map = new Map(document.getElementById('map'), {
+                    center: { lat: -24.6805, lng: -65.3940 },
+                    zoom: 14,
+                    mapId: 'DEMO_MAP_ID',
+                    renderingType: 'VECTOR',
+                    mapTypeId: 'hybrid',
+                    internalUsageAttributionIds: ['gmp_git_agentskills_v1'],
+                    mapTypeControl: false,
+                    streetViewControl: true,
+                    fullscreenControl: true
+                });
+
+                infoWindow = new InfoWindow();
+
+                // 1. Dibujar Polígono Oficial de la Reserva Cerro Varnet
+                if (typeof VARNET_KML_DATA !== 'undefined' && VARNET_KML_DATA.polygon) {
+                    reservePolygon = new Polygon({
+                        paths: VARNET_KML_DATA.polygon,
+                        strokeColor: '#52b788',
+                        strokeOpacity: 0.95,
+                        strokeWeight: 3,
+                        fillColor: '#2d6a4f',
+                        fillOpacity: 0.28,
+                        map: map
+                    });
+
+                    reservePolygon.addListener('click', (ev) => {
+                        infoWindow.setContent(`
+                            <div style="padding:6px; max-width:260px;">
+                                <strong style="color:#1b4332; font-size:0.95rem;">Perímetro Reserva Natural Privada Cerro Varnet</strong>
+                                <p style="font-size:0.8rem; margin-top:4px; color:#374151;">Área protegida privada de senderismo consciente, avistaje de aves y conservación de Yungas en Vaqueros, Salta.</p>
+                                <div style="font-size:0.72rem; font-weight:700; color:#2d6a4f; margin-top:6px;">Google Maps</div>
+                            </div>
+                        `);
+                        infoWindow.setPosition(ev.latLng);
+                        infoWindow.open(map);
+                    });
+                }
+
+                // 2. Dibujar Senderos Internos del KML
+                if (typeof VARNET_KML_DATA !== 'undefined' && VARNET_KML_DATA.trails) {
+                    VARNET_KML_DATA.trails.forEach((trail) => {
+                        const poly = new Polyline({
+                            path: trail.path,
+                            geodesic: true,
+                            strokeColor: trail.color,
+                            strokeOpacity: 0.95,
+                            strokeWeight: 4,
+                            map: map
+                        });
+                        poly.addListener('click', (ev) => {
+                            infoWindow.setContent(`
+                                <div style="padding:6px; max-width:250px;">
+                                    <strong style="color:#1b4332;">${trail.name}</strong>
+                                    <p style="font-size:0.8rem; margin-top:4px;">Dificultad: <strong>${trail.difficulty}</strong></p>
+                                    <div style="font-size:0.72rem; font-weight:700; color:#2d6a4f; margin-top:6px;">Google Maps</div>
+                                </div>
+                            `);
+                            infoWindow.setPosition(ev.latLng);
+                            infoWindow.open(map);
+                        });
+                        trailPolylines.push(poly);
+                    });
+                }
+
+                // 3. Dibujar Ruta de Acceso desde Puente Wierna (RN 9, Vaqueros)
+                if (typeof VARNET_KML_DATA !== 'undefined' && VARNET_KML_DATA.accessFromPuenteWierna) {
+                    accessPolyline = new Polyline({
+                        path: VARNET_KML_DATA.accessFromPuenteWierna,
+                        geodesic: true,
+                        strokeColor: '#38bdf8',
+                        strokeOpacity: 0.85,
+                        strokeWeight: 4,
+                        map: map
+                    });
+                    accessPolyline.addListener('click', (ev) => {
+                        infoWindow.setContent(`
+                            <div style="padding:6px; max-width:260px;">
+                                <strong style="color:#0284c7;">Conexión Vial: Puente Wierna (RN 9, Vaqueros) → Reserva Cerro Varnet</strong>
+                                <p style="font-size:0.8rem; margin-top:4px;">Trazado de acceso oficial desde el ingreso a Vaqueros hasta la Entrada Principal de la reserva.</p>
+                                <div style="font-size:0.72rem; font-weight:700; color:#2d6a4f; margin-top:6px;">Google Maps</div>
+                            </div>
+                        `);
+                        infoWindow.setPosition(ev.latLng);
+                        infoWindow.open(map);
+                    });
+                }
+
+                // 4. Crear AdvancedMarkerElement + PinElement para los hitos de Cerro Varnet (CF7)
+                VARNET_OFFICIAL_POINTS.forEach((pt) => {
+                    const pin = new PinElement({
+                        background: pt.badgeColor,
+                        borderColor: '#ffffff',
+                        glyphColor: '#ffffff',
+                        glyphText: pt.glyph
+                    });
+
+                    const marker = new AdvancedMarkerElement({
+                        map: map,
+                        position: pt.position,
+                        title: pt.name
+                    });
+                    // CF7: Preferir marker.append(pin) y escuchar 'click' en canal weekly
+                    marker.append(pin);
+
+                    marker.addEventListener('click', () => {
+                        openVarnetPointInfo(pt, marker);
+                    });
+
+                    varnetMarkers.push({ id: pt.id, data: pt, marker });
+                });
+
+                // 5. Inicializar PlaceAutocompleteElement para búsqueda libre en Vaqueros
+                await initVaquerosAutocomplete();
+
+                // 6. Ejecutar primera búsqueda en vivo de lugares para conocer en Vaqueros
+                const firstCatBtn = document.querySelector('.cat-btn');
+                await searchVaquerosCategory('turismo', firstCatBtn);
+
+            } catch (err) {
+                console.error('Error al inicializar Google Maps Platform:', err);
+                document.getElementById('vaqueros-status').textContent = 'Error al cargar Google Maps: verificá tu API Key y las APIs habilitadas.';
+            }
+        }
+
+        function openVarnetPointInfo(pt, marker) {
+            if (!map || !infoWindow) return;
+            infoWindow.setContent(`
+                <div style="padding:8px; max-width:280px; font-family:'Plus Jakarta Sans',sans-serif;">
+                    <span style="font-size:0.68rem; font-weight:800; text-transform:uppercase; color:${pt.badgeColor};">${pt.category}</span>
+                    <h4 style="font-size:0.98rem; margin:4px 0 6px; color:#081c15;">${pt.name}</h4>
+                    <p style="font-size:0.8rem; color:#374151; line-height:1.45; margin-bottom:8px;">${pt.description}</p>
+                    <button type="button" onclick="computeRouteFromVaqueros(${pt.position.lat}, ${pt.position.lng}, '${pt.name.replace(/'/g, "\\'")}')" style="padding:5px 10px; border-radius:999px; border:1px solid #1b4332; background:#1b4332; color:#fff; font-size:0.74rem; font-weight:700; cursor:pointer;">
+                        🚗 Calcular ruta desde Puente Wierna (Vaqueros)
+                    </button>
+                    <div style="font-size:0.72rem; font-weight:700; color:#2d6a4f; margin-top:8px;">Google Maps</div>
+                </div>
+            `);
+            infoWindow.open({ anchor: marker, map });
+        }
+
+        // Inicializa PlaceAutocompleteElement (Places UI Kit / Places API New)
+        // Ref: https://developers.google.com/maps/documentation/javascript/place-autocomplete-new?utm_campaign=gmp_git_agentskills_v1
+        async function initVaquerosAutocomplete() {
+            const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
+            const { LatLngBounds } = await google.maps.importLibrary('core');
+
+            const bounds = new LatLngBounds(
+                { lat: -24.7300, lng: -65.4500 },
+                { lat: -24.6400, lng: -65.3400 }
+            );
+
+            const autocomplete = new PlaceAutocompleteElement({
+                internalUsageAttributionIds: ['gmp_git_agentskills_v1'],
+                locationBias: bounds,
+                includedRegionCodes: ['ar']
+            });
+
+            const container = document.getElementById('autocomplete-container');
+            container.innerHTML = '';
+            container.appendChild(autocomplete);
+
+            autocomplete.addEventListener('gmp-select', async ({ placePrediction }) => {
+                if (!placePrediction) return;
+                const place = placePrediction.toPlace();
+                await place.fetchFields({
+                    fields: ['displayName', 'formattedAddress', 'location', 'rating', 'userRatingCount', 'googleMapsURI', 'types']
+                });
+                if (place.location) {
+                    renderVaquerosPlaces([place], `Resultado seleccionado: ${place.displayName}`);
+                    map.panTo(place.location);
+                    map.setZoom(16);
+                }
+            });
+        }
+
+        // Consulta en tiempo real lugares para conocer en Vaqueros usando Place.searchByText (Places API New)
+        // Ref: https://developers.google.com/maps/documentation/javascript/place-search?utm_campaign=gmp_git_agentskills_v1
+        async function searchVaquerosCategory(categoryKey, btnEl) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+
+            if (!map) {
+                openApiKeyModal();
+                return;
+            }
+
+            const config = VAQUEROS_QUERIES[categoryKey];
+            if (!config) return;
+
+            const statusEl = document.getElementById('vaqueros-status');
+            statusEl.textContent = `Buscando "${config.label}" en Google Maps...`;
+
+            try {
+                const { Place } = await google.maps.importLibrary('places');
+                const { LatLngBounds } = await google.maps.importLibrary('core');
+
+                // Restringimos/sesgamos al área de Vaqueros y Río Wierna
+                const vaquerosBounds = new LatLngBounds(
+                    { lat: -24.7150, lng: -65.4350 },
+                    { lat: -24.6600, lng: -65.3800 }
+                );
+
+                const request = {
+                    textQuery: config.textQuery,
+                    fields: [
+                        'displayName',
+                        'formattedAddress',
+                        'location',
+                        'rating',
+                        'userRatingCount',
+                        'googleMapsURI',
+                        'businessStatus'
+                    ],
+                    locationBias: vaquerosBounds,
+                    language: 'es',
+                    region: 'AR',
+                    maxResultCount: 10
+                };
+
+                const { places } = await Place.searchByText(request);
+                renderVaquerosPlaces(places || [], config.label);
+            } catch (err) {
+                console.error('Error en Place.searchByText:', err);
+                statusEl.textContent = 'No se pudo completar la búsqueda en Places API (New). Verificá que Places API (New) esté habilitada en tu clave.';
+            }
+        }
+
+        async function renderVaquerosPlaces(places, label) {
+            const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary('marker');
+            const { LatLngBounds } = await google.maps.importLibrary('core');
+
+            // Limpiar marcadores previos de Vaqueros
+            vaquerosMarkers.forEach(m => { m.map = null; });
+            vaquerosMarkers = [];
+
+            const listEl = document.getElementById('vaqueros-poi-list');
+            const statusEl = document.getElementById('vaqueros-status');
+            listEl.innerHTML = '';
+
+            if (!places.length) {
+                statusEl.textContent = `Sin resultados para ${label}.`;
+                return;
+            }
+
+            statusEl.textContent = `${places.length} lugares encontrados en vivo (${label}):`;
+            const bounds = new LatLngBounds();
+
+            // Incluir también la entrada de Cerro Varnet en el encuadre para mostrar la relación espacial
+            bounds.extend({ lat: -24.675661, lng: -65.385324 });
+
+            places.forEach((place, idx) => {
+                if (!place.location) return;
+
+                const pin = new PinElement({
+                    background: '#e11d48',
+                    borderColor: '#ffffff',
+                    glyphColor: '#ffffff',
+                    glyphText: String(idx + 1)
+                });
+
+                const marker = new AdvancedMarkerElement({
+                    map: map,
+                    position: place.location,
+                    title: place.displayName || 'Lugar en Vaqueros'
+                });
+                marker.append(pin);
+
+                const lat = typeof place.location.lat === 'function' ? place.location.lat() : place.location.lat;
+                const lng = typeof place.location.lng === 'function' ? place.location.lng() : place.location.lng;
+
+                const ratingText = place.rating
+                    ? `⭐ ${place.rating.toFixed(1)} (${place.userRatingCount || 0} opiniones)`
+                    : 'Sin calificaciones aún';
+
+                const openInfo = () => {
+                    infoWindow.setContent(`
+                        <div style="padding:8px; max-width:280px; font-family:'Plus Jakarta Sans',sans-serif;">
+                            <span style="font-size:0.68rem; font-weight:800; text-transform:uppercase; color:#e11d48;">Lugar en Vaqueros · #${idx + 1}</span>
+                            <h4 style="font-size:0.98rem; margin:4px 0; color:#081c15;">${place.displayName || 'Lugar'}</h4>
+                            <p style="font-size:0.78rem; color:#4b5563; margin-bottom:4px;">${place.formattedAddress || 'Vaqueros, Salta'}</p>
+                            <p style="font-size:0.78rem; font-weight:700; color:#b45309; margin-bottom:8px;">${ratingText}</p>
+                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <button type="button" onclick="computeRouteBetweenVarnetAndPlace(${lat}, ${lng}, '${(place.displayName || 'Lugar').replace(/'/g, "\\'")}')" style="padding:5px 10px; border-radius:999px; border:1px solid #1b4332; background:#1b4332; color:#fff; font-size:0.72rem; font-weight:700; cursor:pointer;">
+                                    🚗 Ruta a Reserva Cerro Varnet
+                                </button>
+                                ${place.googleMapsURI ? `<a href="${place.googleMapsURI}" target="_blank" rel="noopener noreferrer" style="padding:5px 10px; border-radius:999px; border:1px solid #d1d5db; color:#1b4332; font-size:0.72rem; font-weight:700; text-decoration:none;">Abrir en Google Maps ↗</a>` : ''}
+                            </div>
+                            <div style="font-size:0.72rem; font-weight:700; color:#2d6a4f; margin-top:8px;">Google Maps</div>
+                        </div>
+                    `);
+                    infoWindow.open({ anchor: marker, map });
+                };
+
+                marker.addEventListener('click', openInfo);
+                vaquerosMarkers.push(marker);
+                bounds.extend(place.location);
+
+                // Agregar tarjeta a la lista lateral
+                const item = document.createElement('div');
+                item.className = 'poi-item';
+                item.innerHTML = `
+                    <div class="poi-item-top">
+                        <h4>${idx + 1}. ${place.displayName || 'Lugar en Vaqueros'}</h4>
+                        <span class="poi-tag" style="background:#ffe4e6; color:#e11d48;">${place.rating ? '★ ' + place.rating.toFixed(1) : 'Vaqueros'}</span>
+                    </div>
+                    <p>${place.formattedAddress || 'Vaqueros, Salta'}</p>
+                    <div class="poi-actions">
+                        <button type="button" class="mini-btn" data-focus>Ver marcador</button>
+                        <button type="button" class="mini-btn" data-route>Ruta a Cerro Varnet</button>
+                        ${place.googleMapsURI ? `<a class="mini-btn" href="${place.googleMapsURI}" target="_blank" rel="noopener noreferrer">Ficha Google Maps ↗</a>` : ''}
+                    </div>
+                `;
+                item.querySelector('[data-focus]').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    map.panTo(place.location);
+                    map.setZoom(16);
+                    openInfo();
+                });
+                item.querySelector('[data-route]').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    computeRouteBetweenVarnetAndPlace(lat, lng, place.displayName || 'Lugar en Vaqueros');
+                });
+                listEl.appendChild(item);
+            });
+
+            map.fitBounds(bounds);
+        }
+
+        // Calcula ruta entre un punto de Vaqueros y la Entrada Principal de Reserva Cerro Varnet usando Route.computeRoutes (Routes API)
+        // Ref: https://developers.google.com/maps/documentation/javascript/routes?utm_campaign=gmp_git_agentskills_v1
+        async function computeRouteBetweenVarnetAndPlace(originLat, originLng, placeName) {
+            if (!map) {
+                openApiKeyModal();
+                return;
+            }
+            await executeRouteComputation(
+                { lat: originLat, lng: originLng },
+                { lat: -24.675661, lng: -65.385324 },
+                placeName,
+                'Entrada Principal — Reserva Cerro Varnet'
+            );
+        }
+
+        async function computeRouteFromVaqueros(destLat, destLng, destName) {
+            if (!map) {
+                openApiKeyModal();
+                return;
+            }
+            // Puente Wierna / Acceso Sur a Vaqueros sobre RN 9
+            await executeRouteComputation(
+                { lat: -24.70065, lng: -65.40504 },
+                { lat: destLat, lng: destLng },
+                'Puente Wierna (RN 9, Vaqueros)',
+                destName
+            );
+        }
+
+        async function executeRouteComputation(originLatLng, destinationLatLng, originLabel, destLabel) {
+            clearComputedRoute();
+            try {
+                const { Route } = await google.maps.importLibrary('routes');
+
+                const request = {
+                    origin: originLatLng,
+                    destination: destinationLatLng,
+                    travelMode: 'DRIVING',
+                    fields: ['path', 'legs', 'distanceMeters', 'durationMillis', 'viewport']
+                };
+
+                const { routes } = await Route.computeRoutes(request);
+                if (!routes || !routes.length) {
+                    alert('No se encontró una ruta vehicular directa para este punto.');
+                    return;
+                }
+
+                const route = routes[0];
+                activeRoutePolylines = route.createPolylines({
+                    polylineOptions: {
+                        strokeColor: '#2563eb',
+                        strokeWeight: 6,
+                        strokeOpacity: 0.9
+                    }
+                });
+                activeRoutePolylines.forEach(p => p.setMap(map));
+
+                if (route.createWaypointAdvancedMarkers) {
+                    activeRouteMarkers = await route.createWaypointAdvancedMarkers({ map });
+                }
+
+                if (route.viewport) {
+                    map.fitBounds(route.viewport);
+                }
+
+                const km = route.distanceMeters ? (route.distanceMeters / 1000).toFixed(1) + ' km' : '';
+                const mins = route.durationMillis ? Math.round(route.durationMillis / 60000) + ' min' : '';
+
+                const banner = document.getElementById('route-banner');
+                const summary = document.getElementById('route-summary');
+                summary.innerHTML = `🚗 <strong>Ruta calculada (Routes API):</strong> ${originLabel} → ${destLabel} · <span>${km}</span> (${mins}) <span style="margin-left:8px; font-size:0.75rem; color:#2d6a4f;">Google Maps</span>`;
+                banner.style.display = 'flex';
+            } catch (err) {
+                console.error('Error al calcular ruta con Route.computeRoutes:', err);
+                alert('No se pudo calcular la ruta. Asegurate de tener habilitada la Routes API en tu proyecto de Google Cloud.');
+            }
+        }
+
+        function clearComputedRoute() {
+            activeRoutePolylines.forEach(p => p.setMap(null));
+            activeRoutePolylines = [];
+            activeRouteMarkers.forEach(m => { m.map = null; });
+            activeRouteMarkers = [];
+            document.getElementById('route-banner').style.display = 'none';
+        }
+
+        function toggleLayer(layerName) {
+            layerState[layerName] = !layerState[layerName];
+            const visible = layerState[layerName];
+
+            const btnMap = {
+                polygon: 'toggle-polygon',
+                trails: 'toggle-trails',
+                access: 'toggle-access',
+                varnetPois: 'toggle-varnet-pois'
+            };
+            const btn = document.getElementById(btnMap[layerName]);
+            if (btn) btn.classList.toggle('active', visible);
+
+            if (!map) return;
+
+            if (layerName === 'polygon' && reservePolygon) {
+                reservePolygon.setMap(visible ? map : null);
+            } else if (layerName === 'trails') {
+                trailPolylines.forEach(p => p.setMap(visible ? map : null));
+            } else if (layerName === 'access' && accessPolyline) {
+                accessPolyline.setMap(visible ? map : null);
+            } else if (layerName === 'varnetPois') {
+                varnetMarkers.forEach(item => { item.marker.map = visible ? map : null; });
+            }
+        }
+
+        function focusPoint(lat, lng, id) {
+            if (!map) {
+                openApiKeyModal();
+                return;
+            }
+            map.panTo({ lat, lng });
+            map.setZoom(16);
+            const found = varnetMarkers.find(m => m.id === id);
+            if (found) {
+                openVarnetPointInfo(found.data, found.marker);
+            }
+        }
+
+        function fitToReserve() {
+            if (!map) {
+                openApiKeyModal();
+                return;
+            }
+            map.panTo({ lat: -24.6765, lng: -65.3805 });
+            map.setZoom(15);
+        }
+
+        function fitToVaqueros() {
+            if (!map) {
+                openApiKeyModal();
+                return;
+            }
+            map.panTo(VAQUEROS_CENTER);
+            map.setZoom(14);
+        }
+
+        function setMapType(typeId) {
+            if (map) {
+                map.setMapTypeId(typeId);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initApplication);
+    </script>
+</body>
+</html>
