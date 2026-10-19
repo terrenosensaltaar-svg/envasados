@@ -1,35 +1,87 @@
 // Catálogo Oficial de Productos Gourmet & Pollita Lu al Vacío
 const PRODUCTS = [
     // =========================================================================
-    // 1. EMPANADAS GOURMET (LISTAS PARA HORNEAR)
+    // 1. EMPANADAS GOURMET (OPCIÓN CRUDAS O COCIDAS)
     // =========================================================================
     {
         id: "gm-01",
         name: "Empanadas Árabes",
         category: "gourmet",
         price: 10000,
-        portion: "Media docena (6 unidades) · Listas para hornear",
+        portion: "Media docena (6 unidades) · Crudas o Cocidas",
         badge: "Línea Gourmet · Pack x 6 u.",
-        desc: "Pack de 6 empanadas abiertas triangulares (fatay) rellenas con carne molida magra seleccionada, cebolla dulce, tomate fresco, limón y especias tradicionales árabes. Masa crujiente y dorada.",
-        prep: "12-15 min en horno a 180°C o airfryer.",
+        desc: "Pack de 6 empanadas abiertas triangulares (fatay) rellenas con carne molida magra seleccionada, cebolla dulce, tomate fresco, limón y especias tradicionales árabes. Elegilas crudas para hornear o cocidas listas.",
+        prep: "Crudas: 12-15 min en horno a 180°C · Cocidas: 5-8 min para calentar.",
         image: "empanadas_arabes.jpg",
         packImage: "empanadas_arabes_vacio.jpg",
         icon: "🥟",
-        available: true
+        available: true,
+        variants: [
+            {
+                id: "gm-01-cruda",
+                key: "cruda",
+                label: "❄️ Crudas",
+                shortLabel: "Crudas",
+                subLabel: "Para hornear",
+                fullName: "Empanadas Árabes (Crudas)",
+                portion: "Media docena (6 unidades) · Crudas listas para hornear",
+                prep: "12-15 min en horno a 180°C o airfryer.",
+                available: true,
+                outOfStock: false
+            },
+            {
+                id: "gm-01-cocida",
+                key: "cocida",
+                label: "🔥 Cocidas",
+                shortLabel: "Cocidas",
+                subLabel: "Listas para calentar",
+                fullName: "Empanadas Árabes (Cocidas)",
+                portion: "Media docena (6 unidades) · Cocidas listas para calentar",
+                prep: "5-8 min en horno, sartén o airfryer y servir.",
+                available: true,
+                outOfStock: false
+            }
+        ]
     },
     {
         id: "gm-02",
         name: "Empanadas de Carne",
         category: "gourmet",
         price: 10000,
-        portion: "Media docena (6 unidades) · Listas para hornear",
+        portion: "Media docena (6 unidades) · Crudas o Cocidas",
         badge: "Línea Gourmet · Pack x 6 u.",
-        desc: "Pack de 6 empanadas criollas tradicionales con carne vacuna seleccionada cortada a cuchillo, cebolla de verdeo, pimientos, huevo duro y condimentos caseros.",
-        prep: "12-15 min en horno a 200°C hasta dorar.",
+        desc: "Pack de 6 empanadas criollas tradicionales con carne vacuna seleccionada cortada a cuchillo, cebolla de verdeo, pimientos, huevo duro y condimentos caseros. Elegilas crudas para hornear o cocidas listas.",
+        prep: "Crudas: 12-15 min en horno a 200°C · Cocidas: 5-8 min para calentar.",
         image: "empanadas_de_carne.jpg",
         packImage: "empanadas_de_carne_vacio.jpg",
         icon: "🥟",
-        available: true
+        available: true,
+        variants: [
+            {
+                id: "gm-02-cruda",
+                key: "cruda",
+                label: "❄️ Crudas",
+                shortLabel: "Crudas",
+                subLabel: "Para hornear",
+                fullName: "Empanadas de Carne (Crudas)",
+                portion: "Media docena (6 unidades) · Crudas listas para hornear",
+                prep: "12-15 min en horno a 200°C hasta dorar.",
+                available: true,
+                outOfStock: false
+            },
+            {
+                id: "gm-02-cocida",
+                key: "cocida",
+                label: "🔥 Cocidas",
+                shortLabel: "Cocidas",
+                subLabel: "Listas para calentar",
+                fullName: "Empanadas de Carne (Cocidas)",
+                portion: "Media docena (6 unidades) · Cocidas listas para calentar",
+                prep: "5-8 min en horno, sartén o airfryer y servir.",
+                available: true,
+                outOfStock: false
+            }
+        ]
     },
 
     // =========================================================================
@@ -141,8 +193,10 @@ const PRODUCTS = [
 
 // Mapeo retrocompatible para carritos guardados en localStorage
 const LEGACY_ID_MAP = {
-    "prod-01": "gm-01",
-    "prod-19": "gm-02",
+    "prod-01": "gm-01-cruda",
+    "gm-01": "gm-01-cruda",
+    "prod-19": "gm-02-cruda",
+    "gm-02": "gm-02-cruda",
     "prod-14": "gm-03",
     "prod-18": "gm-04",
     "prod-04": "pl-01"

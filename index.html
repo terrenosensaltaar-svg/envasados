@@ -43,8 +43,10 @@
     }
     </script>
 
-    <!-- Supabase se carga en segundo plano (loadSupabase en app.js); solo se necesita al enviar el pedido -->
+    <!-- Supabase SDK y configuración con defer para asegurar disponibilidad al enviar pedidos -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="supabase-config.js" defer></script>
     <script src="products.js" defer></script>
     <script src="app.js" defer></script>
     <script src="index-mejorado.js" defer></script>
