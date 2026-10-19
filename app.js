@@ -28,26 +28,82 @@ function readCartFromStorage(storage, key) {
     }
 }
 
+const selectedVariantByProduct = {};
+
+function getActiveVariant(product) {
+    if (!product || !Array.isArray(product.variants) || product.variants.length === 0) return null;
+    const preferredKey = selectedVariantByProduct[product.id];
+    let chosen = preferredKey ? product.variants.find(v => v.key === preferredKey || v.id === preferredKey) : null;
+    if (!chosen) {
+        chosen = product.variants.find(v => v.available !== false && !v.outOfStock) || product.variants[0];
+        if (chosen) selectedVariantByProduct[product.id] = chosen.key;
+    }
+    return chosen;
+}
+
+function findCatalogEntry(id) {
+    if (!id || typeof PRODUCTS === "undefined" || !Array.isArray(PRODUCTS)) return null;
+    const mappedId = (typeof LEGACY_ID_MAP !== "undefined" && LEGACY_ID_MAP[id]) ? LEGACY_ID_MAP[id] : id;
+
+    for (const p of PRODUCTS) {
+        if (Array.isArray(p.variants) && p.variants.length > 0) {
+            const matchedVariant = p.variants.find(v => v.id === mappedId || (p.id === id && v.key === (selectedVariantByProduct[p.id] || "cruda")));
+            if (matchedVariant) {
+                return {
+                    ...p,
+                    ...matchedVariant,
+                    parentId: p.id,
+                    id: matchedVariant.id,
+                    name: matchedVariant.fullName || `${p.name} (${matchedVariant.shortLabel || matchedVariant.label})`,
+                    price: Number.isFinite(matchedVariant.price) ? matchedVariant.price : p.price,
+                    image: matchedVariant.image || p.image,
+                    packImage: matchedVariant.packImage || p.packImage,
+                    available: matchedVariant.available !== false,
+                    outOfStock: matchedVariant.outOfStock === true
+                };
+            }
+        }
+        if (p.id === mappedId) {
+            return p;
+        }
+    }
+    return null;
+}
+window.findCatalogEntry = findCatalogEntry;
+
+function sanitizeCartItems(items) {
+    if (!Array.isArray(items)) return [];
+    const merged = new Map();
+    items.forEach(rawItem => {
+        if (!rawItem || typeof rawItem.id !== "string" || !Number.isInteger(rawItem.qty) || rawItem.qty <= 0) return;
+        const mappedId = (typeof LEGACY_ID_MAP !== "undefined" && LEGACY_ID_MAP[rawItem.id])
+            ? LEGACY_ID_MAP[rawItem.id]
+            : rawItem.id;
+        if (typeof PRODUCTS !== "undefined" && Array.isArray(PRODUCTS)) {
+            const prod = findCatalogEntry(mappedId);
+            if (!prod || prod.outOfStock === true || prod.available === false) return;
+        }
+        merged.set(mappedId, (merged.get(mappedId) || 0) + rawItem.qty);
+    });
+    return Array.from(merged.entries()).map(([id, qty]) => ({ id, qty }));
+}
+
 function loadCart() {
     let savedCart = readCartFromStorage(localStorage, CART_STORAGE_KEY);
     if (savedCart === null) {
         const sessionCart = readCartFromStorage(sessionStorage, CART_SESSION_KEY);
         if (sessionCart !== null) {
-            try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(sessionCart)); } catch (_) {}
             savedCart = sessionCart;
         }
     }
     if (!savedCart) return [];
 
-    if (typeof LEGACY_ID_MAP !== "undefined") {
-        savedCart = savedCart.map(item => {
-            if (item && LEGACY_ID_MAP[item.id]) {
-                return Object.assign({}, item, { id: LEGACY_ID_MAP[item.id] });
-            }
-            return item;
-        });
-    }
-    return savedCart;
+    const cleanCart = sanitizeCartItems(savedCart);
+    try {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cleanCart));
+        sessionStorage.setItem(CART_SESSION_KEY, JSON.stringify(cleanCart));
+    } catch (_) {}
+    return cleanCart;
 }
 
 let cart = loadCart();
@@ -74,8 +130,6 @@ function optimizedImage(src, size) {
     return "img-opt/" + src.replace(/\.jpe?g$/i, `-${size}.jpg`);
 }
 
-// El SDK de Supabase (~170 KB) solo se necesita al confirmar el pedido. Se descarga en segundo
-// plano cuando el navegador está libre, así no retrasa la primera pantalla en conexiones lentas.
 let supabaseLoading = null;
 
 function loadScriptOnce(src) {
@@ -90,29 +144,186 @@ function loadScriptOnce(src) {
 
 function loadSupabase() {
     if (window.supabaseClient) return Promise.resolve(window.supabaseClient);
+    if (typeof window.initSupabaseClient === "function" && window.initSupabaseClient()) {
+        return Promise.resolve(window.supabaseClient);
+    }
     if (supabaseLoading) return supabaseLoading;
     supabaseLoading = (async () => {
         if (!window.supabase) {
-            await loadScriptOnce("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
-        }
-        if (!window.supabaseClient) {
-            if (typeof SUPABASE_URL === "undefined") {
-                await loadScriptOnce("supabase-config.js");
-            } else if (window.supabase && typeof window.supabase.createClient === "function") {
-                // La configuración ya se había cargado (reintento tras un fallo del CDN).
-                window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const loadedPrimary = await loadScriptOnce("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+            if (!loadedPrimary && !window.supabase) {
+                await loadScriptOnce("https://unpkg.com/@supabase/supabase-js@2");
             }
+        }
+        if (typeof SUPABASE_URL === "undefined") {
+            await loadScriptOnce("supabase-config.js");
+        }
+        if (!window.supabaseClient && typeof window.initSupabaseClient === "function") {
+            window.initSupabaseClient();
+        } else if (!window.supabaseClient && window.supabase && typeof window.supabase.createClient === "function" && typeof SUPABASE_URL !== "undefined") {
+            window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
         return window.supabaseClient || null;
     })();
-    // Si falló, permitimos reintentar en el próximo pedido.
     supabaseLoading.then((client) => { if (!client) supabaseLoading = null; });
     return supabaseLoading;
 }
 
 window.addEventListener("load", () => {
-    const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1500));
+    const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1200));
     idle(() => { loadSupabase(); });
+});
+
+const LOCAL_STOCK_STORAGE_KEY = "env_production_stock_local";
+const STOCK_LEGACY_MAP = {
+    "prod-01": "gm-01-cruda",
+    "gm-01": "gm-01-cruda",
+    "prod-19": "gm-02-cruda",
+    "gm-02": "gm-02-cruda",
+    "prod-14": "gm-03",
+    "prod-18": "gm-04",
+    "prod-04": "pl-01"
+};
+
+PRODUCTS.forEach((p) => {
+    if (p._initialAvailable === undefined) p._initialAvailable = p.available !== false;
+    if (p._initialOutOfStock === undefined) p._initialOutOfStock = p.outOfStock === true;
+    if (p._activeBadge === undefined) {
+        p._activeBadge = (!p.badge || p.badge === "Sin Stock")
+            ? (p.category === "pollita" ? "Pollita Lu · Para cocinar" : "Línea Gourmet · 500g")
+            : p.badge;
+    }
+    if (Array.isArray(p.variants)) {
+        p.variants.forEach((v) => {
+            if (v._initialOutOfStock === undefined) v._initialOutOfStock = v.outOfStock === true;
+        });
+    }
+});
+
+function applyStockRowsToCatalog(rows, isRemoteOnly = false) {
+    if (!Array.isArray(rows) || rows.length === 0) return false;
+    const byId = new Map();
+    let anyPositive = false;
+
+    rows.forEach((r) => {
+        if (!r || !r.product_id || r.product_id === "__stock_trigger_v1__") return;
+        const mappedId = STOCK_LEGACY_MAP[r.product_id] || r.product_id;
+        const qty = Math.max(0, Number(r.quantity) || 0);
+        if (qty > 0) anyPositive = true;
+        const prev = byId.get(mappedId);
+        if (!prev || qty > prev.quantity || r.configured_by_admin) {
+            byId.set(mappedId, {
+                quantity: qty,
+                configured_by_admin: Boolean(r.configured_by_admin || qty > 0)
+            });
+        }
+    });
+
+    let changed = false;
+    PRODUCTS.forEach((p) => {
+        const wasOut = p.outOfStock === true || p.available === false;
+
+        if (Array.isArray(p.variants) && p.variants.length > 0) {
+            p.variants.forEach((v) => {
+                const vWasOut = v.outOfStock === true || v.available === false;
+                const entry = byId.get(v.id);
+                if (entry) {
+                    if (entry.quantity > 0) {
+                        v.available = true;
+                        v.outOfStock = false;
+                    } else if (entry.configured_by_admin || v._initialOutOfStock || (isRemoteOnly && anyPositive)) {
+                        v.available = false;
+                        v.outOfStock = true;
+                    }
+                }
+                const vNowOut = v.outOfStock === true || v.available === false;
+                if (vWasOut !== vNowOut) changed = true;
+            });
+
+            const anyVariantAvailable = p.variants.some(v => v.available !== false && !v.outOfStock);
+            p.available = anyVariantAvailable;
+            p.outOfStock = !anyVariantAvailable;
+            if (anyVariantAvailable) {
+                p.badge = p._activeBadge;
+                const currentSel = selectedVariantByProduct[p.id];
+                const currentVar = p.variants.find(v => v.key === currentSel);
+                if (!currentVar || currentVar.outOfStock || currentVar.available === false) {
+                    const firstAvail = p.variants.find(v => v.available !== false && !v.outOfStock);
+                    if (firstAvail) selectedVariantByProduct[p.id] = firstAvail.key;
+                }
+            }
+        } else {
+            const entry = byId.get(p.id);
+            if (!entry) return;
+
+            if (entry.quantity > 0) {
+                p.available = true;
+                p.outOfStock = false;
+                p.badge = p._activeBadge;
+            } else if (entry.configured_by_admin || p._initialOutOfStock || (isRemoteOnly && anyPositive)) {
+                p.available = false;
+                p.outOfStock = true;
+            }
+        }
+
+        const isNowOut = p.outOfStock === true || p.available === false;
+        if (wasOut !== isNowOut) changed = true;
+    });
+
+    return changed;
+}
+
+function syncLocalStockToCatalog() {
+    try {
+        const raw = localStorage.getItem(LOCAL_STOCK_STORAGE_KEY);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        return applyStockRowsToCatalog(parsed, false);
+    } catch (_) {
+        return false;
+    }
+}
+
+async function syncRemoteStockToCatalog() {
+    try {
+        const client = await loadSupabase();
+        if (!client) return;
+        const { data, error } = await client
+            .from("production_stock")
+            .select("product_id, quantity, updated_at");
+        if (error || !Array.isArray(data) || data.length === 0) return;
+
+        // Combinar con respaldo local si existe
+        let localRows = [];
+        try {
+            localRows = JSON.parse(localStorage.getItem(LOCAL_STOCK_STORAGE_KEY) || "[]");
+            if (!Array.isArray(localRows)) localRows = [];
+        } catch (_) {
+            localRows = [];
+        }
+
+        const combined = [...data];
+        localRows.forEach((lr) => {
+            if (lr && (lr.configured_by_admin || Number(lr.quantity) > 0)) {
+                combined.push(lr);
+            }
+        });
+
+        if (applyStockRowsToCatalog(combined, localRows.length === 0)) {
+            initRandomProductOrder();
+            renderProducts();
+            updateCartUI();
+        }
+    } catch (_) {}
+}
+
+window.addEventListener("storage", (e) => {
+    if (e.key === LOCAL_STOCK_STORAGE_KEY) {
+        syncLocalStockToCatalog();
+        initRandomProductOrder();
+        renderProducts();
+        updateCartUI();
+    }
 });
 
 // Orden aleatorio de productos por visita / carga de página:
@@ -164,9 +375,11 @@ function initRandomProductOrder() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    syncLocalStockToCatalog();
     initRandomProductOrder();
     renderProducts();
     updateCartUI();
+    syncRemoteStockToCatalog();
 });
 
 // Placeholder con ícono cuando el producto no tiene imagen disponible.
@@ -336,35 +549,96 @@ function startProductCarousels() {
 }
 
 
+function cardVariantSelectorMarkup(p) {
+    if (!Array.isArray(p.variants) || p.variants.length === 0) return "";
+    const activeVariant = getActiveVariant(p);
+
+    return `
+        <div class="card-variant-box" id="card-variants-${p.id}" role="group" aria-label="Elegir presentación para ${p.name}">
+            <span class="card-variant-title">Elegí presentación:</span>
+            <div class="card-variant-options">
+                ${p.variants.map((v) => {
+                    const isSelected = activeVariant && activeVariant.id === v.id;
+                    const isOut = v.outOfStock === true || v.available === false;
+                    const inCart = cart.find(c => c.id === v.id);
+                    const qty = inCart ? inCart.qty : 0;
+                    return `
+                        <button type="button"
+                                class="card-variant-btn ${isSelected ? "is-selected" : ""} ${isOut ? "is-out" : ""}"
+                                aria-pressed="${isSelected ? "true" : "false"}"
+                                onclick="selectProductVariant('${p.id}', '${v.key}')">
+                            <span class="card-variant-main">
+                                <strong>${v.label}</strong>
+                                ${qty > 0 ? `<span class="card-variant-qty">${qty} en pedido</span>` : ""}
+                            </span>
+                            <span class="card-variant-sub">${isOut ? "🚫 Sin stock" : (v.subLabel || "")}</span>
+                        </button>
+                    `;
+                }).join("")}
+            </div>
+        </div>
+    `;
+}
+
+function selectProductVariant(productId, variantKey) {
+    const product = PRODUCTS.find(p => p.id === productId);
+    if (!product || !Array.isArray(product.variants)) return;
+    selectedVariantByProduct[productId] = variantKey;
+    refreshCardFooter(productId);
+}
+window.selectProductVariant = selectProductVariant;
+
 // Pie de la tarjeta (precio + botón agregar / selector de cantidad).
 // Se genera aparte para poder refrescarlo solo, sin reconstruir la grilla completa.
 function cardFooterMarkup(p) {
-    const item = cart.find(c => c.id === p.id);
+    const activeVariant = getActiveVariant(p);
+    const targetId = activeVariant ? activeVariant.id : p.id;
+    const targetName = activeVariant ? (activeVariant.fullName || `${p.name} (${activeVariant.shortLabel})`) : p.name;
+    const addLabel = activeVariant ? `+ Agregar ${activeVariant.shortLabel}` : "+ Agregar";
+
+    const item = cart.find(c => c.id === targetId);
     const qty = item ? item.qty : 0;
-    const isOutOfStock = p.outOfStock === true || p.available === false;
+    const isOutOfStock = activeVariant
+        ? (activeVariant.outOfStock === true || activeVariant.available === false)
+        : (p.outOfStock === true || p.available === false);
     const canOrder = !isOutOfStock && Number.isFinite(p.price) && p.price > 0;
 
     return `
         <span class="card-price">${Number.isFinite(p.price) ? formatPrice(p.price) : "Precio a confirmar"}</span>
         ${canOrder && qty > 0 ? `
             <div class="qty-control">
-                <button class="qty-btn" type="button" data-act="dec" aria-label="Quitar una unidad de ${p.name}" onclick="updateQty('${p.id}', ${qty - 1})">−</button>
+                <button class="qty-btn" type="button" data-act="dec" aria-label="Quitar una unidad de ${targetName}" onclick="updateQty('${targetId}', ${qty - 1})">−</button>
                 <span class="qty-val" aria-live="polite">${qty}</span>
-                <button class="qty-btn" type="button" data-act="inc" aria-label="Agregar una unidad de ${p.name}" onclick="updateQty('${p.id}', ${qty + 1})">+</button>
+                <button class="qty-btn" type="button" data-act="inc" aria-label="Agregar una unidad de ${targetName}" onclick="updateQty('${targetId}', ${qty + 1})">+</button>
             </div>
         ` : canOrder ? `
-            <button class="btn-add" type="button" data-act="add" aria-label="Agregar ${p.name} al pedido" onclick="addToCart('${p.id}')">+ Agregar</button>
+            <button class="btn-add" type="button" data-act="add" aria-label="Agregar ${targetName} al pedido" onclick="addToCart('${targetId}')">${addLabel}</button>
         ` : isOutOfStock ? `
-            <button class="btn-add btn-sin-stock" type="button" disabled>🚫 Sin Stock</button>
+            <button class="btn-add btn-sin-stock" type="button" disabled>🚫 Sin Stock${activeVariant ? ` (${activeVariant.shortLabel})` : ""}</button>
         ` : `<button class="btn-add" type="button" disabled>Próximamente</button>`}
     `;
 }
 
 // Actualiza solo el pie de una tarjeta y conserva el foco del teclado. Devuelve false si la tarjeta no está en pantalla.
 function refreshCardFooter(id) {
-    const product = PRODUCTS.find(p => p.id === id);
-    const footer = document.getElementById(`card-footer-${id}`);
+    const entry = findCatalogEntry(id);
+    const cardId = entry?.parentId || id;
+    const product = PRODUCTS.find(p => p.id === cardId);
+    const footer = document.getElementById(`card-footer-${cardId}`);
     if (!product || !footer) return false;
+
+    const activeVariant = getActiveVariant(product);
+    const portionEl = document.getElementById(`card-portion-${cardId}`);
+    const prepEl = document.getElementById(`card-prep-text-${cardId}`);
+    const variantsWrap = document.getElementById(`card-variants-${cardId}`);
+
+    if (activeVariant) {
+        if (portionEl && activeVariant.portion) portionEl.textContent = activeVariant.portion;
+        if (prepEl && activeVariant.prep) prepEl.textContent = activeVariant.prep;
+    }
+    if (variantsWrap) {
+        variantsWrap.outerHTML = cardVariantSelectorMarkup(product);
+    }
 
     const active = document.activeElement;
     const focusAct = active && footer.contains(active) ? active.getAttribute("data-act") : null;
@@ -397,6 +671,9 @@ function renderProducts() {
 
     grid.innerHTML = filtered.map((p, cardIndex) => {
         const isOutOfStock = p.outOfStock === true || p.available === false;
+        const activeVariant = getActiveVariant(p);
+        const portionText = (activeVariant && activeVariant.portion) ? activeVariant.portion : p.portion;
+        const prepText = (activeVariant && activeVariant.prep) ? activeVariant.prep : p.prep;
 
         return `
             <article class="card ${isOutOfStock ? "is-out-of-stock" : ""}">
@@ -405,13 +682,14 @@ function renderProducts() {
                     <span class="card-badge ${isOutOfStock ? "badge-sin-stock" : ""}">${isOutOfStock ? "🚫 Sin Stock" : p.badge}</span>
                 </div>
                 <div class="card-body">
-                    <span class="card-portion">${p.portion}</span>
+                    <span class="card-portion" id="card-portion-${p.id}">${portionText}</span>
                     <h3 class="card-title">${p.name}</h3>
                     <p class="card-desc">${p.desc}</p>
                     <div class="card-prep">
                         <span>👨‍🍳</span>
-                        <span>${p.prep}</span>
+                        <span id="card-prep-text-${p.id}">${prepText}</span>
                     </div>
+                    ${cardVariantSelectorMarkup(p)}
                     <div class="card-footer" id="card-footer-${p.id}">
                         ${cardFooterMarkup(p)}
                     </div>
@@ -432,29 +710,32 @@ function renderProducts() {
 }
 
 function addToCart(id) {
-    const product = PRODUCTS.find(p => p.id === id);
+    const product = findCatalogEntry(id);
     if (!product || product.available === false || product.outOfStock === true || !Number.isFinite(product.price) || product.price <= 0) return;
-    const item = cart.find(c => c.id === id);
+    const targetId = product.id;
+    const item = cart.find(c => c.id === targetId);
     if (item) {
         item.qty += 1;
     } else {
-        cart.push({ id, qty: 1 });
+        cart.push({ id: targetId, qty: 1 });
     }
     saveCart();
-    if (!refreshCardFooter(id)) renderProducts();
+    if (!refreshCardFooter(product.parentId || targetId)) renderProducts();
     updateCartUI();
-    showToast("Agregado al pedido de Chef");
+    showToast(`Agregado: ${product.name}`);
 }
 
 function updateQty(id, qty) {
+    const product = findCatalogEntry(id);
+    const targetId = product ? product.id : id;
     if (qty <= 0) {
-        cart = cart.filter(c => c.id !== id);
+        cart = cart.filter(c => c.id !== targetId && c.id !== id);
     } else {
-        const item = cart.find(c => c.id === id);
+        const item = cart.find(c => c.id === targetId || c.id === id);
         if (item) item.qty = qty;
     }
     saveCart();
-    if (!refreshCardFooter(id)) renderProducts();
+    if (!refreshCardFooter(product?.parentId || targetId)) renderProducts();
     updateCartUI();
 }
 
@@ -470,7 +751,7 @@ function updateCartUI() {
 
     let subtotal = 0;
     cart.forEach(item => {
-        const p = PRODUCTS.find(prod => prod.id === item.id);
+        const p = findCatalogEntry(item.id);
         if (p) subtotal += p.price * item.qty;
     });
 
@@ -500,7 +781,7 @@ function updateCartUI() {
 
         if (list) {
             list.innerHTML = cart.map(item => {
-                const p = PRODUCTS.find(prod => prod.id === item.id);
+                const p = findCatalogEntry(item.id);
                 if (!p) return "";
                 return `
                     <div class="cart-item">
@@ -629,39 +910,92 @@ function toggleCart(open) {
     }
 }
 
+async function persistOrderInSupabase(orderPayload) {
+    await loadSupabase();
+    if (window.supabaseClient) {
+        try {
+            const { error } = await window.supabaseClient.from("store_orders").insert(orderPayload);
+            if (!error) return true;
+            console.warn("Reintentando registro de pedido por API directa:", error);
+        } catch (sdkErr) {
+            console.warn("Error en SDK de Supabase, intentando API directa:", sdkErr);
+        }
+    }
+
+    const urlBase = (typeof SUPABASE_URL !== "undefined" && SUPABASE_URL) || window.SUPABASE_URL || "https://fotttmvhpxtvzgykwvly.supabase.co";
+    const anonKey = (typeof SUPABASE_ANON_KEY !== "undefined" && SUPABASE_ANON_KEY) || window.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvdHR0bXZocHh0dnpneWt3dmx5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NTY5NzYsImV4cCI6MjEwNzQzMjk3Nn0.Wb0FOIHMeVrDGACFdL8OkVNtgOu0Hr5WJrNlj_-GDyY";
+
+    try {
+        const res = await fetch(`${urlBase}/rest/v1/store_orders`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "apikey": anonKey,
+                "Authorization": `Bearer ${anonKey}`,
+                "Prefer": "return=minimal"
+            },
+            body: JSON.stringify(orderPayload),
+            keepalive: true
+        });
+        if (res.ok) return true;
+        console.warn("Respuesta no exitosa al registrar pedido:", res.status);
+    } catch (fetchErr) {
+        console.warn("No se pudo sincronizar el pedido con la base de datos:", fetchErr);
+    }
+    return false;
+}
+
 async function sendWhatsApp() {
+    cart = sanitizeCartItems(cart);
     if (cart.length === 0) {
-        showToast("Agregá al menos un plato de la carta para enviar tu pedido");
+        updateCartUI();
+        showToast("Agregá al menos un plato disponible de la carta para enviar tu pedido");
         toggleCart(false);
         document.getElementById("carta")?.scrollIntoView({ behavior: "smooth" });
         return;
     }
 
-    const name = (document.getElementById("cust-name")?.value || "").trim();
-    const address = (document.getElementById("cust-address")?.value || "").trim();
+    const nameInput = document.getElementById("cust-name");
+    const addressInput = document.getElementById("cust-address");
+    const name = (nameInput?.value || "").trim();
+    const address = (addressInput?.value || "").trim();
     const payment = document.getElementById("cust-payment")?.value || "Transferencia";
     const notes = (document.getElementById("cust-notes")?.value || "").trim();
 
     if (!name) {
-        alert("Por favor indica tu nombre");
-        document.getElementById("cust-name")?.focus();
+        showToast("Por favor completá tu nombre para enviar el pedido");
+        nameInput?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => nameInput?.focus(), 180);
         return;
     }
 
     if (deliveryMethod === "delivery" && !address) {
-        alert("Por favor indica tu dirección de entrega");
-        document.getElementById("cust-address")?.focus();
+        showToast("Por favor indicá tu dirección de entrega");
+        addressInput?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => addressInput?.focus(), 180);
         return;
     }
 
+    const validItems = [];
     let subtotal = 0;
     const itemsText = cart.map(item => {
-        const p = PRODUCTS.find(prod => prod.id === item.id);
+        const p = findCatalogEntry(item.id);
         if (!p) return "";
         const line = p.price * item.qty;
         subtotal += line;
+        validItems.push({
+            product_id: p.id,
+            name: p.name,
+            quantity: item.qty,
+            unit_price: p.price
+        });
         return `• *${item.qty}x* ${p.name} (${formatPrice(line)})`;
     }).filter(Boolean).join("\n");
+
+    if (validItems.length === 0 || subtotal <= 0) {
+        showToast("Agregá al menos un plato válido para continuar");
+        return;
+    }
 
     let shipping = 0;
     if (deliveryMethod === "delivery") {
@@ -697,39 +1031,20 @@ async function sendWhatsApp() {
         btn.setAttribute("aria-busy", "true");
     });
 
-    // Registrar el pedido antes de abrir WhatsApp y comprobar también los errores
-    // devueltos por PostgREST (no siempre se rechaza la promesa).
-    // Supabase se descarga en segundo plano (ver loadSupabase); aquí nos aseguramos de tenerlo listo.
-    await loadSupabase();
-    if (window.supabaseClient) {
-        try {
-            const { error } = await window.supabaseClient.from("store_orders").insert({
-                customer_name: name,
-                delivery_method: deliveryMethod,
-                delivery_address: deliveryMethod === "delivery" ? address : "",
-                payment_method: payment,
-                notes,
-                items: cart.map(item => {
-                    const product = PRODUCTS.find(prod => prod.id === item.id);
-                    return {
-                        product_id: item.id,
-                        name: product ? product.name : "Producto",
-                        quantity: item.qty,
-                        unit_price: product ? product.price : 0
-                    };
-                }),
-                subtotal,
-                shipping,
-                total
-            });
-            if (error) throw error;
-        } catch (error) {
-            console.warn("Aviso: no se pudo sincronizar con la base de datos de respaldo:", error);
-            alert("No pudimos guardar el pedido en el sistema. Podés continuar por WhatsApp, pero avisá que el pedido no quedó registrado en el panel.");
-        }
-    } else {
-        console.warn("No se pudo sincronizar: el cliente de Supabase no está inicializado.");
-        alert("No pudimos conectar con el sistema de pedidos. Podés continuar por WhatsApp, pero avisá que el pedido no quedó registrado en el panel.");
+    const savedOk = await persistOrderInSupabase({
+        customer_name: name,
+        delivery_method: deliveryMethod,
+        delivery_address: deliveryMethod === "delivery" ? address : "",
+        payment_method: payment,
+        notes,
+        items: validItems,
+        subtotal,
+        shipping,
+        total
+    });
+
+    if (!savedOk) {
+        showToast("Abriendo WhatsApp para confirmar tu pedido…");
     }
 
     // Conservamos el carrito al salir a WhatsApp para que siga disponible al regresar.

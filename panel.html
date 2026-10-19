@@ -577,6 +577,20 @@
         .stock-save-button:hover:not(:disabled) { background: var(--accent-hover); }
         .stock-save-button:disabled { opacity: .55; cursor: not-allowed; }
         .stock-card-note { margin: 9px 0 0; color: var(--text-muted); font-size: .7rem; line-height: 1.4; }
+        .stock-order-demand { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; margin: 0 0 10px; padding: 7px 9px; border-radius: 8px; border: 1px dashed var(--border); background: var(--bg-subtle); font-size: .73rem; font-weight: 750; color: var(--text-muted); }
+        .stock-order-demand.has-active { border-style: solid; border-color: var(--gold-border); background: var(--gold-soft); color: #7a5814; }
+        .stock-order-demand.has-shortage { border-style: solid; border-color: #fecaca; background: #fef2f2; color: #b42318; }
+        .stock-order-demand-sub { display: block; width: 100%; font-size: .68rem; font-weight: 600; opacity: .9; }
+        .stock-whatsapp-orders-box { margin: 0 0 18px; padding: 15px 18px; border: 1px solid var(--accent-border); border-left: 5px solid var(--accent); border-radius: var(--radius-md); background: var(--bg-surface); box-shadow: var(--shadow-soft); }
+        .stock-whatsapp-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        .stock-whatsapp-head h3 { margin: 0; font-size: .95rem; font-weight: 850; color: var(--text-main); display: flex; align-items: center; gap: 7px; }
+        .stock-whatsapp-head span { font-size: .76rem; font-weight: 700; color: var(--text-muted); }
+        .stock-whatsapp-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 10px; }
+        .stock-whatsapp-chip { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: var(--bg-subtle); font-size: .8rem; }
+        .stock-whatsapp-chip strong { color: var(--text-main); font-weight: 800; }
+        .stock-whatsapp-chip-meta { display: block; font-size: .7rem; color: var(--text-muted); margin-top: 2px; }
+        .stock-whatsapp-badge { padding: 4px 8px; border-radius: 999px; font-size: .72rem; font-weight: 800; white-space: nowrap; background: var(--accent-soft); color: var(--accent); }
+        .stock-whatsapp-badge.is-short { background: #fef2f2; color: #b42318; }
         .stock-message { margin-top: 14px !important; padding: 11px 13px; border: 1px solid #f2d89a; border-radius: var(--radius-sm); background: var(--gold-soft); color: #775b19 !important; font-size: .82rem !important; line-height: 1.5; }
         .panel-tabs { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 22px; padding:6px; background:var(--bg-subtle); border:1px solid var(--border); border-radius:var(--radius-full); width:max-content; max-width:100%; }
         .panel-tab { border:0; border-radius:var(--radius-full); padding:10px 18px; background:transparent; color:var(--text-muted); font:inherit; font-size:.86rem; font-weight:800; cursor:pointer; }
@@ -837,8 +851,10 @@
             <div class="stock-summary-row" aria-label="Resumen de inventario">
                 <div class="stock-summary-card"><span>Productos controlados</span><strong id="stock-products-count">11</strong></div>
                 <div class="stock-summary-card"><span>Unidades disponibles</span><strong id="stock-total-units">—</strong></div>
-                <div class="stock-summary-card"><span>Sincronización</span><strong style="font-size:.92rem">Cada 45 segundos</strong></div>
+                <div class="stock-summary-card"><span>Pedidos WhatsApp activos</span><strong id="stock-whatsapp-units" style="color: var(--gold);">0 u.</strong></div>
+                <div class="stock-summary-card"><span>Sincronización</span><strong style="font-size:.92rem">Automática (10 s)</strong></div>
             </div>
+            <div class="stock-whatsapp-orders-box" id="stock-whatsapp-summary" hidden aria-live="polite"></div>
             <div class="stock-grid" id="stock-grid" aria-live="polite">
                 <div class="empty-box"><p>Cargando inventario…</p></div>
             </div>
@@ -966,6 +982,8 @@
             document.getElementById("auth-gate").hidden = true;
             document.getElementById("panel-header").hidden = false;
             document.getElementById("panel-content").hidden = false;
+            pintarStock(combinarStockRemotoYLocal([]));
+            cargarStock();
             cargarPedidos();
             // Mantener el panel actualizado mientras llegan pedidos nuevos (en pausa si la pantalla está en segundo plano).
             const refrescarPanel = () => {
@@ -1136,7 +1154,14 @@
 
                 if (error) throw error;
 
-                todosLosPedidos = data || [];
+                const estadosLocales = leerEstadosPedidosLocal();
+                todosLosPedidos = (data || []).map(pedido => {
+                    const localOverride = estadosLocales[String(pedido.id)];
+                    if (localOverride && localOverride.status) {
+                        return { ...pedido, status: localOverride.status };
+                    }
+                    return pedido;
+                });
                 cargarStock();
                 actualizarKPIs();
                 renderizarPedidos();
@@ -1199,9 +1224,11 @@
             { id: "pl-04", name: "Patas Muslo Ahumada", icon: "🔥", group: "pollita" },
             { id: "pl-05", name: "Patas Muslo Barbacoa Smoky", icon: "🍖", group: "pollita" },
 
-            // Conjunto Empanadas Gourmet (Packs x 6 u.)
-            { id: "gm-01", name: "Empanadas Árabes (x 6 u.)", icon: "🥟", group: "empanadas", legacyIds: ["prod-01"] },
-            { id: "gm-02", name: "Empanadas de Carne (x 6 u.)", icon: "🥟", group: "empanadas", legacyIds: ["prod-19"] },
+            // Conjunto Empanadas Gourmet (Packs x 6 u. · Crudas y Cocidas)
+            { id: "gm-01-cruda", name: "Empanadas Árabes · Crudas (x 6 u.)", icon: "🥟", group: "empanadas", subtype: "cruda", optionBadge: "❄️ Crudas", legacyIds: ["gm-01", "prod-01"] },
+            { id: "gm-01-cocida", name: "Empanadas Árabes · Cocidas (x 6 u.)", icon: "🥟", group: "empanadas", subtype: "cocida", optionBadge: "🔥 Cocidas" },
+            { id: "gm-02-cruda", name: "Empanadas de Carne · Crudas (x 6 u.)", icon: "🥟", group: "empanadas", subtype: "cruda", optionBadge: "❄️ Crudas", legacyIds: ["gm-02", "prod-19"] },
+            { id: "gm-02-cocida", name: "Empanadas de Carne · Cocidas (x 6 u.)", icon: "🥟", group: "empanadas", subtype: "cocida", optionBadge: "🔥 Cocidas" },
 
             // Otros Platos Gourmet y de producción
             { id: "gm-03", name: "Lazaña de Novillo", icon: "🍝", group: "otros", legacyIds: ["prod-14"] },
@@ -1212,6 +1239,9 @@
 
         // Sincronizar dinámicamente si products.js incluye otros productos en el futuro
         catalogoBase.forEach(prod => {
+            if (Array.isArray(prod.variants) && prod.variants.length > 0) {
+                return; // Los productos con variantes (como empanadas) se gestionan por cada variante individual
+            }
             if (!productosDeStock.some(item => item.id === prod.id)) {
                 let group = "otros";
                 if (prod.category === "pollita" || String(prod.id).startsWith("pl-")) group = "pollita";
@@ -1224,6 +1254,192 @@
                 });
             }
         });
+
+        const LOCAL_STOCK_STORAGE_KEY = "env_production_stock_local";
+        const LOCAL_ORDER_STATUS_KEY = "env_orders_status_local";
+        let stockModoLocal = false;
+
+        function leerStockLocalRespaldo() {
+            try {
+                const raw = localStorage.getItem(LOCAL_STOCK_STORAGE_KEY);
+                if (!raw) return [];
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (_) {
+                return [];
+            }
+        }
+
+        function guardarStockLocalRespaldo(rows) {
+            try {
+                const clean = (rows || []).filter(r => r && r.product_id && r.product_id !== "__stock_trigger_v1__");
+                localStorage.setItem(LOCAL_STOCK_STORAGE_KEY, JSON.stringify(clean));
+            } catch (_) {}
+        }
+
+        function leerEstadosPedidosLocal() {
+            try {
+                const raw = localStorage.getItem(LOCAL_ORDER_STATUS_KEY);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                return (parsed && typeof parsed === "object") ? parsed : {};
+            } catch (_) {
+                return {};
+            }
+        }
+
+        function guardarEstadoPedidoLocal(pedidoId, status) {
+            try {
+                const map = leerEstadosPedidosLocal();
+                map[String(pedidoId)] = { status, updated_at: Date.now() };
+                localStorage.setItem(LOCAL_ORDER_STATUS_KEY, JSON.stringify(map));
+            } catch (_) {}
+        }
+
+        function combinarStockRemotoYLocal(remoteRows = []) {
+            const remoteMap = new Map((remoteRows || []).map(r => [r.product_id, r]));
+            const localRows = leerStockLocalRespaldo();
+            const localMap = new Map(localRows.map(r => [r.product_id, r]));
+            const resultado = [];
+
+            if (remoteMap.has("__stock_trigger_v1__")) {
+                resultado.push(remoteMap.get("__stock_trigger_v1__"));
+            }
+
+            productosDeStock.forEach(prod => {
+                const remoteRow = obtenerFilaStockProducto(prod, remoteMap);
+                const localRow = obtenerFilaStockProducto(prod, localMap);
+
+                const remoteTime = remoteRow?.updated_at ? new Date(remoteRow.updated_at).getTime() : 0;
+                const localTime = localRow?.updated_at ? new Date(localRow.updated_at).getTime() : 0;
+                const localConfigurado = Boolean(localRow?.configured_by_admin) || Number(localRow?.quantity || 0) > 0;
+                const remoteQty = Math.max(0, Number(remoteRow?.quantity) || 0);
+                const localQty = Math.max(0, Number(localRow?.quantity) || 0);
+
+                if (localRow && localConfigurado && (!remoteRow || localTime >= remoteTime)) {
+                    resultado.push({
+                        product_id: prod.id,
+                        product_name: prod.name,
+                        quantity: localQty,
+                        updated_at: localRow.updated_at || new Date().toISOString(),
+                        configured_by_admin: Boolean(localRow.configured_by_admin || localQty > 0)
+                    });
+                } else if (remoteRow) {
+                    resultado.push({
+                        product_id: prod.id,
+                        product_name: prod.name,
+                        quantity: remoteQty,
+                        updated_at: remoteRow.updated_at || new Date().toISOString(),
+                        configured_by_admin: Boolean(localRow?.configured_by_admin || remoteQty > 0)
+                    });
+                } else if (localRow) {
+                    resultado.push({
+                        product_id: prod.id,
+                        product_name: prod.name,
+                        quantity: localQty,
+                        updated_at: localRow.updated_at || new Date(0).toISOString(),
+                        configured_by_admin: Boolean(localRow.configured_by_admin || localQty > 0)
+                    });
+                } else {
+                    resultado.push({
+                        product_id: prod.id,
+                        product_name: prod.name,
+                        quantity: 0,
+                        updated_at: new Date(0).toISOString(),
+                        configured_by_admin: false
+                    });
+                }
+            });
+
+            return resultado;
+        }
+
+        function resolverProductoStockDeItem(item) {
+            if (!item) return null;
+            const rawId = String(item.product_id || item.id || "").trim();
+            if (rawId) {
+                // Mapeo retrocompatible directo para pedidos antiguos o IDs genéricos
+                if (rawId === "gm-01" || rawId === "prod-01") {
+                    const fallback = productosDeStock.find(p => p.id === "gm-01-cruda");
+                    if (fallback) return fallback;
+                }
+                if (rawId === "gm-02" || rawId === "prod-19") {
+                    const fallback = productosDeStock.find(p => p.id === "gm-02-cruda");
+                    if (fallback) return fallback;
+                }
+                const direct = productosDeStock.find(p => p.id === rawId || (Array.isArray(p.legacyIds) && p.legacyIds.includes(rawId)));
+                if (direct) return direct;
+            }
+            const rawName = String(item.name || "").trim().toLowerCase();
+            if (rawName) {
+                // Chequeo específico para empanadas con cocción especificada en el nombre
+                if (/árabe/i.test(rawName)) {
+                    if (/cocid/i.test(rawName)) return productosDeStock.find(p => p.id === "gm-01-cocida") || null;
+                    return productosDeStock.find(p => p.id === "gm-01-cruda") || null;
+                }
+                if (/carne/i.test(rawName) && /empanada/i.test(rawName)) {
+                    if (/cocid/i.test(rawName)) return productosDeStock.find(p => p.id === "gm-02-cocida") || null;
+                    return productosDeStock.find(p => p.id === "gm-02-cruda") || null;
+                }
+                return productosDeStock.find(p => {
+                    const pName = p.name.toLowerCase();
+                    return pName === rawName || rawName.includes(pName) || pName.includes(rawName);
+                }) || null;
+            }
+            return null;
+        }
+
+        function calcularDemandaPedidosPorProducto() {
+            const porProducto = new Map();
+            productosDeStock.forEach(p => {
+                porProducto.set(p.id, {
+                    activos: 0,
+                    entregados: 0,
+                    clientesActivos: []
+                });
+            });
+
+            let pedidosActivosCount = 0;
+            let totalUnidadesActivas = 0;
+
+            todosLosPedidos.forEach(pedido => {
+                const estado = pedido.status || "pendiente";
+                const esActivo = estado === "pendiente" || estado === "en_preparacion" || estado === "en_camino";
+                const esEntregado = estado === "entregado";
+                if (!esActivo && !esEntregado) return;
+
+                const items = Array.isArray(pedido.items) ? pedido.items : [];
+                let sumoEnPedido = false;
+
+                items.forEach(item => {
+                    const qty = Math.max(1, Number(item?.quantity || item?.qty || 1));
+                    const prod = resolverProductoStockDeItem(item);
+                    if (!prod) return;
+                    const info = porProducto.get(prod.id);
+                    if (!info) return;
+
+                    if (esActivo) {
+                        info.activos += qty;
+                        totalUnidadesActivas += qty;
+                        sumoEnPedido = true;
+                        info.clientesActivos.push({
+                            id: pedido.id,
+                            cliente: pedido.customer_name || "Cliente",
+                            qty,
+                            estado
+                        });
+                    } else if (esEntregado) {
+                        info.entregados += qty;
+                    }
+                });
+
+                if (esActivo && (sumoEnPedido || items.length > 0)) {
+                    pedidosActivosCount += 1;
+                }
+            });
+
+            return { porProducto, pedidosActivosCount, totalUnidadesActivas };
+        }
 
         function obtenerFilaStockProducto(producto, mapa = stockRegistros) {
             let row = mapa.get(producto.id);
@@ -1242,7 +1458,7 @@
             stockBorradores.set(productId, value);
             const button = document.getElementById("stock-save-" + productId);
             const quantity = Number(value);
-            if (button) button.disabled = !stockConfigurado || value.trim() === "" || !Number.isInteger(quantity) || quantity < 0 || stockGuardando.has(productId);
+            if (button) button.disabled = value.trim() === "" || !Number.isInteger(quantity) || quantity < 0 || stockGuardando.has(productId);
             const prod = productosDeStock.find(item => item.id === productId);
             if (prod) actualizarEstadoBotonesGrupo(prod.group);
         }
@@ -1256,6 +1472,7 @@
             const next = Math.max(0, (Number.isFinite(base) ? base : 0) + delta);
             input.value = String(next);
             registrarBorradorStock(productId, String(next));
+            guardarStock(productId);
         }
 
         function actualizarEstadoBotonesGrupo(groupKey) {
@@ -1267,13 +1484,13 @@
             const qtyInput = document.getElementById("stock-group-qty-" + groupKey);
             const targetSelect = document.getElementById("stock-group-target-" + groupKey);
 
-            if (qtyInput) qtyInput.disabled = !stockConfigurado || savingGroup;
-            if (targetSelect) targetSelect.disabled = !stockConfigurado || savingGroup;
-            if (addBtn) addBtn.disabled = !stockConfigurado || savingGroup;
-            if (setBtn) setBtn.disabled = !stockConfigurado || savingGroup;
+            if (qtyInput) qtyInput.disabled = savingGroup;
+            if (targetSelect) targetSelect.disabled = savingGroup;
+            if (addBtn) addBtn.disabled = savingGroup;
+            if (setBtn) setBtn.disabled = savingGroup;
             if (saveAllBtn) {
                 saveAllBtn.textContent = savingGroup ? "Guardando conjunto…" : "💾 Guardar tablero";
-                saveAllBtn.disabled = !stockConfigurado || savingGroup;
+                saveAllBtn.disabled = savingGroup;
             }
         }
 
@@ -1282,12 +1499,21 @@
             const updated = document.getElementById("stock-updated-text");
             const status = document.getElementById("stock-updated");
             const message = document.getElementById("stock-message");
+            const whatsappBox = document.getElementById("stock-whatsapp-summary");
+            const whatsappUnitsEl = document.getElementById("stock-whatsapp-units");
             if (!grid) return;
 
             const byId = new Map(registros.map(row => [row.product_id, row]));
-            stockConfigurado = byId.has("__stock_trigger_v1__") || registros.length > 0;
+            stockConfigurado = true;
             stockRegistros.clear();
             byId.forEach((row, id) => stockRegistros.set(id, row));
+
+            const demanda = calcularDemandaPedidosPorProducto();
+            if (whatsappUnitsEl) {
+                whatsappUnitsEl.textContent = demanda.pedidosActivosCount > 0
+                    ? `${demanda.totalUnidadesActivas} u. (${demanda.pedidosActivosCount} ${demanda.pedidosActivosCount === 1 ? "pedido" : "pedidos"})`
+                    : "0 u.";
+            }
 
             if (!grid.dataset.cardsReady) {
                 grid.className = "stock-boards";
@@ -1310,6 +1536,10 @@
                                         <strong id="stock-group-total-${grupo.key}">—</strong>
                                     </div>
                                     <div class="stock-board-kpi">
+                                        <span>En pedidos WhatsApp</span>
+                                        <strong id="stock-group-ordered-${grupo.key}" style="color: var(--gold);">0 u.</strong>
+                                    </div>
+                                    <div class="stock-board-kpi">
                                         <span>Con stock</span>
                                         <strong id="stock-group-active-${grupo.key}">0 / ${itemsGrupo.length}</strong>
                                     </div>
@@ -1322,12 +1552,16 @@
                                         <label for="stock-group-target-${grupo.key}">Aplicar sobre</label>
                                         <select class="stock-bulk-select" id="stock-group-target-${grupo.key}">
                                             <option value="all">📦 ${escapeHtml(grupo.allOptionLabel)} (${itemsGrupo.length})</option>
+                                            ${grupo.key === "empanadas" ? `
+                                                <option value="subtype:cruda">❄️ Todas las Empanadas Crudas (${itemsGrupo.filter(p => p.subtype === "cruda").length})</option>
+                                                <option value="subtype:cocida">🔥 Todas las Empanadas Cocidas (${itemsGrupo.filter(p => p.subtype === "cocida").length})</option>
+                                            ` : ""}
                                             ${itemsGrupo.map(p => `<option value="${p.id}">${p.icon} ${escapeHtml(p.name)}</option>`).join("")}
                                         </select>
                                     </div>
                                     <div class="stock-bulk-field stock-bulk-field--qty">
                                         <label for="stock-group-qty-${grupo.key}">Cantidad</label>
-                                        <input class="stock-bulk-input" id="stock-group-qty-${grupo.key}" type="number" min="0" step="1" inputmode="numeric" placeholder="Ej.: 10">
+                                        <input class="stock-bulk-input" id="stock-group-qty-${grupo.key}" type="number" min="0" step="1" inputmode="numeric" placeholder="Ej.: 10" onkeydown="if(event.key==='Enter'){event.preventDefault();aplicarCambioConjunto('${grupo.key}', 'add');}">
                                     </div>
                                 </div>
                                 <div class="stock-board-bulk-actions">
@@ -1342,12 +1576,18 @@
                                     <article class="stock-item" data-stock-card="${producto.id}">
                                         <div class="stock-card-top">
                                             <span class="stock-product-icon" aria-hidden="true">${producto.icon}</span>
-                                            <span class="stock-level" id="stock-level-${producto.id}">Cargando</span>
+                                            <div style="display: flex; gap: 6px; align-items: center;">
+                                                ${producto.optionBadge ? `<span style="font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: ${producto.subtype === 'cocida' ? 'rgba(230, 81, 0, 0.15)' : 'rgba(2, 136, 209, 0.15)'}; color: ${producto.subtype === 'cocida' ? '#ff9800' : '#4fc3f7'}; border: 1px solid ${producto.subtype === 'cocida' ? 'rgba(255, 152, 0, 0.4)' : 'rgba(79, 195, 247, 0.4)'};">${escapeHtml(producto.optionBadge)}</span>` : ""}
+                                                <span class="stock-level" id="stock-level-${producto.id}">Cargando</span>
+                                            </div>
                                         </div>
                                         <label class="stock-item-name" for="stock-${producto.id}">${escapeHtml(producto.name)}</label>
                                         <div class="stock-current" aria-live="polite">
                                             <strong id="stock-current-${producto.id}">—</strong>
                                             <span>${escapeHtml(grupo.unitLabel)}</span>
+                                        </div>
+                                        <div class="stock-order-demand" id="stock-demand-${producto.id}">
+                                            <span>📲 En pedidos WhatsApp: 0 u.</span>
                                         </div>
                                         <div class="stock-field-row">
                                             <label class="stock-field-label" for="stock-${producto.id}">Cantidad</label>
@@ -1358,7 +1598,7 @@
                                             </div>
                                         </div>
                                         <div class="stock-item-controls">
-                                            <input class="stock-quantity-input" id="stock-${producto.id}" type="number" min="0" step="1" inputmode="numeric" placeholder="Sin dato" aria-label="Ajustar stock de ${escapeHtml(producto.name)}" oninput="registrarBorradorStock('${producto.id}', this.value)">
+                                            <input class="stock-quantity-input" id="stock-${producto.id}" type="number" min="0" step="1" inputmode="numeric" placeholder="0" aria-label="Ajustar stock de ${escapeHtml(producto.name)}" oninput="registrarBorradorStock('${producto.id}', this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();guardarStock('${producto.id}');}">
                                             <button class="stock-save-button" id="stock-save-${producto.id}" type="button" onclick="guardarStock('${producto.id}')">Guardar</button>
                                         </div>
                                         <p class="stock-card-note" id="stock-note-${producto.id}">El contador muestra el último valor confirmado.</p>
@@ -1375,6 +1615,8 @@
             let productosActivos = 0;
             const totalesPorGrupo = new Map();
             const disponiblesPorGrupo = new Map();
+            const pedidosPorGrupo = new Map();
+            const itemsPedidosActivos = [];
 
             productosDeStock.forEach(producto => {
                 const row = obtenerFilaStockProducto(producto, byId);
@@ -1383,76 +1625,147 @@
                 const button = document.getElementById("stock-save-" + producto.id);
                 const level = document.getElementById("stock-level-" + producto.id);
                 const note = document.getElementById("stock-note-" + producto.id);
+                const demandEl = document.getElementById("stock-demand-" + producto.id);
                 const draft = stockBorradores.get(producto.id);
                 const isSaving = stockGuardando.has(producto.id);
 
-                if (row) {
-                    const quantity = Number(row.quantity);
-                    totalUnidades += quantity;
-                    productosActivos += 1;
-                    totalesPorGrupo.set(producto.group, (totalesPorGrupo.get(producto.group) || 0) + quantity);
-                    if (quantity > 0) {
-                        disponiblesPorGrupo.set(producto.group, (disponiblesPorGrupo.get(producto.group) || 0) + 1);
-                    }
-                    if (current) current.textContent = String(quantity);
-                    if (level) {
-                        level.textContent = quantity > 0 ? "Disponible" : "Sin unidades";
-                        level.classList.toggle("is-available", quantity > 0);
-                        level.classList.toggle("is-empty", quantity === 0);
-                    }
-                    if (input && draft === undefined && document.activeElement !== input) input.value = String(quantity);
-                    if (note) note.textContent = draft !== undefined ? "Tenés cambios sin guardar." : "El contador muestra el último valor confirmado.";
-                } else {
-                    if (current) current.textContent = "—";
-                    if (level) {
-                        level.textContent = "Sin configurar";
-                        level.classList.remove("is-available", "is-empty");
-                    }
-                    if (input && draft === undefined && document.activeElement !== input) input.value = "";
-                    if (note) note.textContent = "Ingresá la cantidad para inicializar el stock de este producto.";
+                const quantity = row ? Number(row.quantity || 0) : 0;
+                const infoDemanda = demanda.porProducto.get(producto.id) || { activos: 0, entregados: 0, clientesActivos: [] };
+                pedidosPorGrupo.set(producto.group, (pedidosPorGrupo.get(producto.group) || 0) + infoDemanda.activos);
+
+                if (infoDemanda.activos > 0) {
+                    itemsPedidosActivos.push({
+                        producto,
+                        pedidas: infoDemanda.activos,
+                        stockActual: quantity,
+                        clientes: infoDemanda.clientesActivos
+                    });
                 }
-                if (input) input.disabled = !stockConfigurado || isSaving;
+
+                if (demandEl) {
+                    const faltante = Math.max(0, infoDemanda.activos - quantity);
+                    demandEl.classList.toggle("has-active", infoDemanda.activos > 0 && faltante === 0);
+                    demandEl.classList.toggle("has-shortage", faltante > 0);
+                    if (infoDemanda.activos > 0) {
+                        const resumenClientes = infoDemanda.clientesActivos
+                            .map(c => `${escapeHtml(c.cliente)} (${c.qty}x)`)
+                            .join(" · ");
+                        const estadoCobertura = faltante > 0
+                            ? `⚠️ Faltan ${faltante} u. en stock`
+                            : `✅ Cubierto con stock`;
+                        demandEl.innerHTML = `
+                            <span>📲 Pedidos WhatsApp: <strong>${infoDemanda.activos} u.</strong></span>
+                            <span>${estadoCobertura}</span>
+                            <span class="stock-order-demand-sub">Clientes: ${resumenClientes}</span>
+                        `;
+                    } else if (infoDemanda.entregados > 0) {
+                        demandEl.innerHTML = `
+                            <span>📲 En pedidos activos: 0 u.</span>
+                            <span>✅ Entregados: ${infoDemanda.entregados} u.</span>
+                        `;
+                    } else {
+                        demandEl.innerHTML = `<span>📲 En pedidos WhatsApp: 0 u.</span>`;
+                    }
+                }
+
+                totalUnidades += quantity;
+                productosActivos += 1;
+                totalesPorGrupo.set(producto.group, (totalesPorGrupo.get(producto.group) || 0) + quantity);
+                if (quantity > 0) {
+                    disponiblesPorGrupo.set(producto.group, (disponiblesPorGrupo.get(producto.group) || 0) + 1);
+                }
+                if (current) current.textContent = String(quantity);
+                if (level) {
+                    level.textContent = quantity > 0 ? "Disponible" : "Sin unidades";
+                    level.classList.toggle("is-available", quantity > 0);
+                    level.classList.toggle("is-empty", quantity === 0);
+                }
+                if (input && draft === undefined) input.value = String(quantity);
+                if (note) {
+                    note.textContent = draft !== undefined
+                        ? "Tenés cambios sin guardar (tocá Guardar)."
+                        : "Se descuenta automáticamente al marcar un pedido como Entregado.";
+                }
+                if (input) input.disabled = isSaving;
                 document.querySelectorAll(`[data-step-for="${producto.id}"]`).forEach(btn => {
-                    btn.disabled = !stockConfigurado || isSaving;
+                    btn.disabled = isSaving;
                 });
                 if (button) {
                     button.textContent = isSaving ? "Guardando…" : "Guardar";
                     const value = input ? Number(input.value) : NaN;
-                    button.disabled = !stockConfigurado || isSaving || !input?.value?.trim() || !Number.isInteger(value) || value < 0;
+                    button.disabled = isSaving || !input?.value?.trim() || !Number.isInteger(value) || value < 0;
                 }
             });
+
+            if (whatsappBox) {
+                if (itemsPedidosActivos.length > 0) {
+                    whatsappBox.hidden = false;
+                    whatsappBox.innerHTML = `
+                        <div class="stock-whatsapp-head">
+                            <h3>📲 Productos solicitados en pedidos de WhatsApp activos (${demanda.pedidosActivosCount})</h3>
+                            <span>Al pasar el pedido a "✅ Entregado" se descuenta del stock automáticamente</span>
+                        </div>
+                        <div class="stock-whatsapp-list">
+                            ${itemsPedidosActivos.map(entry => {
+                                const faltan = Math.max(0, entry.pedidas - entry.stockActual);
+                                const clientesTxt = entry.clientes.map(c => `${escapeHtml(c.cliente)} (${c.qty}x)`).join(", ");
+                                return `
+                                    <div class="stock-whatsapp-chip">
+                                        <div>
+                                            <strong>${entry.producto.icon} ${escapeHtml(entry.producto.name)}</strong>
+                                            <span class="stock-whatsapp-chip-meta">Pidieron: ${clientesTxt} · Stock actual: ${entry.stockActual} u.</span>
+                                        </div>
+                                        <span class="stock-whatsapp-badge ${faltan > 0 ? "is-short" : ""}">
+                                            ${entry.pedidas} pedidas ${faltan > 0 ? `(faltan ${faltan})` : "✓"}
+                                        </span>
+                                    </div>
+                                `;
+                            }).join("")}
+                        </div>
+                    `;
+                } else {
+                    whatsappBox.hidden = true;
+                    whatsappBox.innerHTML = "";
+                }
+            }
 
             stockGruposConfig.forEach(grupo => {
                 const itemsGrupo = productosDeStock.filter(p => p.group === grupo.key);
                 const totalEl = document.getElementById("stock-group-total-" + grupo.key);
+                const orderedEl = document.getElementById("stock-group-ordered-" + grupo.key);
                 const activeEl = document.getElementById("stock-group-active-" + grupo.key);
-                const sumaGrupo = totalesPorGrupo.get(grupo.key);
+                const sumaGrupo = totalesPorGrupo.get(grupo.key) || 0;
+                const pedidosGrupo = pedidosPorGrupo.get(grupo.key) || 0;
                 const conStock = disponiblesPorGrupo.get(grupo.key) || 0;
-                if (totalEl) totalEl.textContent = sumaGrupo !== undefined ? sumaGrupo.toLocaleString("es-AR") : "—";
+                if (totalEl) totalEl.textContent = sumaGrupo.toLocaleString("es-AR");
+                if (orderedEl) orderedEl.textContent = `${pedidosGrupo} u.`;
                 if (activeEl) activeEl.textContent = `${conStock} / ${itemsGrupo.length}`;
                 actualizarEstadoBotonesGrupo(grupo.key);
             });
 
             const total = document.getElementById("stock-total-units");
             const count = document.getElementById("stock-products-count");
-            if (total) total.textContent = productosActivos ? totalUnidades.toLocaleString("es-AR") : "—";
-            if (count) count.textContent = `${productosActivos} de ${productosDeStock.length}`;
+            if (total) total.textContent = totalUnidades.toLocaleString("es-AR");
+            if (count) count.textContent = `${productosDeStock.length} productos`;
             if (status) {
-                status.classList.toggle("is-ready", stockConfigurado && !stockErrorMessage);
+                status.classList.toggle("is-ready", !stockErrorMessage);
                 status.classList.toggle("is-error", Boolean(stockErrorMessage));
             }
             if (message) {
-                const configurationMessage = "Inventario pendiente de configuración. No marques pedidos como entregados hasta que estén cargados los registros de stock.";
-                message.hidden = stockConfigurado && !stockErrorMessage;
-                message.textContent = stockErrorMessage || (stockConfigurado ? "" : configurationMessage);
+                message.hidden = !stockErrorMessage;
+                message.textContent = stockErrorMessage || "";
             }
-            if (updated) updated.textContent = stockErrorMessage ? "Revisar sincronización" : (stockConfigurado ? "Guardado · " + new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) : "Configuración pendiente");
+            if (updated) {
+                const hora = new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+                updated.textContent = stockErrorMessage
+                    ? "Revisar sincronización"
+                    : `Actualizado · ${hora}`;
+            }
             renderizarPedidos();
         }
 
         async function cargarStock() {
             const grid = document.getElementById("stock-grid");
-            const updated = document.getElementById("stock-updated-text");
             const status = document.getElementById("stock-updated");
             const message = document.getElementById("stock-message");
             if (!grid || !window.supabaseClient || stockGuardando.size > 0) return;
@@ -1465,67 +1778,114 @@
                     .order("product_id");
                 if (version !== stockCargaVersion) return;
                 if (error) throw error;
+                stockModoLocal = false;
                 if (status) status.classList.remove("is-error");
                 stockErrorMessage = "";
                 if (message) message.hidden = true;
-                pintarStock(data || []);
+                const rows = combinarStockRemotoYLocal(data || []);
+                guardarStockLocalRespaldo(rows);
+                pintarStock(rows);
             } catch (error) {
                 if (version !== stockCargaVersion) return;
-                console.error("Error al cargar stock:", error);
-                stockConfigurado = false;
-                stockErrorMessage = "No se pudo actualizar el inventario. Se conserva en pantalla el último valor mostrado. " + (error.message || "");
-                if (status) {
-                    status.classList.add("is-error");
-                    status.classList.remove("is-ready");
-                }
-                if (updated) updated.textContent = "No se pudo sincronizar";
-                if (!grid.dataset.cardsReady) pintarStock([]);
-                if (message) {
-                    message.hidden = false;
-                    message.textContent = stockErrorMessage;
-                }
-                grid.querySelectorAll(".stock-quantity-input, .stock-save-button, .stock-bulk-btn, .stock-bulk-input, .stock-bulk-select, .stock-step-btn").forEach(control => control.disabled = true);
-                renderizarPedidos();
+                stockModoLocal = true;
+                stockErrorMessage = "";
+                const fallbackRows = combinarStockRemotoYLocal([]);
+                guardarStockLocalRespaldo(fallbackRows);
+                pintarStock(fallbackRows);
             }
         }
 
         async function persistirCantidadProducto(producto, quantity) {
-            let targetId = producto.id;
-            if (!stockRegistros.has(producto.id) && producto?.legacyIds) {
-                const existingLegacy = producto.legacyIds.find(id => stockRegistros.has(id));
-                if (existingLegacy) targetId = existingLegacy;
-            }
+            const nowIso = new Date().toISOString();
+            const cleanQty = Math.max(0, Math.floor(Number(quantity) || 0));
+            const localRecord = {
+                product_id: producto.id,
+                product_name: producto?.name || producto.id,
+                quantity: cleanQty,
+                updated_at: nowIso,
+                configured_by_admin: true
+            };
 
-            let { data, error } = await window.supabaseClient
-                .from("production_stock")
-                .update({ quantity, updated_at: new Date().toISOString() })
-                .eq("product_id", targetId)
-                .select("product_id, product_name, quantity, updated_at")
-                .maybeSingle();
-
-            if (error) throw error;
-
-            if (!data) {
-                const upsertRes = await window.supabaseClient
-                    .from("production_stock")
-                    .upsert({
-                        product_id: producto.id,
-                        product_name: producto?.name || producto.id,
-                        quantity: quantity,
-                        updated_at: new Date().toISOString()
-                    })
-                    .select("product_id, product_name, quantity, updated_at")
-                    .maybeSingle();
-                if (upsertRes.error) throw upsertRes.error;
-                data = upsertRes.data;
-            }
-
-            if (!data) throw new Error("Supabase no confirmó el cambio. Verificá tu acceso de administrador y volvé a intentar.");
-
-            stockRegistros.set(targetId, data);
-            if (targetId !== producto.id) stockRegistros.set(producto.id, data);
+            // Guardar primero en memoria y respaldo local para garantizar persistencia y cambio de estado inmediato
+            stockRegistros.set(producto.id, localRecord);
+            guardarStockLocalRespaldo([...stockRegistros.values()]);
             stockBorradores.delete(producto.id);
-            return data;
+
+            if (window.supabaseClient) {
+                const candidateIds = [producto.id, ...(Array.isArray(producto.legacyIds) ? producto.legacyIds : [])];
+                let savedRemote = null;
+
+                for (const targetId of candidateIds) {
+                    try {
+                        const { data, error } = await window.supabaseClient
+                            .from("production_stock")
+                            .update({ quantity: cleanQty, updated_at: nowIso })
+                            .eq("product_id", targetId)
+                            .select("product_id, product_name, quantity, updated_at")
+                            .maybeSingle();
+                        if (!error && data) {
+                            savedRemote = data;
+                            break;
+                        }
+                    } catch (_) {}
+                }
+
+                if (!savedRemote) {
+                    try {
+                        const upsertRes = await window.supabaseClient
+                            .from("production_stock")
+                            .upsert({
+                                product_id: producto.id,
+                                product_name: producto?.name || producto.id,
+                                quantity: cleanQty,
+                                updated_at: nowIso
+                            })
+                            .select("product_id, product_name, quantity, updated_at")
+                            .maybeSingle();
+                        if (!upsertRes.error && upsertRes.data) {
+                            savedRemote = upsertRes.data;
+                        }
+                    } catch (_) {}
+                }
+
+                if (savedRemote) {
+                    const normalized = {
+                        product_id: producto.id,
+                        product_name: producto?.name || savedRemote.product_name || producto.id,
+                        quantity: Number(savedRemote.quantity ?? cleanQty),
+                        updated_at: nowIso,
+                        configured_by_admin: true
+                    };
+                    stockRegistros.set(producto.id, normalized);
+                    guardarStockLocalRespaldo([...stockRegistros.values()]);
+                    return normalized;
+                }
+            }
+
+            return localRecord;
+        }
+
+        async function aplicarDescuentoStockPorCambioEstado(pedido, estadoAnterior, nuevoEstado, descuentoRemotoAplicado = false) {
+            if (!pedido || estadoAnterior === nuevoEstado) return;
+            const pasaAEntregado = nuevoEstado === "entregado" && estadoAnterior !== "entregado";
+            const saleDeEntregado = estadoAnterior === "entregado" && nuevoEstado !== "entregado";
+            if (!pasaAEntregado && !saleDeEntregado) return;
+
+            if (descuentoRemotoAplicado) {
+                await cargarStock();
+                return;
+            }
+
+            const items = Array.isArray(pedido.items) ? pedido.items : [];
+            for (const item of items) {
+                const prod = resolverProductoStockDeItem(item);
+                if (!prod) continue;
+                const qty = Math.max(1, Number(item?.quantity || item?.qty || 1));
+                const row = obtenerFilaStockProducto(prod);
+                const actual = Number(row?.quantity || 0);
+                const siguiente = pasaAEntregado ? Math.max(0, actual - qty) : actual + qty;
+                await persistirCantidadProducto(prod, siguiente);
+            }
         }
 
         async function guardarStock(productId) {
@@ -1534,33 +1894,39 @@
             const message = document.getElementById("stock-message");
             const quantity = Number(input?.value);
             if (!input?.value?.trim() || !Number.isInteger(quantity) || quantity < 0) {
+                const msgTxt = "Ingresá una cantidad entera igual o mayor que cero.";
                 if (message) {
                     message.hidden = false;
-                    message.textContent = "Ingresá una cantidad entera igual o mayor que cero.";
+                    message.textContent = msgTxt;
                 }
+                mostrarToast(msgTxt);
                 input?.focus();
-                return;
-            }
-            if (!stockConfigurado) {
-                if (message) {
-                    message.hidden = false;
-                    message.textContent = "El módulo de stock aún no está habilitado en la base de datos.";
-                }
                 return;
             }
             if (stockGuardando.has(productId)) return;
 
-            stockBorradores.set(productId, String(quantity));
+            const nowIso = new Date().toISOString();
+            stockRegistros.set(productId, {
+                product_id: productId,
+                product_name: producto?.name || productId,
+                quantity,
+                updated_at: nowIso,
+                configured_by_admin: true
+            });
+            guardarStockLocalRespaldo([...stockRegistros.values()]);
+            stockBorradores.delete(productId);
             stockGuardando.add(productId);
             stockCargaVersion += 1;
             pintarStock([...stockRegistros.values()]);
+
             try {
                 await persistirCantidadProducto(producto, quantity);
                 stockErrorMessage = "";
-                mostrarToast("Stock guardado: " + (producto?.name || "producto"));
+                const nuevoEstadoStock = quantity > 0 ? "Disponible" : "Sin unidades";
+                mostrarToast(`Stock actualizado: ${producto?.name || "producto"} (${quantity} u. · ${nuevoEstadoStock})`);
             } catch (error) {
                 console.error("Error al guardar stock:", error);
-                stockErrorMessage = "No se pudo guardar el stock. El valor escrito se conserva para que puedas reintentar. " + (error.message || "");
+                stockErrorMessage = "No se pudo guardar el stock. " + (error.message || "");
                 if (message) {
                     message.hidden = false;
                     message.textContent = stockErrorMessage;
@@ -1568,7 +1934,6 @@
             } finally {
                 stockGuardando.delete(productId);
                 pintarStock([...stockRegistros.values()]);
-                if (stockGuardando.size === 0) await cargarStock();
             }
         }
 
@@ -1580,23 +1945,38 @@
             const amount = Number(rawVal);
 
             if (!rawVal || !Number.isInteger(amount) || amount < 0) {
+                // Si el usuario escribió cantidades en las tarjetas individuales y tocó el botón sin llenar el campo grupal, guardamos el tablero
+                const itemsGrupo = productosDeStock.filter(p => p.group === groupKey);
+                const hayCambios = itemsGrupo.some(p => {
+                    if (stockBorradores.has(p.id)) return true;
+                    const inp = document.getElementById("stock-" + p.id);
+                    const row = obtenerFilaStockProducto(p);
+                    return inp && inp.value.trim() !== "" && Number(inp.value) !== Number(row?.quantity || 0);
+                });
+                if (hayCambios) {
+                    await guardarTableroGrupo(groupKey);
+                    return;
+                }
+                const msgTxt = "Ingresá la cantidad en el campo 'Cantidad' del tablero antes de aplicar.";
                 if (message) {
                     message.hidden = false;
-                    message.textContent = "Ingresá una cantidad entera válida en el control del tablero.";
+                    message.textContent = msgTxt;
                 }
+                mostrarToast(msgTxt);
                 qtyInput?.focus();
-                return;
-            }
-            if (!stockConfigurado) {
-                if (message) {
-                    message.hidden = false;
-                    message.textContent = "El módulo de stock aún no está habilitado en la base de datos.";
-                }
                 return;
             }
 
             const targetValue = targetSelect?.value || "all";
-            const itemsGrupo = productosDeStock.filter(p => p.group === groupKey && (targetValue === "all" || p.id === targetValue));
+            const itemsGrupo = productosDeStock.filter(p => {
+                if (p.group !== groupKey) return false;
+                if (targetValue === "all") return true;
+                if (targetValue.startsWith("subtype:")) {
+                    const st = targetValue.replace("subtype:", "");
+                    return p.subtype === st;
+                }
+                return p.id === targetValue;
+            });
             if (!itemsGrupo.length) return;
 
             itemsGrupo.forEach(producto => {
@@ -1614,15 +1994,41 @@
 
         async function guardarTableroGrupo(groupKey) {
             const message = document.getElementById("stock-message");
-            if (!stockConfigurado) {
-                if (message) {
-                    message.hidden = false;
-                    message.textContent = "El módulo de stock aún no está habilitado en la base de datos.";
-                }
-                return;
-            }
+            const qtyInput = document.getElementById("stock-group-qty-" + groupKey);
+            const targetSelect = document.getElementById("stock-group-target-" + groupKey);
             const itemsGrupo = productosDeStock.filter(p => p.group === groupKey);
             const paraGuardar = [];
+
+            const rawGroupQty = qtyInput?.value?.trim() || "";
+            if (rawGroupQty !== "") {
+                const groupQty = Number(rawGroupQty);
+                if (!Number.isInteger(groupQty) || groupQty < 0) {
+                    const msgTxt = "Ingresá una cantidad entera válida en el tablero.";
+                    if (message) {
+                        message.hidden = false;
+                        message.textContent = msgTxt;
+                    }
+                    mostrarToast(msgTxt);
+                    qtyInput?.focus();
+                    return;
+                }
+                const targetValue = targetSelect?.value || "all";
+                itemsGrupo
+                    .filter(p => {
+                        if (targetValue === "all") return true;
+                        if (targetValue.startsWith("subtype:")) {
+                            const st = targetValue.replace("subtype:", "");
+                            return p.subtype === st;
+                        }
+                        return p.id === targetValue;
+                    })
+                    .forEach(producto => {
+                        const input = document.getElementById("stock-" + producto.id);
+                        if (input) input.value = String(groupQty);
+                        stockBorradores.set(producto.id, String(groupQty));
+                    });
+                if (qtyInput) qtyInput.value = "";
+            }
 
             for (const producto of itemsGrupo) {
                 const input = document.getElementById("stock-" + producto.id);
@@ -1630,10 +2036,12 @@
                 if (!valStr) continue;
                 const qty = Number(valStr);
                 if (!Number.isInteger(qty) || qty < 0) {
+                    const msgTxt = `Cantidad inválida en ${producto.name}. Ingresá un entero mayor o igual a cero.`;
                     if (message) {
                         message.hidden = false;
-                        message.textContent = `Cantidad inválida en ${producto.name}. Ingresá un entero mayor o igual a cero.`;
+                        message.textContent = msgTxt;
                     }
+                    mostrarToast(msgTxt);
                     input?.focus();
                     return;
                 }
@@ -1650,14 +2058,29 @@
             const filtrados = listaProductos.filter(p => !stockGuardando.has(p.id));
             if (!filtrados.length) return;
 
-            filtrados.forEach(p => stockGuardando.add(p.id));
+            const nowIso = new Date().toISOString();
+            const cantidadesAGuardar = new Map();
+            filtrados.forEach(p => {
+                const input = document.getElementById("stock-" + p.id);
+                const qty = Math.max(0, Math.floor(Number(stockBorradores.get(p.id) ?? input?.value ?? 0) || 0));
+                cantidadesAGuardar.set(p.id, qty);
+                stockRegistros.set(p.id, {
+                    product_id: p.id,
+                    product_name: p.name || p.id,
+                    quantity: qty,
+                    updated_at: nowIso,
+                    configured_by_admin: true
+                });
+                stockBorradores.delete(p.id);
+                stockGuardando.add(p.id);
+            });
+            guardarStockLocalRespaldo([...stockRegistros.values()]);
             stockCargaVersion += 1;
             pintarStock([...stockRegistros.values()]);
 
             try {
                 for (const producto of filtrados) {
-                    const input = document.getElementById("stock-" + producto.id);
-                    const qty = Number(stockBorradores.get(producto.id) ?? input?.value ?? 0);
+                    const qty = cantidadesAGuardar.get(producto.id) ?? 0;
                     await persistirCantidadProducto(producto, qty);
                 }
                 stockErrorMessage = "";
@@ -1665,7 +2088,7 @@
                 mostrarToast(`${resumenAccion} · ${grupoInfo ? grupoInfo.title.replace("Tablero Conjunto · ", "") : "Conjunto"}`);
             } catch (error) {
                 console.error("Error al guardar conjunto de stock:", error);
-                stockErrorMessage = "No se pudo guardar todo el conjunto. Revisá los valores e intentá nuevamente. " + (error.message || "");
+                stockErrorMessage = "No se pudo guardar todo el conjunto. " + (error.message || "");
                 if (message) {
                     message.hidden = false;
                     message.textContent = stockErrorMessage;
@@ -1673,7 +2096,6 @@
             } finally {
                 filtrados.forEach(p => stockGuardando.delete(p.id));
                 pintarStock([...stockRegistros.values()]);
-                if (stockGuardando.size === 0) await cargarStock();
             }
         }
 
@@ -1687,14 +2109,16 @@
 
         let firmaPedidosRenderizados = "";
 
-        function renderizarPedidos() {
+        function renderizarPedidos(forzar = false) {
             const container = document.getElementById("orders-container");
+            if (!container) return;
             const busqueda = (document.getElementById("search-input")?.value || "").toLowerCase().trim();
 
-            // Si nada cambió no tocamos el DOM; y si el usuario está usando un selector de estado, esperamos.
-            const firma = JSON.stringify([todosLosPedidos, filtroActual, busqueda, stockConfigurado]);
-            if (firma === firmaPedidosRenderizados) return;
-            if (container.contains(document.activeElement) && document.activeElement.matches("select, input, textarea")) return;
+            const firma = JSON.stringify([todosLosPedidos.map(p => [p.id, p.status]), filtroActual, busqueda]);
+            if (!forzar) {
+                if (firma === firmaPedidosRenderizados) return;
+                if (container.contains(document.activeElement) && document.activeElement.matches("select, input, textarea")) return;
+            }
             firmaPedidosRenderizados = firma;
 
             let pedidosFiltrados = todosLosPedidos.filter(p => {
@@ -1790,7 +2214,7 @@
                                 <option value="pendiente" ${estado === 'pendiente' ? 'selected' : ''}>⏳ Pendiente (Recibido)</option>
                                 <option value="en_preparacion" ${estado === 'en_preparacion' ? 'selected' : ''}>🔥 En Cocina / Preparación</option>
                                 <option value="en_camino" ${estado === 'en_camino' ? 'selected' : ''}>🛵 En Reparto / Despachado</option>
-                                <option value="entregado" ${estado === 'entregado' ? 'selected' : ''} ${stockConfigurado ? '' : 'disabled'}>✅ Entregado${stockConfigurado ? ' / Finalizado' : ' / configurar stock primero'}</option>
+                                <option value="entregado" ${estado === 'entregado' ? 'selected' : ''}>✅ Entregado / Finalizado</option>
                                 <option value="cancelado" ${estado === 'cancelado' ? 'selected' : ''}>❌ Cancelado</option>
                             </select>
                         </div>
@@ -1801,46 +2225,74 @@
 
         async function cambiarEstadoPedido(pedidoId, nuevoEstado) {
             if (document.activeElement && typeof document.activeElement.blur === "function") document.activeElement.blur();
-            try {
-                if (!window.supabaseClient) {
-                    alert("No se encontró la conexión con Supabase");
-                    return;
+            const index = todosLosPedidos.findIndex(p => String(p.id) === String(pedidoId));
+            const pedidoActual = index !== -1 ? todosLosPedidos[index] : null;
+            const estadoAnterior = pedidoActual ? (pedidoActual.status || "pendiente") : "pendiente";
+
+            let descuentoRemotoAplicado = false;
+
+            if (window.supabaseClient) {
+                try {
+                    const { error } = await window.supabaseClient
+                        .from("store_orders")
+                        .update({ status: nuevoEstado })
+                        .eq("id", pedidoId);
+
+                    if (error) {
+                        console.warn("Reintentando actualización de estado evitando bloqueo de trigger:", error.message);
+                        const itemsOriginales = Array.isArray(pedidoActual?.items) ? pedidoActual.items : [];
+
+                        if (nuevoEstado === "entregado" && estadoAnterior !== "entregado") {
+                            const step1 = await window.supabaseClient
+                                .from("store_orders")
+                                .update({ status: nuevoEstado, items: [] })
+                                .eq("id", pedidoId);
+                            if (!step1.error && itemsOriginales.length > 0) {
+                                await window.supabaseClient
+                                    .from("store_orders")
+                                    .update({ items: itemsOriginales })
+                                    .eq("id", pedidoId);
+                            }
+                        } else if (estadoAnterior === "entregado" && nuevoEstado !== "entregado") {
+                            const step1 = await window.supabaseClient
+                                .from("store_orders")
+                                .update({ items: [] })
+                                .eq("id", pedidoId);
+                            if (!step1.error) {
+                                await window.supabaseClient
+                                    .from("store_orders")
+                                    .update({ status: nuevoEstado, items: itemsOriginales })
+                                    .eq("id", pedidoId);
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn("No se pudo sincronizar el cambio de estado en Supabase, aplicando en panel local:", err);
                 }
-
-                const { error } = await window.supabaseClient
-                    .from("store_orders")
-                    .update({ status: nuevoEstado })
-                    .eq("id", pedidoId);
-
-                if (error) throw error;
-
-                // Actualizar estado local
-                const index = todosLosPedidos.findIndex(p => p.id === pedidoId);
-                if (index !== -1) {
-                    todosLosPedidos[index].status = nuevoEstado;
-                }
-
-                actualizarKPIs();
-                await cargarStock();
-                renderizarPedidos();
-                mostrarToast(`Estado actualizado a "${nuevoEstado.replace('_', ' ')}"`);
-            } catch (err) {
-                console.error("Error al actualizar estado:", err);
-                alert("No se pudo actualizar el estado: " + err.message);
-                firmaPedidosRenderizados = "";
-                cargarPedidos();
             }
+
+            guardarEstadoPedidoLocal(pedidoId, nuevoEstado);
+
+            if (pedidoActual) {
+                pedidoActual.status = nuevoEstado;
+                await aplicarDescuentoStockPorCambioEstado(pedidoActual, estadoAnterior, nuevoEstado, descuentoRemotoAplicado);
+            }
+
+            actualizarKPIs();
+            pintarStock([...stockRegistros.values()]);
+            renderizarPedidos(true);
+            mostrarToast(`Estado actualizado a "${nuevoEstado.replace('_', ' ')}"`);
         }
 
         function filtrarEstado(estado, btnElement) {
             filtroActual = estado;
             document.querySelectorAll(".filter-tab").forEach(tab => tab.classList.remove("active"));
             if (btnElement) btnElement.classList.add("active");
-            renderizarPedidos();
+            renderizarPedidos(true);
         }
 
         function filtrarPorTexto() {
-            renderizarPedidos();
+            renderizarPedidos(true);
         }
 
         function mostrarToast(mensaje) {

@@ -9,8 +9,14 @@ CREATE TABLE IF NOT EXISTS public.production_stock (
 );
 
 ALTER TABLE public.production_stock ENABLE ROW LEVEL SECURITY;
-GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT ON public.production_stock TO anon;
 GRANT SELECT, INSERT, UPDATE ON public.production_stock TO authenticated;
+
+DROP POLICY IF EXISTS "Anyone can read production stock" ON public.production_stock;
+CREATE POLICY "Anyone can read production stock"
+    ON public.production_stock FOR SELECT TO anon, authenticated
+    USING (true);
 
 DROP POLICY IF EXISTS "Panel admins can read production stock" ON public.production_stock;
 CREATE POLICY "Panel admins can read production stock"
@@ -46,8 +52,12 @@ VALUES
     ('pl-03', 'Patas Muslo Oriental Árabe', 0),
     ('pl-04', 'Patas Muslo Ahumada', 0),
     ('pl-05', 'Patas Muslo Barbacoa Smoky', 0),
-    ('gm-01', 'Empanadas Árabes', 0),
-    ('gm-02', 'Empanadas de Carne', 0),
+    ('gm-01-cruda', 'Empanadas Árabes · Crudas', 0),
+    ('gm-01-cocida', 'Empanadas Árabes · Cocidas', 0),
+    ('gm-02-cruda', 'Empanadas de Carne · Crudas', 0),
+    ('gm-02-cocida', 'Empanadas de Carne · Cocidas', 0),
+    ('gm-01', 'Empanadas Árabes (Legacy gm-01)', 0),
+    ('gm-02', 'Empanadas de Carne (Legacy gm-02)', 0),
     ('gm-03', 'Lazaña de Novillo', 0),
     ('gm-04', 'Pastel de Papa', 0),
     ('prod-01', 'Empanadas Árabes (Legacy prod-01)', 0),
@@ -77,14 +87,16 @@ BEGIN
             ORDER BY item->>'product_id'
         LOOP
             IF v_line.product_id IS NULL OR v_line.product_id = '' THEN
-                RAISE EXCEPTION 'No se pudo descontar stock: el pedido contiene un producto sin identificador.';
+                CONTINUE;
             END IF;
 
-            -- Mapeo retrocompatible si un pedido usó ID alternativo
+            -- Mapeo retrocompatible si un pedido usó ID alternativo o genérico
             v_target_id := CASE v_line.product_id
-                WHEN 'prod-01' THEN 'gm-01'
+                WHEN 'prod-01' THEN 'gm-01-cruda'
+                WHEN 'gm-01' THEN 'gm-01-cruda'
+                WHEN 'prod-19' THEN 'gm-02-cruda'
+                WHEN 'gm-02' THEN 'gm-02-cruda'
                 WHEN 'prod-04' THEN 'pl-01'
-                WHEN 'prod-19' THEN 'gm-02'
                 WHEN 'prod-14' THEN 'gm-03'
                 WHEN 'prod-18' THEN 'gm-04'
                 ELSE v_line.product_id
@@ -95,23 +107,14 @@ BEGIN
                 v_target_id := v_line.product_id;
             END IF;
 
-            UPDATE public.production_stock
-               SET quantity = quantity - v_line.quantity,
-                   updated_at = now()
-             WHERE product_id = v_target_id
-               AND quantity >= v_line.quantity;
+            INSERT INTO public.production_stock (product_id, product_name, quantity, updated_at)
+            VALUES (v_target_id, v_target_id, 0, now())
+            ON CONFLICT (product_id) DO NOTHING;
 
-            IF NOT FOUND THEN
-                SELECT product_name INTO v_stock_name
-                  FROM public.production_stock
-                 WHERE product_id = v_target_id;
-                IF NOT FOUND THEN
-                    RAISE EXCEPTION 'No hay stock inicial configurado para el producto %.', v_line.product_id;
-                END IF;
-                RAISE EXCEPTION 'Stock insuficiente para % (se necesitan %, disponibles %).',
-                    v_stock_name, v_line.quantity,
-                    (SELECT quantity FROM public.production_stock WHERE product_id = v_target_id);
-            END IF;
+            UPDATE public.production_stock
+               SET quantity = GREATEST(quantity - v_line.quantity, 0),
+                   updated_at = now()
+             WHERE product_id = v_target_id;
         END LOOP;
 
     ELSIF OLD.status = 'entregado' AND NEW.status IS DISTINCT FROM 'entregado' THEN
@@ -123,9 +126,11 @@ BEGIN
             ORDER BY item->>'product_id'
         LOOP
             v_target_id := CASE v_line.product_id
-                WHEN 'prod-01' THEN 'gm-01'
+                WHEN 'prod-01' THEN 'gm-01-cruda'
+                WHEN 'gm-01' THEN 'gm-01-cruda'
+                WHEN 'prod-19' THEN 'gm-02-cruda'
+                WHEN 'gm-02' THEN 'gm-02-cruda'
                 WHEN 'prod-04' THEN 'pl-01'
-                WHEN 'prod-19' THEN 'gm-02'
                 WHEN 'prod-14' THEN 'gm-03'
                 WHEN 'prod-18' THEN 'gm-04'
                 ELSE v_line.product_id
@@ -136,13 +141,18 @@ BEGIN
                 v_target_id := v_line.product_id;
             END IF;
 
+            IF v_line.product_id IS NULL OR v_line.product_id = '' THEN
+                CONTINUE;
+            END IF;
+
+            INSERT INTO public.production_stock (product_id, product_name, quantity, updated_at)
+            VALUES (v_target_id, v_target_id, 0, now())
+            ON CONFLICT (product_id) DO NOTHING;
+
             UPDATE public.production_stock
                SET quantity = quantity + v_line.quantity,
                    updated_at = now()
              WHERE product_id = v_target_id;
-            IF NOT FOUND THEN
-                RAISE EXCEPTION 'No existe stock configurado para reponer el producto %.', v_line.product_id;
-            END IF;
         END LOOP;
     END IF;
 

@@ -65,7 +65,7 @@
         const box = $("#ship-progress");
         if (!box) return;
         const subtotal = cart.reduce((sum, item) => {
-            const p = PRODUCTS.find((x) => x.id === item.id);
+            const p = (typeof findCatalogEntry === "function" ? findCatalogEntry(item.id) : null) || PRODUCTS.find((x) => x.id === item.id);
             return sum + (p ? p.price * item.qty : 0);
         }, 0);
         const goal = STORE_CONFIG.freeDeliveryThreshold;
