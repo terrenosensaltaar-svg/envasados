@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Luciana aprende a leer</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EAF6FF;--ink:#1D2B4F;--card:#fff;--vow:#E8434A;--con:#2F6BFF;--ok:#1FA866;--star:#F5A400;--soft:#C9DDF2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141B34;--ink:#F2F5FF;--card:#222B4D;--vow:#FF7479;--con:#7FA2FF;--ok:#3DD68C;--star:#FFC843;--soft:#37426B}}
+:root[data-theme="dark"]{--bg:#141B34;--ink:#F2F5FF;--card:#222B4D;--vow:#FF7479;--con:#7FA2FF;--ok:#3DD68C;--star:#FFC843;--soft:#37426B}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Baloo 2","Trebuchet MS","Comic Sans MS",sans-serif;font-weight:500;min-height:100vh;display:flex;justify-content:center}
+.app{width:100%;max-width:640px;padding:14px 14px 28px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+h1{font-size:clamp(24px,6vw,34px);margin:0;font-weight:800;line-height:1.1}
+.stars{background:var(--card);border-radius:999px;padding:6px 16px;font-size:24px;font-weight:800;color:var(--star);white-space:nowrap}
+nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+nav button{font:inherit;font-weight:700;font-size:clamp(16px,4.4vw,20px);border:3px solid var(--soft);background:var(--card);color:var(--ink);border-radius:18px;padding:10px 4px;cursor:pointer}
+nav button[aria-selected="true"]{border-color:var(--con);background:var(--con);color:#fff}
+button:focus-visible{outline:4px solid var(--star);outline-offset:2px}
+.guide{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.owl{font-size:60px;line-height:1;border:0;background:none;cursor:pointer;padding:0}
+.bub{flex:1;background:var(--card);border-radius:22px;padding:12px 16px;font-size:clamp(18px,5vw,22px);font-weight:700;min-height:64px;display:flex;align-items:center}
+.panel{background:var(--card);border-radius:28px;padding:18px;text-align:center}
+.big{font-size:clamp(72px,26vw,130px);line-height:1.1;margin:4px 0}
+.word{font-size:clamp(48px,16vw,84px);font-weight:800;letter-spacing:.06em;margin:4px 0}
+.v{color:var(--vow)}.c{color:var(--con)}
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:12px 0}
+.col{flex-direction:column}
+.tile{font:inherit;font-weight:800;font-size:clamp(34px,11vw,52px);min-width:68px;padding:6px 14px;border:3px solid var(--soft);background:var(--bg);border-radius:20px;cursor:pointer;color:var(--ink)}
+.tile:active{border-color:var(--star)}
+.opt{width:100%}
+.pic{width:calc(33% - 8px);min-width:90px;font-size:clamp(52px,17vw,84px)}
+.slots{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:14px 0}
+.slot{width:clamp(44px,13vw,64px);height:clamp(56px,16vw,76px);border-bottom:6px solid var(--soft);font-size:clamp(36px,11vw,56px);font-weight:800;display:flex;align-items:center;justify-content:center}
+.tile:disabled{opacity:.25;cursor:default}
+.hear{font:inherit;font-size:20px;font-weight:700;border:0;background:var(--star);color:#1D2B4F;border-radius:999px;padding:8px 20px;cursor:pointer;margin:4px}
+.hint{box-shadow:0 0 0 6px var(--star)}
+.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.conf{position:fixed;top:-8vh;font-size:30px;pointer-events:none;animation:fall 2.2s ease-in forwards;z-index:20}
+@keyframes fall{to{transform:translateY(112vh) rotate(540deg)}}
+.start{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:30;text-align:center;padding:20px}
+.start .big{margin:0}
+.go{font:inherit;font-size:30px;font-weight:800;border:0;background:var(--ok);color:#fff;border-radius:999px;padding:14px 40px;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.shake{animation:none;outline:4px solid var(--vow)}.conf{display:none}}
+</style>
+</head>
+<body>
+<div class="start" id="start">
+  <div class="big">🦉</div>
+  <h1>¡Hola, Luciana!</h1>
+  <p style="font-size:22px;margin:0">Soy Lula, la lechuza. ¡Vamos a leer juntas!</p>
+  <button class="go" id="go">▶ Empezar</button>
+</div>
+<div class="app">
+  <header><h1>Luciana lee</h1><div class="stars" id="stars">⭐ 0</div></header>
+  <nav role="tablist">
+    <button role="tab" data-m="listen" aria-selected="true">👂 Escuchá</button>
+    <button role="tab" data-m="que" aria-selected="false">👀 ¿Qué dice?</button>
+    <button role="tab" data-m="find" aria-selected="false">🔍 Leé y buscá</button>
+    <button role="tab" data-m="spell" aria-selected="false">✏️ Armá</button>
+  </nav>
+  <div class="guide"><button class="owl" id="owl" aria-label="Escuchar de nuevo">🦉</button><div class="bub" id="bub"></div></div>
+  <main class="panel" id="main"></main>
+</div>
+<script>
+const WORDS=[["SAPO","🐸"],["PATO","🦆"],["LUNA","🌙"],["SOL","☀️"],["GATO","🐱"],["CASA","🏠"],["MONO","🐵"],["OSO","🐻"],["UVA","🍇"],["OJO","👁️"],["LOBO","🐺"],["PELOTA","⚽"],["LECHE","🥛"],["ROSA","🌹"],["GLOBO","🎈"],["PEZ","🐟"],["DEDO","☝️"],["TOMATE","🍅"],["LUCIANA","👧"]];
+const VOW="AEIOU",CONS="MPLSTNDFBC";
+const PRAISE=["¡Muy bien, Luciana!","¡Genial!","¡Bravo!","¡Lo lograste!","¡Excelente!","¡Qué lectora!"];
+const $=s=>document.querySelector(s),main=$("#main");
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(p=>p[1]);
+const col=w=>[...w].map(l=>`<span class="${VOW.includes(l)?"v":"c"}">${l}</span>`).join("");
+let stars=0,voice=null,lastSay="",lastW="",wrong=0,mode="listen",timer=null;
+try{stars=+localStorage.getItem("luci-stars")||0}catch(e){}
+function showStars(){$("#stars").textContent="⭐ "+stars}
+function pickVoice(){try{const v=speechSynthesis.getVoices();voice=v.find(x=>/^es[-_](AR|MX|US|419)/i.test(x.lang))||v.find(x=>/^es/i.test(x.lang))||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+function say(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.toLowerCase());u.lang=voice?voice.lang:"es-AR";if(voice)u.voice=voice;u.rate=.8;u.pitch=1.15;speechSynthesis.speak(u)}catch(e){}}
+function talk(t){lastSay=t;$("#bub").textContent=t;say(t)}
+$("#owl").onclick=()=>say(lastSay);
+function shake(el){el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake")}
+function burst(n){for(let i=0;i<n;i++){const s=document.createElement("span");s.className="conf";s.textContent=rnd(["⭐","🎉","✨","🌈","💖"]);s.style.left=Math.random()*95+"vw";s.style.animationDelay=Math.random()*.5+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),3000)}}
+function win(word){
+  stars++;showStars();try{localStorage.setItem("luci-stars",stars)}catch(e){}
+  if(stars%5===0){burst(40);talk(`¡Ya tenés ${stars} estrellas! ¡Sos una gran lectora!`)}
+  else{burst(14);talk(`${rnd(PRAISE)} ${word.toLowerCase()}`)}
+}
+function pickWord(){
+  let pool=WORDS.filter(x=>stars<10?x[0].length<=4:true);
+  let w;do{w=rnd(pool)}while(w[0]===lastW);lastW=w[0];return w;
+}
+
+/* Rondas de elegir: escuchar / qué dice / leé y buscá */
+function choice(kind){
+  clearTimeout(timer);wrong=0;
+  const w=pickWord();
+  const opts=shuffle([w,...shuffle(WORDS.filter(x=>x[0]!==w[0])).slice(0,2)]);
+  const isPic=kind!=="que";
+  let top="";
+  if(kind==="listen")top=`<div class="big">🔊</div><button class="hear" id="rep">Escuchar otra vez</button>`;
+  if(kind==="que")top=`<div class="big">${w[1]}</div>`;
+  if(kind==="find")top=`<div class="word">${col(w[0])}</div><button class="hear" id="hint">💡 Ayuda</button>`;
+  main.innerHTML=`${top}<div class="row ${isPic?"":"col"}">${opts.map(o=>isPic?`<button class="tile pic" data-w="${o[0]}">${o[1]}</button>`:`<button class="tile opt" data-w="${o[0]}">${col(o[0])}</button>`).join("")}</div>`;
+  const msg={listen:`¿Dónde está ${w[0].toLowerCase()}? Tocá el dibujo.`,que:"¿Qué dice acá? Tocá la palabra.",find:"Leé la palabra. ¿Cuál es el dibujo?"}[kind];
+  talk(msg);
+  if($("#rep"))$("#rep").onclick=()=>say(w[0]);
+  if($("#hint"))$("#hint").onclick=()=>say(`Empieza con la letra ${w[0][0]}`);
+  const all=main.querySelectorAll("[data-w]");
+  all.forEach(b=>b.onclick=()=>{
+    if(b.dataset.w===w[0]){
+      all.forEach(x=>x.disabled=true);b.disabled=false;win(w[0]);
+      timer=setTimeout(()=>choice(kind),2600);
+    }else{
+      wrong++;shake(b);
+      const o=WORDS.find(x=>x[0]===b.dataset.w);
+      talk(kind==="que"?`Esa dice ${o[0].toLowerCase()}. Probá otra vez.`:`Ese es ${o[0].toLowerCase()}. Probá otra vez.`);
+      if(wrong>=2)all.forEach(x=>{if(x.dataset.w===w[0])x.classList.add("hint")});
+    }
+  });
+}
+
+/* Armar la palabra */
+function spell(){
+  clearTimeout(timer);wrong=0;
+  const w=pickWord(),word=w[0];
+  const extra=shuffle([...(VOW+CONS)].filter(l=>!word.includes(l))).slice(0,3);
+  const bank=shuffle([...word,...extra]);
+  let i=0;
+  main.innerHTML=`<div class="big">${w[1]}</div>
+  <button class="hear" id="h">🔊 Escuchar</button><button class="hear" id="hint">💡 Ayuda</button>
+  <div class="word" style="opacity:.45">${col(word)}</div>
+  <div class="slots">${[...word].map(()=>`<div class="slot"></div>`).join("")}</div>
+  <div class="row">${bank.map(l=>`<button class="tile" data-l="${l}">${l}</button>`).join("")}</div>`;
+  talk(`Mirá y copiá la palabra ${word.toLowerCase()}. Tocá las letras en orden.`);
+  const slots=main.querySelectorAll(".slot"),btns=main.querySelectorAll("[data-l]");
+  const glow=()=>btns.forEach(b=>{b.classList.remove("hint");if(!b.disabled&&b.dataset.l===word[i])b.classList.add("hint")});
+  $("#h").onclick=()=>say(word);
+  $("#hint").onclick=()=>{say(`Ahora va la ${word[i]}`);glow()};
+  btns.forEach(b=>b.onclick=()=>{
+    if(i>=word.length)return;
+    if(b.dataset.l===word[i]){
+      slots[i].innerHTML=col(b.dataset.l);b.disabled=true;b.classList.remove("hint");wrong=0;i++;
+      if(i<word.length)say(word[i-1]);
+      else{win(word);timer=setTimeout(spell,3200)}
+    }else{
+      wrong++;shake(b);say("Probá otra vez");
+      if(wrong>=2)glow();
+    }
+  });
+}
+
+const modes={listen:()=>choice("listen"),que:()=>choice("que"),find:()=>choice("find"),spell};
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  mode=b.dataset.m;modes[mode]();
+});
+$("#go").onclick=()=>{$("#start").style.display="none";showStars();modes.listen()};
+showStars();
+</script>
+</body>
+</html>
