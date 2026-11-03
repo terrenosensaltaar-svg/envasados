@@ -165,6 +165,19 @@
         });
     }
 
+    function scrollCardIntoRail(id) {
+        const rail = $("#products-rail");
+        if (!rail) return;
+        const card = $(`.v2-card[data-id="${id}"]`, rail);
+        if (!card) return;
+        const targetLeft = card.offsetLeft - (rail.clientWidth - card.offsetWidth) / 2;
+        const maxScroll = Math.max(0, rail.scrollWidth - rail.clientWidth);
+        rail.scrollTo({
+            left: Math.max(0, Math.min(maxScroll, targetLeft)),
+            behavior: prefersReducedMotion ? "auto" : "smooth"
+        });
+    }
+
     function selectDish(id, animate) {
         if (id !== selectedId) selectedView = "dish";
         selectedId = id;
@@ -176,9 +189,18 @@
         renderDish(animate);
     }
 
+    let autoRotatePausedUntil = 0;
+    let isPointerInsideCatalog = false;
+
+    function pauseAutoRotate(ms = 7000) {
+        autoRotatePausedUntil = Date.now() + ms;
+    }
+
     /* La página no se mueve al elegir: en celular se puede tocar otro plato enseguida. */
     window.v2SelectDish = function (id) {
+        pauseAutoRotate(9000);
         selectDish(id, true);
+        scrollCardIntoRail(id);
     };
 
     window.renderProducts = function () {
@@ -309,11 +331,41 @@
         if (el) el.textContent = formatPrice(STORE_CONFIG.freeDeliveryThreshold);
     }
 
+    function setupAutoRandomCarousel() {
+        const panel = $(".v2-panel");
+        const rail = $("#products-rail");
+        if (!panel || !rail || prefersReducedMotion) return;
+
+        panel.addEventListener("pointerdown", () => pauseAutoRotate(8000), { passive: true });
+        panel.addEventListener("touchstart", () => pauseAutoRotate(8000), { passive: true });
+        rail.addEventListener("wheel", () => pauseAutoRotate(6000), { passive: true });
+        rail.addEventListener("pointerenter", () => { isPointerInsideCatalog = true; });
+        rail.addEventListener("pointerleave", () => { isPointerInsideCatalog = false; });
+
+        setInterval(() => {
+            if (document.hidden || isPointerInsideCatalog || Date.now() < autoRotatePausedUntil) return;
+            if (document.body.classList.contains("drawer-open")) return;
+
+            const allVisible = visibleProducts();
+            const inStock = allVisible.filter((p) => !isProductOut(p));
+            const pool = inStock.length > 1 ? inStock : allVisible;
+            if (pool.length <= 1) return;
+
+            const candidates = pool.filter((p) => p.id !== selectedId);
+            const next = candidates[Math.floor(Math.random() * candidates.length)] || pool[0];
+            if (!next) return;
+
+            selectDish(next.id, true);
+            scrollCardIntoRail(next.id);
+        }, 4000);
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         setupRail();
         setupViews();
         setupSearch();
         setupMenu();
         fillFreeShippingChip();
+        setupAutoRandomCarousel();
     });
 })();
