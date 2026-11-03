@@ -327,10 +327,8 @@ window.addEventListener("storage", (e) => {
 });
 
 // Orden aleatorio de productos por visita / carga de página:
-// 1º Empanadas con stock (aleatorio)
-// 2º Pollita Lu con stock (aleatorio)
-// 3º Otros productos con stock (aleatorio)
-// 4º Productos sin stock al final
+// 1º Todos los productos con stock (aleatorio)
+// 2º Productos sin stock al final
 let displayProducts = [];
 
 function shuffleProducts(array) {
@@ -346,31 +344,9 @@ function shuffleProducts(array) {
 
 function initRandomProductOrder() {
     const isOutOfStock = (p) => p.outOfStock === true || p.available === false;
-    const isEmpanada = (p) => (p.name && p.name.toLowerCase().includes("empanada")) || p.id === "gm-01" || p.id === "gm-02";
-    const isPollita = (p) => p.category === "pollita" || p.id.startsWith("pl-");
-
-    const inStockEmpanadas = [];
-    const inStockPollita = [];
-    const inStockOther = [];
-    const outOfStock = [];
-
-    PRODUCTS.forEach((p) => {
-        if (isOutOfStock(p)) {
-            outOfStock.push(p);
-        } else if (isEmpanada(p)) {
-            inStockEmpanadas.push(p);
-        } else if (isPollita(p)) {
-            inStockPollita.push(p);
-        } else {
-            inStockOther.push(p);
-        }
-    });
-
     displayProducts = [
-        ...shuffleProducts(inStockEmpanadas),
-        ...shuffleProducts(inStockPollita),
-        ...shuffleProducts(inStockOther),
-        ...outOfStock
+        ...shuffleProducts(PRODUCTS.filter((p) => !isOutOfStock(p))),
+        ...PRODUCTS.filter(isOutOfStock)
     ];
 }
 
