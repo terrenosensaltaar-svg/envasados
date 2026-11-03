@@ -1,0 +1,69 @@
+<!--
+  SECCIONES GUARDADAS — quitadas de indexv2.html el 03/11/2026
+  =============================================================
+  Para volver a usarlas:
+  1) Pegá el bloque de abajo en indexv2.html justo ANTES de
+     <!-- ================= FOOTER ================= -->
+  2) Si querés que vuelvan a aparecer en el menú, agregá dentro de <nav class="v2-menu">:
+       <a href="#pollita-lu">Pollita Lu</a>
+       <a href="#preguntas">Preguntas</a>
+  3) Y en la lista de enlaces del footer:
+       <li><a href="#pollita-lu">Línea Pollita Lu</a></li>
+       <li><a href="#preguntas">Preguntas frecuentes</a></li>
+
+  No hace falta tocar CSS ni JS: los estilos siguen en styles.css / index-mejorado.css,
+  y index-mejorado.js vuelve a completar solo los sabores (#pollita-flavors) y los
+  montos de envío ([data-fee], [data-free-from]) apenas encuentra estos elementos.
+-->
+
+    <!-- ================= POLLITA LU ================= -->
+    <section class="pollita-showcase" id="pollita-lu" aria-labelledby="pollita-title">
+        <div class="pollita-container">
+            <div class="pollita-content-box">
+                <div class="pollita-header-row">
+                    <div class="pollita-head-left">
+                        <h2 id="pollita-title" style="font-size:1.35rem;font-weight:800;margin-bottom:6px">Línea Pollita Lu: Patas muslo saborizadas</h2>
+                        <p>Presas de pollo marinadas al vacío x 1Kg listas para cocinar. Sacas de la bolsa, doras a la parrilla, plancha u horno y sirves con sabor profesional.</p>
+                    </div>
+                    <button class="btn-consult-flavors" type="button" onclick="consultPollitaLu('Patas muslo saborizadas')">
+                        <span>💬 Pedir Variedades por WhatsApp</span>
+                    </button>
+                </div>
+                <!-- Se completa desde products.js (precios y stock siempre actualizados) -->
+                <div class="flavors-pills-grid" id="pollita-flavors"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= PREGUNTAS FRECUENTES ================= -->
+    <section class="faq-section" id="preguntas" aria-labelledby="faq-title">
+        <div class="section-head" style="justify-content:center;text-align:center">
+            <div>
+                <h2 class="section-title" id="faq-title">Preguntas frecuentes</h2>
+                <p class="section-subtitle">Lo que más nos consultan antes de pedir</p>
+            </div>
+        </div>
+        <div class="faq-list">
+            <details>
+                <summary>¿Cómo se prepara cada producto?</summary>
+                <p>Cada tarjeta de la carta indica el tiempo y método de preparación (horno, plancha, parrilla o baño maría). En general se regenera o cocina en 10 a 25 minutos.</p>
+            </details>
+            <details>
+                <summary>¿Cuánto cuesta el envío y cómo retiro mi pedido?</summary>
+                <p>El envío a domicilio cuesta <span data-fee></span> y es gratis en compras desde <span data-free-from></span>. También podés elegir retiro en el local, sin costo.</p>
+            </details>
+            <details>
+                <summary>¿Qué medios de pago aceptan?</summary>
+                <p>Transferencia bancaria, efectivo contra entrega y link de pago o tarjeta. Elegís el medio al completar los datos de tu pedido.</p>
+            </details>
+            <details>
+                <summary>¿Cómo confirmo mi pedido?</summary>
+                <p>Al finalizar se abre WhatsApp con el detalle de tu pedido ya armado. Nosotros lo confirmamos y coordinamos la entrega con vos.</p>
+            </details>
+            <details>
+                <summary>¿Qué significa “Sin Stock”?</summary>
+                <p>Es un plato que se agotó momentáneamente. Escribinos por WhatsApp y te avisamos cuándo vuelve a estar disponible.</p>
+            </details>
+        </div>
+    </section>
+

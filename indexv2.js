@@ -62,7 +62,7 @@
         let control = '<span class="v2-card-out">Sin stock</span>';
         if (state.canOrder && state.qty > 0) control = stepperMarkup(state);
         else if (state.canOrder) control = `<button type="button" class="v2-add" data-act="add" aria-label="Agregar ${state.name} al pedido" onclick="addToCart('${state.id}')">${ICON_PLUS}</button>`;
-        return `<span class="v2-card-price">${formatPrice(p.price)}</span>${control}`;
+        return control;
     }
 
     function cardMarkup(p, index) {
@@ -70,12 +70,13 @@
         const eager = index < 4;
         return `
             <article class="v2-card ${p.id === selectedId ? "is-selected" : ""} ${isOut ? "is-out-of-stock" : ""}" data-id="${p.id}" style="--tint:${cardTint(p)}">
-                <button type="button" class="v2-card-pick" aria-pressed="${p.id === selectedId}" aria-label="Ver ${p.name}" onclick="v2SelectDish('${p.id}')">
+                <button type="button" class="v2-card-pick" aria-pressed="${p.id === selectedId}" aria-label="Ver ${p.name}, ${formatPrice(p.price)}" onclick="v2SelectDish('${p.id}')">
                     <span class="v2-card-tag ${isOut ? "is-out" : ""}">${isOut ? "Sin stock" : lineName(p)}</span>
                     <span class="v2-card-plate">
                         <img src="${optimizedImage(p.image, 640)}" data-orig="${p.image}" alt="" width="112" height="112"
                              ${eager ? "" : 'loading="lazy"'} decoding="async" onerror="productImgError(this, '${p.id}')">
                     </span>
+                    <span class="v2-card-price" id="v2-price-${p.id}">${formatPrice(p.price)}</span>
                     <span class="v2-card-name">${p.name}</span>
                     <span class="v2-card-portion">${shortPortion(p)}</span>
                 </button>
@@ -175,12 +176,9 @@
         renderDish(animate);
     }
 
-    /* En celular la foto queda arriba de las tarjetas: al tocar un plato se lleva la vista hasta ella. */
+    /* La página no se mueve al elegir: en celular se puede tocar otro plato enseguida. */
     window.v2SelectDish = function (id) {
         selectDish(id, true);
-        if (window.matchMedia("(max-width: 900px)").matches) {
-            $("#v2-showcase").scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
-        }
     };
 
     window.renderProducts = function () {
@@ -224,6 +222,11 @@
 
         const foot = document.getElementById(`v2-foot-${productId}`);
         if (foot) foot.innerHTML = cardFootMarkup(product);
+        const price = document.getElementById(`v2-price-${productId}`);
+        if (price) {
+            price.textContent = formatPrice(product.price);
+            price.closest("button").setAttribute("aria-label", `Ver ${product.name}, ${formatPrice(product.price)}`);
+        }
         if (selectedId === productId) renderDish(false);
 
         if (zoneSelector && focusAct) {

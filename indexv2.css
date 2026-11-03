@@ -730,7 +730,6 @@ body { background: var(--v2-cream); }
         align-self: center;
         width: min(74vw, 340px);
         margin: 34px auto 18px;
-        scroll-margin-top: 130px;
     }
 
     .v2-dish { order: 4; margin-top: 8px; max-width: none; min-height: 0; }
@@ -946,3 +945,23 @@ body { background: #fff; color: var(--text-main); }
     .v2-eyebrow:not(.is-center) { order: 0; }
     .v2-hero h1 { font-size: clamp(2.2rem, 10vw, 3.4rem); }
 }
+
+/* Precio arriba del título y el detalle */
+.v2-order { margin-top: 0; }
+.v2-dish h2 { margin-top: 14px; }
+.v2-card-price { display: block; margin-bottom: 2px; }
+.v2-card-foot { justify-content: flex-end; min-height: 48px; padding-top: 2px; }
+
+/* Líneas de productos: logos sin fondo */
+.v2-lines { padding: 40px 16px; background: #fff; text-align: center; }
+.v2-lines-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 220px));
+    justify-content: center;
+    align-items: center;
+    gap: clamp(12px, 4vw, 56px);
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+}
+.v2-lines-list img { display: block; width: 100%; height: auto; }
