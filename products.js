@@ -159,21 +159,20 @@ const PRODUCTS = [
     },
 
     // =========================================================================
-    // 3. PRODUCTOS SIN STOCK (AL FINAL)
+    // 3. LÍNEA GOURMET · PLATOS DE 500G
     // =========================================================================
     {
         id: "gm-03",
-        name: "Lazaña de Novillo",
+        name: "Lazagna de Novillo",
         category: "gourmet",
         price: 12500,
         portion: "500g · Porción individual generosa",
-        badge: "Sin Stock",
+        badge: "Línea Gourmet · 500g",
         desc: "Capas artesanales de masa al huevo intercaladas con abundante ragú de novillo braseado, salsa de tomate casera y gratén de queso fundido.",
         prep: "10 min a baño maría en bolsa o 8 min al horno para gratinar.",
         image: "lasana_casera.jpg",
         icon: "🍝",
-        available: false,
-        outOfStock: true
+        available: true
     },
     {
         id: "gm-04",
@@ -181,13 +180,12 @@ const PRODUCTS = [
         category: "gourmet",
         price: 12000,
         portion: "500g · Porción individual generosa",
-        badge: "Sin Stock",
+        badge: "Línea Gourmet · 500g",
         desc: "Puré de papas mantecado y cremoso sobre una base sabrosa y jugosa de carne vacuna sazonada con huevo duro, aceitunas y pimientos, gratinado al horno.",
         prep: "10 min a baño maría en bolsa o gratinar 6 min al horno.",
         image: "pastel_de_papa.jpg",
         icon: "🥧",
-        available: false,
-        outOfStock: true
+        available: true
     }
 ];
 

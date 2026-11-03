@@ -58,7 +58,7 @@ VALUES
     ('gm-02-cocida', 'Empanadas de Carne · Cocidas', 0),
     ('gm-01', 'Empanadas Árabes (Legacy gm-01)', 0),
     ('gm-02', 'Empanadas de Carne (Legacy gm-02)', 0),
-    ('gm-03', 'Lazaña de Novillo', 0),
+    ('gm-03', 'Lazagna de Novillo', 0),
     ('gm-04', 'Pastel de Papa', 0),
     ('prod-01', 'Empanadas Árabes (Legacy prod-01)', 0),
     ('prod-02', 'Pollo al Horno con Papas', 0),
