@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Envasados al Vacío Gourmet | Platos caseros y Pollita Lu en Salta</title>
     <meta name="description" content="Platos caseros gourmet y patas muslo marinadas Pollita Lu envasados al vacío. Pedí online, pagá como prefieras y recibí en tu casa en Salta o retirá sin cargo.">
-    <meta name="theme-color" content="#266b3b">
+    <meta name="theme-color" content="#ffffff">
 
     <!-- Open Graph / redes sociales -->
     <meta property="og:type" content="website">
@@ -19,13 +19,14 @@
     <!-- Tipografía: carga rápida con swap -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"></noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Great+Vibes&family=Poppins:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Great+Vibes&family=Poppins:wght@400;500;600;700&display=swap"></noscript>
 
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="index-mejorado.css">
+    <link rel="stylesheet" href="indexv2.css">
 
     <!-- Datos estructurados para buscadores -->
     <script type="application/ld+json">
@@ -39,7 +40,7 @@
         "address": { "@type": "PostalAddress", "addressLocality": "Salta", "addressCountry": "AR" },
         "areaServed": "Salta, Argentina",
         "currenciesAccepted": "ARS",
-        "paymentAccepted": "Transferencia, efectivo, tarjeta"
+        "paymentAccepted": "Transferencia, link de pago"
     }
     </script>
 
@@ -51,116 +52,113 @@
     <script>document.write('<script src="products.js?v=' + Math.floor(Date.now() / 300000) + '" defer><\/script>');</script>
     <script src="app.js?v=20261103" defer></script>
     <script src="index-mejorado.js" defer></script>
+    <script src="indexv2.js" defer></script>
 </head>
 <body>
     <a class="skip-link" href="#carta">Saltar al contenido</a>
 
-    <!-- ================= HEADER ================= -->
-    <header class="header">
-        <div class="header-inner">
-            <a href="#inicio" class="brand-link" aria-label="Envasados al Vacío, ir al inicio">
-                <img src="logo.png" alt="Envasados al Vacío" class="brand-logo" width="128" height="44" fetchpriority="high">
-                <span class="brand-sub">Catálogo</span>
-            </a>
-            <nav class="site-nav" aria-label="Secciones de la página">
-                <a href="#carta">Carta</a>
-                <a href="#pollita-lu">Pollita Lu</a>
-                <a href="#como-pedir">Cómo pedir</a>
-                <a href="#preguntas">Preguntas</a>
-            </nav>
-            <div class="header-right">
-                <button class="btn-cart" type="button" onclick="toggleCart(true)" aria-haspopup="dialog" aria-controls="drawer">
-                    <span aria-hidden="true">🛒</span>
-                    <span>Mi Pedido</span>
-                    <span class="cart-pill cart-count" aria-live="polite">0</span>
+    <!-- ================= CABECERA ================= -->
+    <header class="v2-header">
+        <div class="v2-header-inner">
+            <div class="v2-brand-group">
+                <button class="v2-icon-btn" id="v2-menu-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="v2-menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
                 </button>
+                <a href="#inicio" class="v2-brand" aria-label="Envasados al Vacío, ir al inicio">
+                    <img src="logo.png" alt="Envasados al Vacío" width="128" height="44">
+                </a>
+                <nav class="v2-menu" id="v2-menu" aria-label="Secciones de la página" hidden>
+                    <a href="#carta">Carta</a>
+                    <a href="#como-pedir">Cómo pedir</a>
+                </nav>
             </div>
+            <form class="v2-search" id="v2-search" role="search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input type="search" id="v2-search-input" placeholder="Buscar empanadas, pollo..." aria-label="Buscar en la carta" autocomplete="off">
+            </form>
+            <button class="btn-cart" type="button" onclick="toggleCart(true)" aria-haspopup="dialog" aria-controls="drawer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.2a1.5 1.5 0 0 0 1.5-1.2L20 8H6"/><circle cx="10" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>
+                <span>Mi pedido</span>
+                <span class="cart-pill cart-count" aria-live="polite">0</span>
+            </button>
         </div>
     </header>
 
-    <!-- ================= HERO ================= -->
-    <section class="hero" id="inicio">
-        <div class="hero-content">
-            <div class="hero-pill">👨‍🍳 Experiencia gastronómica en tu hogar</div>
-            <h1>Envasados al Vacío Gourmet,<br><span>el toque de un chef en tu propia mesa</span></h1>
-            <div class="hero-badges">
-                <span>⏱️ Listo en 10-15 min</span>
-                <span>🌿 100% Sabor natural</span>
-                <span>❄️ Conservación al vacío</span>
-                <span>🛵 Envío refrigerado</span>
-            </div>
-            <div class="hero-actions">
-                <a class="btn-hero primary" href="#carta">Ver la carta</a>
-                <button class="btn-hero ghost" type="button" onclick="contactWhatsApp()">
-                    <span aria-hidden="true">💬</span> Consultar por WhatsApp
-                </button>
-            </div>
+    <!-- ================= PORTADA Y CATÁLOGO INTERACTIVO ================= -->
+    <main class="v2-stage" id="inicio">
+        <div class="v2-panel">
+            <section class="v2-hero" aria-labelledby="v2-title">
+                <div class="v2-copy">
+                    <p class="v2-eyebrow">Casero · Gourmet · Al vacío</p>
+                    <h1 id="v2-title">De nuestra cocina <span class="v2-script">a tu mesa</span></h1>
+                    <div class="v2-dish" aria-live="polite">
+                        <h2 id="v2-dish-name"></h2>
+                        <p class="v2-dish-desc" id="v2-dish-desc"></p>
+                        <p class="v2-dish-meta" id="v2-dish-meta"></p>
+                        <div class="v2-variants" id="v2-variants" role="group" aria-label="Elegir presentación" hidden></div>
+                        <div class="v2-order" id="v2-order"></div>
+                    </div>
+                </div>
+                <div class="v2-showcase" id="v2-showcase" data-view="dish">
+                    <div class="v2-photo" id="v2-photo">
+                        <img id="v2-photo-img" alt="" width="470" height="470" sizes="(max-width: 900px) 74vw, 470px" fetchpriority="high" decoding="async"
+                             onerror="if(this.dataset.fb!==this.dataset.orig){this.dataset.fb=this.dataset.orig;this.removeAttribute('srcset');this.src=this.dataset.orig}">
+                    </div>
+                    <div class="v2-chip">
+                        <span class="v2-chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></span>
+                        <span>Envío gratis desde <strong id="v2-chip-amount"></strong></span>
+                    </div>
+                    <div class="v2-views" id="v2-views" role="group" aria-label="Elegir foto" hidden>
+                        <button type="button" data-view="dish" aria-pressed="true">Servido</button>
+                        <button type="button" data-view="pack" aria-pressed="false">Envasado</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="v2-catalog" id="carta" aria-labelledby="v2-catalog-title">
+                <div class="v2-catalog-bar">
+                    <h2 id="v2-catalog-title">Nuestra carta</h2>
+                    <div class="v2-tabs" role="group" aria-label="Filtrar por línea de producto">
+                        <button type="button" class="cat-tab is-active" data-cat="all" onclick="filterCategory('all', this)" aria-pressed="true">Todos <span class="tab-count">–</span></button>
+                        <button type="button" class="cat-tab" data-cat="pollita" onclick="filterCategory('pollita', this)" aria-pressed="false">Pollita Lu <span class="tab-count">–</span></button>
+                        <button type="button" class="cat-tab" data-cat="gourmet" onclick="filterCategory('gourmet', this)" aria-pressed="false">Gourmet <span class="tab-count">–</span></button>
+                    </div>
+                </div>
+                <div class="v2-rail-wrap">
+                    <button type="button" class="v2-arrow" data-dir="-1" aria-label="Ver platos anteriores" disabled>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+                    </button>
+                    <div class="v2-rail" id="products-rail">
+                        <noscript><p>Activá JavaScript para ver la carta o escribinos por WhatsApp al 387 228 3546.</p></noscript>
+                    </div>
+                    <button type="button" class="v2-arrow" data-dir="1" aria-label="Ver más platos">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </button>
+                </div>
+            </section>
         </div>
-    </section>
+    </main>
 
     <!-- ================= CÓMO PEDIR ================= -->
     <section class="how-section" id="como-pedir" aria-labelledby="como-pedir-title">
         <div class="section-head" style="justify-content:center;text-align:center">
             <div>
+                <p class="v2-eyebrow is-center">Cómo pedir</p>
                 <h2 class="section-title" id="como-pedir-title">Pedir es muy simple</h2>
                 <p class="section-subtitle">Tres pasos y listo para cocinar</p>
             </div>
         </div>
         <div class="steps-grid">
             <article class="step-card"><h3>Elegí tus platos</h3><p>Sumá a tu pedido los productos que quieras desde la carta. Podés modificar cantidades cuando quieras.</p></article>
-            <article class="step-card"><h3>Completá tus datos</h3><p>Indicá tu nombre, si preferís envío o retiro y el medio de pago. Te mostramos el total antes de enviar.</p></article>
+            <article class="step-card"><h3>Completá tus datos</h3><p>Indicá tu nombre, tu dirección de entrega y el medio de pago. Te mostramos el total antes de enviar.</p></article>
             <article class="step-card"><h3>Confirmá por WhatsApp</h3><p>Se abre WhatsApp con tu pedido ya armado. Lo confirmamos y coordinamos la entrega.</p></article>
         </div>
     </section>
 
-    <!-- ================= CARTA ================= -->
-    <main class="main-content" id="carta">
-        <div class="section-head">
-            <div>
-                <h2 class="section-title">Nuestra Carta y Productos</h2>
-                <p class="section-subtitle">Patas muslo marinadas saborizadas y platos caseros listos para regenerar</p>
-            </div>
-        </div>
-
-        <div class="category-tabs" role="group" aria-label="Filtrar por línea de producto">
-            <button type="button" class="cat-tab is-active" data-cat="all" onclick="filterCategory('all', this)" aria-pressed="true">
-                ✨ Todos los productos <span class="tab-count">–</span>
-            </button>
-            <button type="button" class="cat-tab" data-cat="pollita" onclick="filterCategory('pollita', this)" aria-pressed="false">
-                🍗 Línea Pollita Lu · Patas Muslo <span class="tab-count">–</span>
-            </button>
-            <button type="button" class="cat-tab" data-cat="gourmet" onclick="filterCategory('gourmet', this)" aria-pressed="false">
-                👨‍🍳 Línea Gourmet · Platos Caseros <span class="tab-count">–</span>
-            </button>
-        </div>
-
-        <!-- Barra de navegación y controles del Carrusel -->
-        <div class="carousel-bar" id="carousel-bar">
-            <div class="carousel-hint">
-                <span class="carousel-hint-icon" aria-hidden="true">👈👉</span>
-                <span class="carousel-hint-text">Deslizá para descubrir los platos</span>
-            </div>
-            <div class="carousel-controls">
-                <button type="button" class="carousel-arrow" id="carousel-prev" onclick="scrollProductsCarousel(-1)" aria-label="Ver plato anterior" title="Anterior">‹</button>
-                <span class="carousel-counter" id="carousel-counter" aria-live="polite">1 / 9</span>
-                <button type="button" class="carousel-arrow" id="carousel-next" onclick="scrollProductsCarousel(1)" aria-label="Ver plato siguiente" title="Siguiente">›</button>
-                <button type="button" class="btn-view-toggle" id="btn-view-toggle" onclick="toggleProductsViewMode()" title="Cambiar vista a cuadrícula o carrusel">
-                    <span id="view-mode-icon" aria-hidden="true">⊞</span>
-                    <span id="view-mode-text">Cuadrícula</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="products-grid is-carousel" id="products-grid" aria-live="polite">
-            <noscript><p style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted)">Activá JavaScript para ver la carta o escribinos por WhatsApp al 387 228 3546.</p></noscript>
-        </div>
-    </main>
-
     <!-- ================= FRANJA DE CONFIANZA ================= -->
     <section class="trust-strip" aria-label="Ventajas de comprar con nosotros">
         <div class="trust-item"><span class="ti-icon" aria-hidden="true">🛵</span><div><strong>Envío a domicilio</strong><span><span data-fee></span> · gratis desde <span data-free-from></span></span></div></div>
-        <div class="trust-item"><span class="ti-icon" aria-hidden="true">🏪</span><div><strong>Retiro en local</strong><span>Sin costo de envío</span></div></div>
-        <div class="trust-item"><span class="ti-icon" aria-hidden="true">💳</span><div><strong>Pagá como prefieras</strong><span>Transferencia, efectivo o tarjeta</span></div></div>
+        <div class="trust-item"><span class="ti-icon" aria-hidden="true">💳</span><div><strong>Pagá como prefieras</strong><span>Transferencia o link de pago</span></div></div>
         <div class="trust-item"><span class="ti-icon" aria-hidden="true">💬</span><div><strong>Pedido por WhatsApp</strong><span>Atención personal y directa</span></div></div>
     </section>
 
@@ -168,6 +166,7 @@
     <section class="chef-tips-section" aria-labelledby="vacio-title">
         <div class="section-head" style="justify-content:center;text-align:center">
             <div>
+                <p class="v2-eyebrow is-center">Nuestra técnica</p>
                 <h2 class="section-title" id="vacio-title">¿Por qué cocinar con envasados al vacío?</h2>
                 <p class="section-subtitle">Técnica culinaria profesional adaptada para que disfrutes en tu casa sin complicaciones</p>
             </div>
@@ -187,57 +186,6 @@
         </div>
     </section>
 
-    <!-- ================= POLLITA LU ================= -->
-    <section class="pollita-showcase" id="pollita-lu" aria-labelledby="pollita-title">
-        <div class="pollita-container">
-            <div class="pollita-content-box">
-                <div class="pollita-header-row">
-                    <div class="pollita-head-left">
-                        <h2 id="pollita-title" style="font-size:1.35rem;font-weight:800;margin-bottom:6px">Línea Pollita Lu: Patas muslo saborizadas</h2>
-                        <p>Presas de pollo marinadas al vacío x 1Kg listas para cocinar. Sacas de la bolsa, doras a la parrilla, plancha u horno y sirves con sabor profesional.</p>
-                    </div>
-                    <button class="btn-consult-flavors" type="button" onclick="consultPollitaLu('Patas muslo saborizadas')">
-                        <span>💬 Pedir Variedades por WhatsApp</span>
-                    </button>
-                </div>
-                <!-- Se completa desde products.js (precios y stock siempre actualizados) -->
-                <div class="flavors-pills-grid" id="pollita-flavors"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ================= PREGUNTAS FRECUENTES ================= -->
-    <section class="faq-section" id="preguntas" aria-labelledby="faq-title">
-        <div class="section-head" style="justify-content:center;text-align:center">
-            <div>
-                <h2 class="section-title" id="faq-title">Preguntas frecuentes</h2>
-                <p class="section-subtitle">Lo que más nos consultan antes de pedir</p>
-            </div>
-        </div>
-        <div class="faq-list">
-            <details>
-                <summary>¿Cómo se prepara cada producto?</summary>
-                <p>Cada tarjeta de la carta indica el tiempo y método de preparación (horno, plancha, parrilla o baño maría). En general se regenera o cocina en 10 a 25 minutos.</p>
-            </details>
-            <details>
-                <summary>¿Cuánto cuesta el envío y cómo retiro mi pedido?</summary>
-                <p>El envío a domicilio cuesta <span data-fee></span> y es gratis en compras desde <span data-free-from></span>. También podés elegir retiro en el local, sin costo.</p>
-            </details>
-            <details>
-                <summary>¿Qué medios de pago aceptan?</summary>
-                <p>Transferencia bancaria, efectivo contra entrega y link de pago o tarjeta. Elegís el medio al completar los datos de tu pedido.</p>
-            </details>
-            <details>
-                <summary>¿Cómo confirmo mi pedido?</summary>
-                <p>Al finalizar se abre WhatsApp con el detalle de tu pedido ya armado. Nosotros lo confirmamos y coordinamos la entrega con vos.</p>
-            </details>
-            <details>
-                <summary>¿Qué significa “Sin Stock”?</summary>
-                <p>Es un plato que se agotó momentáneamente. Escribinos por WhatsApp y te avisamos cuándo vuelve a estar disponible.</p>
-            </details>
-        </div>
-    </section>
-
     <!-- ================= FOOTER ================= -->
     <footer class="footer">
         <div class="footer-grid">
@@ -253,9 +201,7 @@
                 <h4>Navegación</h4>
                 <ul>
                     <li><a href="#carta">Carta</a></li>
-                    <li><a href="#pollita-lu">Línea Pollita Lu</a></li>
                     <li><a href="#como-pedir">Cómo pedir</a></li>
-                    <li><a href="#preguntas">Preguntas frecuentes</a></li>
                 </ul>
             </div>
         </div>
@@ -302,7 +248,6 @@
                         <label class="form-label" for="delivery-method">Modalidad de entrega</label>
                         <select class="form-select" id="delivery-method" onchange="setDeliveryMethod(this.value)">
                             <option value="delivery">Envío a domicilio</option>
-                            <option value="pickup">Retiro en local ($0)</option>
                         </select>
                     </div>
 
@@ -310,7 +255,6 @@
                         <label class="form-label" for="cust-payment">Medio de pago</label>
                         <select class="form-select" id="cust-payment">
                             <option value="Transferencia">Transferencia bancaria</option>
-                            <option value="Efectivo contra entrega">Efectivo contra entrega</option>
                             <option value="Link de pago / Tarjeta">Link de pago / Tarjeta</option>
                         </select>
                     </div>
