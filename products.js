@@ -105,7 +105,7 @@ const PRODUCTS = [
     // =========================================================================
     {
         id: "gm-03",
-        name: "Lazagna de Novillo",
+        name: "Lasagna de Novillo",
         category: "gourmet",
         price: 12500,
         portion: "500g · Porción individual generosa",
