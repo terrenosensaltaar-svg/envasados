@@ -32,7 +32,7 @@
         });
     }
 
-    /* El pedido siempre apunta a la presentación elegida (crudas o cocidas) cuando el plato las tiene. */
+    /* El pedido siempre apunta a la presentación elegida cuando el plato tiene varias. */
     function orderState(p) {
         const variant = getActiveVariant(p);
         const id = variant ? variant.id : p.id;
@@ -124,7 +124,7 @@
             img.srcset = `${optimizedImage(src, 640)} 640w, ${src} 1000w`;
             img.src = optimizedImage(src, 640);
         }
-        img.alt = selectedView === "pack" ? `${p.name} envasado al vacío` : `${p.name} servido`;
+        img.alt = selectedView === "pack" || !p.packImage && /_vacio\./.test(src) ? `${p.name} envasado al vacío` : `${p.name} servido`;
 
         if (animate && !prefersReducedMotion) {
             photo.classList.remove("is-turning");

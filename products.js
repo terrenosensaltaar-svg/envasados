@@ -1,87 +1,34 @@
 // Catálogo Oficial de Productos Gourmet & Pollita Lu al Vacío
 const PRODUCTS = [
     // =========================================================================
-    // 1. EMPANADAS GOURMET (OPCIÓN CRUDAS O COCIDAS)
+    // 1. EMPANADAS GOURMET
+    // Los id conservan el nombre con el que Supabase descuenta el stock al entregar.
     // =========================================================================
     {
-        id: "gm-01",
+        id: "gm-01-cruda",
         name: "Empanadas Árabes",
         category: "gourmet",
         price: 10000,
-        portion: "Media docena (6 unidades) · Crudas o Cocidas",
+        portion: "Media docena (6 unidades) · Precocidas",
         badge: "Línea Gourmet · Pack x 6 u.",
-        desc: "Pack de 6 empanadas abiertas triangulares (fatay) rellenas con carne molida magra seleccionada, cebolla dulce, tomate fresco, limón y especias tradicionales árabes. Elegilas crudas para hornear o cocidas listas.",
-        prep: "Crudas: 12-15 min en horno a 180°C · Cocidas: 5-8 min para calentar.",
-        image: "empanadas_arabes.jpg",
-        packImage: "empanadas_arabes_vacio.jpg",
+        desc: "Pack de 6 empanadas abiertas triangulares (fatay) rellenas con carne molida magra seleccionada, cebolla dulce, tomate fresco, limón y especias tradicionales árabes.",
+        prep: "5-8 min en horno, sartén o airfryer y servir.",
+        image: "empanadas_arabes_vacio.jpg",
         icon: "🥟",
-        available: true,
-        variants: [
-            {
-                id: "gm-01-cruda",
-                key: "cruda",
-                label: "❄️ Crudas",
-                shortLabel: "Crudas",
-                subLabel: "Para hornear",
-                fullName: "Empanadas Árabes (Crudas)",
-                portion: "Media docena (6 unidades) · Crudas listas para hornear",
-                prep: "12-15 min en horno a 180°C o airfryer.",
-                available: true,
-                outOfStock: false
-            },
-            {
-                id: "gm-01-cocida",
-                key: "cocida",
-                label: "🔥 Cocidas",
-                shortLabel: "Cocidas",
-                subLabel: "Listas para calentar",
-                fullName: "Empanadas Árabes (Cocidas)",
-                portion: "Media docena (6 unidades) · Cocidas listas para calentar",
-                prep: "5-8 min en horno, sartén o airfryer y servir.",
-                available: true,
-                outOfStock: false
-            }
-        ]
+        available: true
     },
     {
-        id: "gm-02",
+        id: "gm-02-cruda",
         name: "Empanadas de Carne",
         category: "gourmet",
         price: 10000,
-        portion: "Media docena (6 unidades) · Crudas o Cocidas",
+        portion: "Media docena (6 unidades) · Listas para hornear",
         badge: "Línea Gourmet · Pack x 6 u.",
-        desc: "Pack de 6 empanadas criollas tradicionales con carne vacuna seleccionada cortada a cuchillo, cebolla de verdeo, pimientos, huevo duro y condimentos caseros. Elegilas crudas para hornear o cocidas listas.",
-        prep: "Crudas: 12-15 min en horno a 200°C · Cocidas: 5-8 min para calentar.",
-        image: "empanadas_de_carne.jpg",
-        packImage: "empanadas_de_carne_vacio.jpg",
+        desc: "Pack de 6 empanadas criollas tradicionales con carne vacuna seleccionada cortada a cuchillo, cebolla de verdeo, pimientos, huevo duro y condimentos caseros.",
+        prep: "12-15 min en horno a 200°C hasta dorar.",
+        image: "empanadas_de_carne_vacio.jpg",
         icon: "🥟",
-        available: true,
-        variants: [
-            {
-                id: "gm-02-cruda",
-                key: "cruda",
-                label: "❄️ Crudas",
-                shortLabel: "Crudas",
-                subLabel: "Para hornear",
-                fullName: "Empanadas de Carne (Crudas)",
-                portion: "Media docena (6 unidades) · Crudas listas para hornear",
-                prep: "12-15 min en horno a 200°C hasta dorar.",
-                available: true,
-                outOfStock: false
-            },
-            {
-                id: "gm-02-cocida",
-                key: "cocida",
-                label: "🔥 Cocidas",
-                shortLabel: "Cocidas",
-                subLabel: "Listas para calentar",
-                fullName: "Empanadas de Carne (Cocidas)",
-                portion: "Media docena (6 unidades) · Cocidas listas para calentar",
-                prep: "5-8 min en horno, sartén o airfryer y servir.",
-                available: true,
-                outOfStock: false
-            }
-        ]
+        available: true
     },
 
     // =========================================================================
@@ -96,8 +43,7 @@ const PRODUCTS = [
         badge: "Pollita Lu · Para cocinar",
         desc: "Limón, ajo y chimichurri artesanal x 1Kg. Presas seleccionadas marinadas al vacío, jugosas y listas para dorar a la parrilla, plancha u horno.",
         prep: "Directo a fuego, plancha u horno por 20-25 min.",
-        image: "patas_muslo_parrillera.jpg",
-        packImage: "patas_muslo_parrillera_vacio.jpg",
+        image: "patas_muslo_parrillera_vacio.jpg",
         icon: "🍗",
         available: true
     },
@@ -110,8 +56,7 @@ const PRODUCTS = [
         badge: "Pollita Lu · Para cocinar",
         desc: "Mostaza, ajo y miel natural x 1Kg. Marinado agridulce que carameliza con un dorado irresistible al cocinar.",
         prep: "Horno a 180°C o sartén tapada por 20-25 min.",
-        image: "patas_muslo_honey.jpg",
-        packImage: "patas_muslo_honey_vacio.jpg",
+        image: "patas_muslo_honey_vacio.jpg",
         icon: "🍯",
         available: true
     },
@@ -124,8 +69,7 @@ const PRODUCTS = [
         badge: "Pollita Lu · Para cocinar",
         desc: "Salsa de soja, pimienta árabe, comino y limón x 1Kg. Sabor exótico, aromático y especiado con toque cítrico.",
         prep: "Salteado, horno o plancha caliente 20 min.",
-        image: "patas_muslo_oriental.jpg",
-        packImage: "patas_muslo_oriental_vacio.jpg",
+        image: "patas_muslo_oriental_vacio.jpg",
         icon: "🍋",
         available: true
     },
@@ -138,8 +82,7 @@ const PRODUCTS = [
         badge: "Pollita Lu · Para cocinar",
         desc: "Pimentón ahumado, comino, ajo y vino blanco x 1Kg. Perfil ahumado profundo y piel crocante al dorar.",
         prep: "Cocción a la parrilla u horno medio 20-25 min.",
-        image: "patas_muslo_ahumada.jpg",
-        packImage: "patas_muslo_ahumada_vacio.jpg",
+        image: "patas_muslo_ahumada_vacio.jpg",
         icon: "🔥",
         available: true
     },
@@ -152,8 +95,7 @@ const PRODUCTS = [
         badge: "Pollita Lu · Para cocinar",
         desc: "Salsa barbacoa base, toque de azúcar mascabo o miel, salsa inglesa, pimentón ahumado y un toque de vinagre de manzana x 1Kg.",
         prep: "Horno o sartén dorando al final para glasear 20-25 min.",
-        image: "patas_muslo_barbacoa.jpg",
-        packImage: "patas_muslo_barbacoa_vacio.jpg",
+        image: "patas_muslo_barbacoa_vacio.jpg",
         icon: "🍖",
         available: true
     },
@@ -170,7 +112,7 @@ const PRODUCTS = [
         badge: "Línea Gourmet · 500g",
         desc: "Capas artesanales de masa al huevo intercaladas con abundante ragú de novillo braseado, salsa de tomate casera y gratén de queso fundido.",
         prep: "10 min a baño maría en bolsa o 8 min al horno para gratinar.",
-        image: "lasana_casera.jpg",
+        image: "lasana_casera_vacio.jpg",
         icon: "🍝",
         available: true
     },
@@ -183,7 +125,7 @@ const PRODUCTS = [
         badge: "Línea Gourmet · 500g",
         desc: "Puré de papas mantecado y cremoso sobre una base sabrosa y jugosa de carne vacuna sazonada con huevo duro, aceitunas y pimientos, gratinado al horno.",
         prep: "10 min a baño maría en bolsa o gratinar 6 min al horno.",
-        image: "pastel_de_papa.jpg",
+        image: "pastel_de_papa_vacio.jpg",
         icon: "🥧",
         available: true
     }
@@ -193,8 +135,10 @@ const PRODUCTS = [
 const LEGACY_ID_MAP = {
     "prod-01": "gm-01-cruda",
     "gm-01": "gm-01-cruda",
+    "gm-01-cocida": "gm-01-cruda",
     "prod-19": "gm-02-cruda",
     "gm-02": "gm-02-cruda",
+    "gm-02-cocida": "gm-02-cruda",
     "prod-14": "gm-03",
     "prod-18": "gm-04",
     "prod-04": "pl-01"

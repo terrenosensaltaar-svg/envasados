@@ -247,6 +247,7 @@
         .stock-name { min-width: 0; }
         .stock-name strong { display: block; font-size: .88rem; font-weight: 500; line-height: 1.3; }
         .stock-name small { display: block; font-size: .74rem; color: var(--muted); }
+        .stock-detail { display: block; font-size: .78rem; line-height: 1.3; }
         .stock-row.is-empty .stock-name small { color: var(--mostaza); }
         .stock-row.is-short .stock-name small { color: var(--red); font-weight: 600; }
         .stock-row.has-orders .stock-name small { color: var(--orange-text); }
@@ -477,7 +478,7 @@
                 <div>
                     <span class="eyebrow">Carga de producción</span>
                     <h1 id="t-stock">Stock <span class="script">disponible</span></h1>
-                    <p>Usá − / + o escribí la cantidad y tocá <b>Guardar cambios</b>. Se descuenta solo al entregar un pedido.</p>
+                    <p>Usá − / + o escribí la cantidad: se guarda sola. Se descuenta sola al entregar un pedido.</p>
                 </div>
                 <span class="sync-pill" id="stock-sync">Cargando…</span>
             </div>
@@ -549,12 +550,8 @@
         </section>
     </main>
 
-    <div class="savebar" id="savebar" hidden role="region" aria-label="Cambios de stock sin guardar">
-        <span id="savebar-text">Cambios sin guardar</span>
-        <div style="display:flex;gap:6px">
-            <button class="btn btn-ghost" type="button" id="stock-discard">Descartar</button>
-            <button class="btn btn-primary" type="button" id="stock-save">Guardar cambios</button>
-        </div>
+    <div class="savebar" id="savebar" hidden role="status">
+        <span id="savebar-text">Guardando…</span>
     </div>
 
     <div class="toasts" id="toasts" aria-live="polite"></div>
@@ -619,6 +616,7 @@
         const borradores = new Map();     // product_id -> texto escrito
         let stockTriggerActivo = false;   // la base descuenta stock sola al entregar
         let stockGuardando = false;
+        let stockTimer = null;
         let stockEstado = "cargando";
 
         let finMes = [];                  // filas del mes (Supabase)
@@ -670,8 +668,6 @@
                 e.target.value = "";
                 if (valor) cambiarEstadoPedido(id, valor);
             });
-            $("stock-save").addEventListener("click", guardarCambiosStock);
-            $("stock-discard").addEventListener("click", () => { borradores.clear(); actualizarStockUI(true); });
             $("finance-form").addEventListener("submit", guardarMovimientoFinanciero);
             $("finance-month").addEventListener("change", () => { if (!$("finance-month").value) return; fechaSel = $("finance-month").value + "-01"; $("finance-date").value = fechaSel; cargarFinanzas(); });
             $("month-prev").addEventListener("click", () => moverMes(-1));
@@ -735,7 +731,8 @@
                 cargarStock();
                 if (ciclo % 2 === 0) cargarFinanzas({ silencioso: true });
             }, 15000);
-            document.addEventListener("visibilitychange", () => { if (!document.hidden) refrescarTodo(); });
+            // Al salir de la pantalla no se espera: lo escrito se guarda enseguida.
+            document.addEventListener("visibilitychange", () => { if (document.hidden) guardarCambiosStock(); else refrescarTodo(); });
         }
 
         async function refrescarTodo() {
@@ -749,7 +746,8 @@
         }
 
         async function cerrarSesion() {
-            if (borradores.size && !confirm("Tenés cambios de stock sin guardar. ¿Salir igual?")) return;
+            await guardarCambiosStock();
+            if (borradores.size && !confirm("Hay cambios de stock que no se pudieron guardar. ¿Salir igual?")) return;
             // Solo este dispositivo: la misma cuenta sigue abierta en las otras pantallas.
             await sb().auth.signOut({ scope: "local" });
             window.location.reload();
@@ -761,7 +759,7 @@
             vistaActual = vista;
             document.querySelectorAll("[data-view]").forEach(s => { s.hidden = s.dataset.view !== vista; });
             document.querySelectorAll("[data-tab]").forEach(t => t.setAttribute("aria-selected", String(t.dataset.tab === vista)));
-            $("savebar").hidden = !(vista === "stock" && borradores.size > 0);
+            $("savebar").hidden = !(vista === "stock" && stockGuardando);
             if (vista === "finanzas") cargarFinanzas();
             if (vista === "stock") actualizarStockUI();
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -986,10 +984,8 @@
             { id: "pl-03", name: "Oriental Árabe", icon: "🍋", group: "pollita", match: "patas muslo oriental árabe" },
             { id: "pl-04", name: "Ahumada", icon: "🔥", group: "pollita", match: "patas muslo ahumada" },
             { id: "pl-05", name: "Barbacoa Smoky", icon: "🍖", group: "pollita", match: "patas muslo barbacoa smoky" },
-            { id: "gm-01-cruda", name: "Árabes · Crudas", icon: "❄️", group: "empanadas", legacyIds: ["gm-01", "prod-01"] },
-            { id: "gm-01-cocida", name: "Árabes · Cocidas", icon: "🔥", group: "empanadas" },
-            { id: "gm-02-cruda", name: "De carne · Crudas", icon: "❄️", group: "empanadas", legacyIds: ["gm-02", "prod-19"] },
-            { id: "gm-02-cocida", name: "De carne · Cocidas", icon: "🔥", group: "empanadas" },
+            { id: "gm-01-cruda", name: "Árabes", detail: "Precocidas", icon: "🥟", group: "empanadas", legacyIds: ["gm-01", "prod-01", "gm-01-cocida"] },
+            { id: "gm-02-cruda", name: "De carne", detail: "Listas para hornear", fullName: "Empanadas de Carne", icon: "🥟", group: "empanadas", legacyIds: ["gm-02", "prod-19", "gm-02-cocida"] },
             { id: "gm-03", name: "Lazagna de Novillo", icon: "🍝", group: "otros", legacyIds: ["prod-14"] },
             { id: "gm-04", name: "Pastel de Papa", icon: "🥧", group: "otros", legacyIds: ["prod-18"] },
             { id: "prod-02", name: "Pollo al Horno con Papas", icon: "🍗", group: "otros" },
@@ -1006,7 +1002,7 @@
             productosDeStock.push({ id: prod.id, name: prod.name, icon: prod.icon || "🍽️", group });
         });
 
-        const nombreCompleto = p => p.group === "pollita" ? `Patas Muslo ${p.name}` : p.group === "empanadas" ? `Empanadas ${p.name}` : p.name;
+        const nombreCompleto = p => p.fullName || (p.group === "pollita" ? `Patas Muslo ${p.name}` : p.group === "empanadas" ? `Empanadas ${p.name}` : p.name);
 
         function leerStockLocalRespaldo() {
             try { const v = JSON.parse(localStorage.getItem(LOCAL_STOCK_STORAGE_KEY) || "[]"); return Array.isArray(v) ? v : []; }
@@ -1028,7 +1024,8 @@
         // Une Supabase con el respaldo local: gana el dato más reciente (el local solo si lo cargó el admin).
         function combinarStockRemotoYLocal(remoteRows) {
             const remoto = new Map((remoteRows || []).map(r => [r.product_id, r]));
-            const local = new Map(leerStockLocalRespaldo().map(r => [r.product_id, r]));
+            // Con datos de Supabase se ignora la copia local: todas las pantallas deben ver lo mismo.
+            const local = new Map((remoteRows || []).length ? [] : leerStockLocalRespaldo().map(r => [r.product_id, r]));
             const res = new Map();
             productosDeStock.forEach(prod => {
                 const r = filaDeProducto(prod, remoto);
@@ -1073,19 +1070,13 @@
             const rawId = String(item.product_id || item.id || "").trim();
             if (rawId) {
                 const directo = productosDeStock.find(p => p.id === rawId || (p.legacyIds || []).includes(rawId));
-                if (directo) {
-                    // Pedidos viejos de empanadas sin variante: usar "crudas" salvo que el nombre diga cocidas.
-                    if ((rawId === "gm-01" || rawId === "gm-02" || rawId === "prod-01" || rawId === "prod-19") && /cocid/i.test(item.name || "")) {
-                        return productosDeStock.find(p => p.id === directo.id.replace("-cruda", "-cocida")) || directo;
-                    }
-                    return directo;
-                }
+                if (directo) return directo;
             }
             const nombre = String(item.name || "").trim().toLowerCase();
             if (!nombre) return null;
             if (/empanada/.test(nombre) || /árabe|arabe/.test(nombre) && !/muslo/.test(nombre)) {
                 const base = /árabe|arabe/.test(nombre) ? "gm-01" : /carne/.test(nombre) ? "gm-02" : null;
-                if (base) return productosDeStock.find(p => p.id === `${base}-${/cocid/.test(nombre) ? "cocida" : "cruda"}`) || null;
+                if (base) return productosDeStock.find(p => p.id === `${base}-cruda`) || null;
             }
             return productosDeStock.find(p => {
                 const n = (p.match || nombreCompleto(p)).toLowerCase();
@@ -1123,7 +1114,7 @@
                         ${items.map(p => `
                             <div class="stock-row" id="sr-${p.id}" data-id="${p.id}">
                                 <span class="stock-ico" aria-hidden="true">${p.icon}</span>
-                                <div class="stock-name"><strong>${escapeHtml(p.name)}</strong><small id="sd-${p.id}">—</small></div>
+                                <div class="stock-name"><strong>${escapeHtml(p.name)}</strong>${p.detail ? `<span class="stock-detail">${escapeHtml(p.detail)}</span>` : ""}<small id="sd-${p.id}">—</small></div>
                                 <div class="stepper">
                                     <button type="button" data-step="-1" aria-label="Restar uno a ${escapeHtml(nombreCompleto(p))}">−</button>
                                     <input type="number" min="0" step="1" inputmode="numeric" id="si-${p.id}" aria-label="Stock de ${escapeHtml(nombreCompleto(p))}">
@@ -1135,7 +1126,7 @@
 
             cont.addEventListener("click", e => {
                 const b = e.target.closest("[data-step]");
-                if (!b || stockGuardando) return;
+                if (!b) return;
                 const id = b.closest("[data-id]").dataset.id;
                 const input = $("si-" + id);
                 const base = Number(input.value);
@@ -1150,6 +1141,17 @@
                 if (e.key === "Enter" && e.target.matches("input[id^='si-']")) { e.preventDefault(); guardarCambiosStock(); }
             });
             cont.addEventListener("focusin", e => { if (e.target.matches("input[id^='si-']")) e.target.select(); });
+            // Una cantidad vacía o inválida no se guarda: al salir del campo vuelve el valor anterior.
+            cont.addEventListener("focusout", e => {
+                if (!e.target.matches("input[id^='si-']")) return;
+                const id = e.target.id.slice(3);
+                const valor = borradores.get(id);
+                if (valor === undefined || cantidadValida(valor)) return;
+                borradores.delete(id);
+                if (valor.trim() !== "") mostrarToast("Usá un número entero desde 0.", "warn");
+                e.target.value = String(stock.get(id)?.quantity || 0);
+                actualizarStockUI();
+            });
         }
 
         function registrarBorrador(id, valor) {
@@ -1157,6 +1159,13 @@
             if (valor.trim() !== "" && Number(valor) === actual) borradores.delete(id);
             else borradores.set(id, valor);
             actualizarStockUI();
+            clearTimeout(stockTimer);
+            if (borradores.size) stockTimer = setTimeout(guardarCambiosStock, 800);
+        }
+
+        function cantidadValida(valor) {
+            const n = Number(valor);
+            return valor.trim() !== "" && Number.isInteger(n) && n >= 0;
         }
 
         function actualizarStockUI(resetInputs = false) {
@@ -1177,7 +1186,6 @@
                 if (!row) return;
                 const sucio = borradores.has(p.id);
                 if (input && (resetInputs || (!sucio && document.activeElement !== input))) input.value = String(qty);
-                if (input) input.disabled = stockGuardando;
                 row.classList.toggle("is-dirty", sucio);
                 row.classList.toggle("is-empty", qty === 0 && !pedida);
                 row.classList.toggle("is-short", faltan > 0);
@@ -1198,12 +1206,7 @@
             pill.className = "sync-pill" + (stockEstado === "local" ? " is-warn" : "");
             pill.textContent = stockEstado === "local" ? "Sin conexión · respaldo local" : stockEstado === "ok" ? (stockTriggerActivo ? "Sincronizado · descuento automático" : "Sincronizado") : "Cargando…";
 
-            const n = borradores.size;
-            $("savebar").hidden = !(n > 0 && vistaActual === "stock");
-            $("savebar-text").textContent = `${n} ${n === 1 ? "cambio" : "cambios"} sin guardar`;
-            $("stock-save").disabled = stockGuardando;
-            $("stock-save").textContent = stockGuardando ? "Guardando…" : "Guardar cambios";
-            $("stock-discard").disabled = stockGuardando;
+            $("savebar").hidden = !(stockGuardando && vistaActual === "stock");
 
             pintarAPreparar(demanda);
         }
@@ -1240,34 +1243,32 @@
         }
 
         async function guardarCambiosStock() {
-            if (stockGuardando || !borradores.size) return;
+            clearTimeout(stockTimer);
+            if (!borradores.size) return;
+            // Si llega otro cambio mientras se guarda, se guarda apenas termine.
+            if (stockGuardando) { stockTimer = setTimeout(guardarCambiosStock, 800); return; }
             const cambios = [];
             for (const [id, valor] of borradores) {
-                const n = Number(valor);
                 const prod = productosDeStock.find(p => p.id === id);
-                if (!prod) continue;
-                if (valor.trim() === "" || !Number.isInteger(n) || n < 0) {
-                    mostrarToast(`Cantidad inválida en ${nombreCompleto(prod)}. Usá un número entero desde 0.`, "warn");
-                    $("si-" + id)?.focus();
-                    return;
-                }
-                cambios.push([prod, n]);
+                if (prod && cantidadValida(valor)) cambios.push([prod, Number(valor), valor]);
             }
+            if (!cambios.length) return;
             stockGuardando = true;
             actualizarStockUI();
-            let fallosRemotos = 0;
+            const fallidos = [];
             try {
-                for (const [prod, n] of cambios) {
+                for (const [prod, n, valor] of cambios) {
                     const ok = await persistirCantidadProducto(prod, n);
-                    if (!ok) fallosRemotos += 1;
-                    borradores.delete(prod.id);
+                    if (!ok) fallidos.push(nombreCompleto(prod));
+                    if (borradores.get(prod.id) === valor) borradores.delete(prod.id);
                 }
             } finally {
                 stockGuardando = false;
-                actualizarStockUI(true);
+                actualizarStockUI();
             }
-            if (fallosRemotos) mostrarToast(`Stock guardado en este dispositivo, pero Supabase no aceptó ${fallosRemotos} ${fallosRemotos === 1 ? "cambio" : "cambios"}.`, "warn");
-            else mostrarToast(`Stock guardado (${cambios.length} ${cambios.length === 1 ? "producto" : "productos"})`);
+            if (fallidos.length) mostrarToast(`No se pudo guardar en Supabase: ${fallidos.join(", ")}. Revisá la conexión y volvé a cargarlo.`, "warn");
+            else mostrarToast("Stock guardado");
+            if (borradores.size) stockTimer = setTimeout(guardarCambiosStock, 800);
         }
 
         async function ajustarStockPorPedido(pedido, signo) {

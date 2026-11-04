@@ -174,7 +174,6 @@ window.addEventListener("load", () => {
     idle(() => { loadSupabase(); });
 });
 
-const LOCAL_STOCK_STORAGE_KEY = "env_production_stock_local";
 const STOCK_LEGACY_MAP = {
     "prod-01": "gm-01-cruda",
     "gm-01": "gm-01-cruda",
@@ -273,17 +272,6 @@ function applyStockRowsToCatalog(rows, isRemoteOnly = false) {
     return changed;
 }
 
-function syncLocalStockToCatalog() {
-    try {
-        const raw = localStorage.getItem(LOCAL_STOCK_STORAGE_KEY);
-        if (!raw) return false;
-        const parsed = JSON.parse(raw);
-        return applyStockRowsToCatalog(parsed, false);
-    } catch (_) {
-        return false;
-    }
-}
-
 async function syncRemoteStockToCatalog() {
     try {
         const client = await loadSupabase();
@@ -293,38 +281,14 @@ async function syncRemoteStockToCatalog() {
             .select("product_id, quantity, updated_at");
         if (error || !Array.isArray(data) || data.length === 0) return;
 
-        // Combinar con respaldo local si existe
-        let localRows = [];
-        try {
-            localRows = JSON.parse(localStorage.getItem(LOCAL_STOCK_STORAGE_KEY) || "[]");
-            if (!Array.isArray(localRows)) localRows = [];
-        } catch (_) {
-            localRows = [];
-        }
-
-        const combined = [...data];
-        localRows.forEach((lr) => {
-            if (lr && (lr.configured_by_admin || Number(lr.quantity) > 0)) {
-                combined.push(lr);
-            }
-        });
-
-        if (applyStockRowsToCatalog(combined, localRows.length === 0)) {
+        // Solo vale Supabase: la copia que el panel guarda en un navegador no debe cambiar lo que ve ese dispositivo.
+        if (applyStockRowsToCatalog(data, true)) {
             initRandomProductOrder();
             renderProducts();
             updateCartUI();
         }
     } catch (_) {}
 }
-
-window.addEventListener("storage", (e) => {
-    if (e.key === LOCAL_STOCK_STORAGE_KEY) {
-        syncLocalStockToCatalog();
-        initRandomProductOrder();
-        renderProducts();
-        updateCartUI();
-    }
-});
 
 // Orden aleatorio de productos por visita / carga de página:
 // 1º Todos los productos con stock (aleatorio)
@@ -351,7 +315,6 @@ function initRandomProductOrder() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    syncLocalStockToCatalog();
     initRandomProductOrder();
     renderProducts();
     updateCartUI();
