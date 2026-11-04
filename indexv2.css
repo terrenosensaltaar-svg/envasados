@@ -965,7 +965,21 @@ body { background: #fff; color: var(--text-main); }
     list-style: none;
 }
 @media (max-width: 720px) {
-    .v2-lines-list { grid-template-columns: repeat(2, minmax(0, 180px)); }
+    /* En celular: logos más chicos en un carrusel que se desliza con el dedo */
+    .v2-lines { padding: 28px 0; }
+    .v2-lines-list {
+        display: flex;
+        justify-content: flex-start;
+        gap: 18px;
+        margin-top: 18px;
+        padding: 0 16px;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        scroll-padding-inline: 16px;
+        scrollbar-width: none;
+    }
+    .v2-lines-list::-webkit-scrollbar { display: none; }
+    .v2-lines-list li { flex: 0 0 112px; scroll-snap-align: start; }
     .v2-catalog-bar .v2-tabs { flex-wrap: wrap; min-width: 0; }
 }
 .v2-lines-list img { display: block; width: 100%; height: auto; }

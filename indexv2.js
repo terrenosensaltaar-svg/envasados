@@ -360,6 +360,26 @@
         }, 4000);
     }
 
+    /* En celular los logos avanzan solos; se pausan unos segundos si el cliente los toca. */
+    function setupLinesCarousel() {
+        const list = $(".v2-lines-list");
+        if (!list || prefersReducedMotion) return;
+        const isMobile = window.matchMedia("(max-width: 720px)");
+        let pausedUntil = 0;
+        const pause = () => { pausedUntil = Date.now() + 6000; };
+        list.addEventListener("pointerdown", pause, { passive: true });
+        list.addEventListener("touchstart", pause, { passive: true });
+
+        setInterval(() => {
+            if (!isMobile.matches || document.hidden || Date.now() < pausedUntil) return;
+            const maxLeft = list.scrollWidth - list.clientWidth;
+            if (maxLeft <= 0) return;
+            const step = list.firstElementChild.offsetWidth + parseFloat(getComputedStyle(list).columnGap);
+            const left = list.scrollLeft >= maxLeft - 2 ? 0 : list.scrollLeft + step;
+            list.scrollTo({ left, behavior: "smooth" });
+        }, 3000);
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         setupRail();
         setupViews();
@@ -367,5 +387,6 @@
         setupMenu();
         fillFreeShippingChip();
         setupAutoRandomCarousel();
+        setupLinesCarousel();
     });
 })();
