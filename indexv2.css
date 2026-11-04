@@ -956,13 +956,17 @@ body { background: #fff; color: var(--text-main); }
 .v2-lines { padding: 40px 16px; background: #fff; text-align: center; }
 .v2-lines-list {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 220px));
+    grid-template-columns: repeat(4, minmax(0, 220px));
     justify-content: center;
     align-items: center;
     gap: clamp(12px, 4vw, 56px);
     margin: 24px 0 0;
     padding: 0;
     list-style: none;
+}
+@media (max-width: 720px) {
+    .v2-lines-list { grid-template-columns: repeat(2, minmax(0, 180px)); }
+    .v2-catalog-bar .v2-tabs { flex-wrap: wrap; min-width: 0; }
 }
 .v2-lines-list img { display: block; width: 100%; height: auto; }
 .v2-lines-list li.is-soon img { opacity: 0.38; }

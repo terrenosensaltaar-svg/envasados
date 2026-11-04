@@ -189,7 +189,7 @@ PRODUCTS.forEach((p) => {
     if (p._initialOutOfStock === undefined) p._initialOutOfStock = p.outOfStock === true;
     if (p._activeBadge === undefined) {
         p._activeBadge = (!p.badge || p.badge === "Sin Stock")
-            ? (p.category === "pollita" ? "Pollita Lu · Para cocinar" : "Línea Gourmet · 500g")
+            ? (p.category === "pollita" ? "Pollita Lu · Para cocinar" : p.category === "empanadas" ? "Good Food · Pack x 6 u." : "Línea Gourmet · 500g")
             : p.badge;
     }
     if (Array.isArray(p.variants)) {

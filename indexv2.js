@@ -19,7 +19,7 @@
 
     const normalize = (text) => String(text || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
     const isProductOut = (p) => p.outOfStock === true || p.available === false;
-    const lineName = (p) => (p.category === "pollita" ? "Pollita Lu" : "Gourmet");
+    const lineName = (p) => ({ pollita: "Pollita Lu", empanadas: "Good Food Empanadas" }[p.category] || "Línea Gourmet");
     const shortPortion = (p) => String(p.portion || "").split("·")[0].trim();
     const cardTint = (p) => CARD_TINTS[PRODUCTS.indexOf(p) % CARD_TINTS.length];
 

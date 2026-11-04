@@ -26,7 +26,7 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="index-mejorado.css">
-    <link rel="stylesheet" href="indexv2.css">
+    <link rel="stylesheet" href="indexv2.css?v=20261104b">
 
     <!-- Datos estructurados para buscadores -->
     <script type="application/ld+json">
@@ -50,9 +50,9 @@
     <script src="supabase-config.js" defer></script>
     <!-- Pide una versión nueva cada 5 min para que Cloudflare no demore los cambios de precios y productos -->
     <script>document.write('<script src="products.js?v=' + Math.floor(Date.now() / 300000) + '" defer><\/script>');</script>
-    <script src="app.js?v=20261104" defer></script>
+    <script src="app.js?v=20261104b" defer></script>
     <script src="index-mejorado.js" defer></script>
-    <script src="indexv2.js" defer></script>
+    <script src="indexv2.js?v=20261104b" defer></script>
 </head>
 <body>
     <a class="skip-link" href="#carta">Saltar al contenido</a>
@@ -121,7 +121,8 @@
                     <div class="v2-tabs" role="group" aria-label="Filtrar por línea de producto">
                         <button type="button" class="cat-tab is-active" data-cat="all" onclick="filterCategory('all', this)" aria-pressed="true">Todos <span class="tab-count">–</span></button>
                         <button type="button" class="cat-tab" data-cat="pollita" onclick="filterCategory('pollita', this)" aria-pressed="false">Pollita Lu <span class="tab-count">–</span></button>
-                        <button type="button" class="cat-tab" data-cat="gourmet" onclick="filterCategory('gourmet', this)" aria-pressed="false">Gourmet <span class="tab-count">–</span></button>
+                        <button type="button" class="cat-tab" data-cat="empanadas" onclick="filterCategory('empanadas', this)" aria-pressed="false">Good Food Empanadas <span class="tab-count">–</span></button>
+                        <button type="button" class="cat-tab" data-cat="gourmet" onclick="filterCategory('gourmet', this)" aria-pressed="false">Línea Gourmet <span class="tab-count">–</span></button>
                     </div>
                 </div>
                 <div class="v2-rail-wrap">
@@ -143,6 +144,7 @@
     <section class="v2-lines" aria-labelledby="v2-lines-title">
         <h2 class="section-title" id="v2-lines-title">Nuestras líneas de productos</h2>
         <ul class="v2-lines-list">
+            <li><img src="logos/linea-gourmet.webp" alt="Línea Gourmet, comidas listas" width="560" height="306" loading="lazy" decoding="async"></li>
             <li><img src="logos/good-food-empanadas.webp" alt="Good Food Empanadas" width="560" height="491" loading="lazy" decoding="async"></li>
             <li class="is-soon">
                 <img src="logos/punto-pizza.webp" alt="Punto Pizza (próximamente)" width="560" height="455" loading="lazy" decoding="async">

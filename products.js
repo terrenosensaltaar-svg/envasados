@@ -1,16 +1,16 @@
 // Catálogo Oficial de Productos Gourmet & Pollita Lu al Vacío
 const PRODUCTS = [
     // =========================================================================
-    // 1. EMPANADAS GOURMET
+    // 1. GOOD FOOD EMPANADAS
     // Los id conservan el nombre con el que Supabase descuenta el stock al entregar.
     // =========================================================================
     {
         id: "gm-01-cruda",
         name: "Empanadas Árabes",
-        category: "gourmet",
+        category: "empanadas",
         price: 10000,
         portion: "Media docena (6 unidades) · Precocidas",
-        badge: "Línea Gourmet · Pack x 6 u.",
+        badge: "Good Food · Pack x 6 u.",
         desc: "Pack de 6 empanadas abiertas triangulares (fatay) rellenas con carne molida magra seleccionada, cebolla dulce, tomate fresco, limón y especias tradicionales árabes.",
         prep: "5-8 min en horno, sartén o airfryer y servir.",
         image: "empanadas_arabes_vacio.jpg",
@@ -20,10 +20,10 @@ const PRODUCTS = [
     {
         id: "gm-02-cruda",
         name: "Empanadas de Carne",
-        category: "gourmet",
+        category: "empanadas",
         price: 10000,
         portion: "Media docena (6 unidades) · Listas para hornear",
-        badge: "Línea Gourmet · Pack x 6 u.",
+        badge: "Good Food · Pack x 6 u.",
         desc: "Pack de 6 empanadas criollas tradicionales con carne vacuna seleccionada cortada a cuchillo, cebolla de verdeo, pimientos, huevo duro y condimentos caseros.",
         prep: "12-15 min en horno a 200°C hasta dorar.",
         image: "empanadas_de_carne_vacio.jpg",
