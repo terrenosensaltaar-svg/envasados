@@ -585,18 +585,11 @@
             setTimeout(() => t.remove(), tipo === "warn" ? 5000 : 2800);
         }
 
-        function leerMapa(key) {
-            try { const v = JSON.parse(localStorage.getItem(key) || "{}"); return v && typeof v === "object" && !Array.isArray(v) ? v : {}; }
-            catch (_) { return {}; }
-        }
-        function escribirMapa(key, map) { try { localStorage.setItem(key, JSON.stringify(map)); } catch (_) {} }
 
         /* =========================================================
            Estado
            ========================================================= */
         const LOCAL_STOCK_STORAGE_KEY = "env_production_stock_local";
-        const LOCAL_ORDER_STATUS_KEY = "env_orders_status_local";      // estados que Supabase no aceptó
-        const LOCAL_DELIVERED_AT_KEY = "env_orders_delivered_at";      // fecha real de entrega (para facturación)
 
         const ESTADOS = {
             pendiente:      { label: "Pendiente",  icon: "⏳" },
@@ -645,6 +638,8 @@
            ========================================================= */
         document.addEventListener("DOMContentLoaded", async () => {
             $("auth-form").addEventListener("submit", ingresarAlPanel);
+            // Restos de versiones anteriores: tapaban en este dispositivo lo que dice Supabase.
+            try { localStorage.removeItem("env_orders_status_local"); localStorage.removeItem("env_orders_delivered_at"); } catch (_) {}
             const hoy = hoyISO();
             $("finance-month").value = hoy.slice(0, 7);
             $("finance-date").value = hoy;
@@ -717,11 +712,13 @@
 
         async function habilitarPanel(session) {
             const { data, error } = await sb().from("panel_admins").select("user_id").eq("user_id", session.user.id).maybeSingle();
-            if (error || !data) {
-                await sb().auth.signOut();
+            if (error) { mostrarErrorAcceso("No se pudo verificar la cuenta. Revisá la conexión y recargá la página."); return; }
+            if (!data) {
+                await sb().auth.signOut({ scope: "local" });
                 mostrarErrorAcceso("Esta cuenta no tiene permiso para administrar pedidos.");
                 return;
             }
+            sb().auth.onAuthStateChange(evento => { if (evento === "SIGNED_OUT") window.location.reload(); });
             $("auth-gate").hidden = true;
             $("panel-header").hidden = false;
             $("panel-content").hidden = false;
@@ -736,7 +733,7 @@
                 ciclo += 1;
                 cargarPedidos();
                 cargarStock();
-                if (vistaActual === "finanzas" && ciclo % 2 === 0) cargarFinanzas({ silencioso: true });
+                if (ciclo % 2 === 0) cargarFinanzas({ silencioso: true });
             }, 15000);
             document.addEventListener("visibilitychange", () => { if (!document.hidden) refrescarTodo(); });
         }
@@ -745,7 +742,7 @@
             const btn = $("btn-refresh");
             btn.classList.add("is-spinning");
             try {
-                await Promise.all([cargarPedidos(), cargarStock(), vistaActual === "finanzas" ? cargarFinanzas() : null]);
+                await Promise.all([cargarPedidos(), cargarStock(), cargarFinanzas({ silencioso: vistaActual !== "finanzas" })]);
             } finally {
                 btn.classList.remove("is-spinning");
             }
@@ -753,7 +750,8 @@
 
         async function cerrarSesion() {
             if (borradores.size && !confirm("Tenés cambios de stock sin guardar. ¿Salir igual?")) return;
-            await sb().auth.signOut();
+            // Solo este dispositivo: la misma cuenta sigue abierta en las otras pantallas.
+            await sb().auth.signOut({ scope: "local" });
             window.location.reload();
         }
 
@@ -779,16 +777,7 @@
                 const { data, error } = await sb().from("store_orders").select("*").order("created_at", { ascending: false });
                 if (error) throw error;
 
-                const overrides = leerMapa(LOCAL_ORDER_STATUS_KEY);
-                let overridesCambiaron = false;
-                pedidos = (data || []).map(p => {
-                    const ov = overrides[String(p.id)];
-                    if (!ov || !ov.status) return p;
-                    // Si Supabase ya tiene ese estado, el respaldo local ya no hace falta.
-                    if ((p.status || "pendiente") === ov.status) { delete overrides[String(p.id)]; overridesCambiaron = true; return p; }
-                    return { ...p, status: ov.status, _soloLocal: true };
-                });
-                if (overridesCambiaron) escribirMapa(LOCAL_ORDER_STATUS_KEY, overrides);
+                pedidos = data || [];
                 pedidosCargados = true;
 
                 pill.className = "sync-pill";
@@ -818,8 +807,6 @@
         function fechaEntregaPedido(p) {
             const fila = filasPorPedido.get(String(p.id));
             if (fila && fila.entry_date) return fila.entry_date;
-            const local = leerMapa(LOCAL_DELIVERED_AT_KEY)[String(p.id)];
-            if (local) return fechaLocal(new Date(local));
             const raw = p.delivered_at || p.updated_at || p.created_at;
             return raw ? fechaLocal(new Date(raw)) : hoyISO();
         }
@@ -866,7 +853,7 @@
         function renderizarPedidos(forzar = false) {
             const cont = $("orders-container");
             const q = ($("search-input").value || "").toLowerCase().trim();
-            const firma = JSON.stringify([pedidos.map(p => [p.id, p.status, p._soloLocal]), filtroActual, q]);
+            const firma = JSON.stringify([pedidos.map(p => [p.id, p.status]), filtroActual, q]);
             if (!forzar) {
                 if (firma === firmaPedidos) return;
                 if (cont.contains(document.activeElement) && document.activeElement.matches("select")) return;
@@ -910,7 +897,6 @@
                             <li><span><b>${cantidadItem(i)}×</b>${escapeHtml(i?.name || "Producto")}</span><em>${fmtARS((Number(i?.unit_price) || 0) * cantidadItem(i))}</em></li>`).join("")}
                         </ul>` : ""}
                         ${p.notes ? `<div class="order-note"><b>Nota:</b> ${escapeHtml(p.notes)}</div>` : ""}
-                        ${p._soloLocal ? `<div class="order-warn">⚠️ Estado guardado solo en este dispositivo (Supabase no lo aceptó).</div>` : ""}
                         <div class="order-foot">
                             <span class="order-total">${fmtARS(p.total)}</span>
                             <div class="order-actions">
@@ -938,51 +924,32 @@
 
             const pasaAEntregado = nuevoEstado === "entregado" && anterior !== "entregado";
             const saleDeEntregado = anterior === "entregado" && nuevoEstado !== "entregado";
-            let remotoOk = false;
-            let stockLoHizoLaBase = false;
+            let guardado = null;
+            let motivo = "";
 
             try {
-                // .select() permite detectar cuando RLS bloquea el cambio sin devolver error (0 filas actualizadas).
-                const { data, error } = await sb().from("store_orders").update({ status: nuevoEstado }).eq("id", pedidoId).select("id");
-                if (!error && Array.isArray(data) && data.length) {
-                    remotoOk = true;
-                    stockLoHizoLaBase = stockTriggerActivo && (pasaAEntregado || saleDeEntregado);
-                } else if (error && (pasaAEntregado || saleDeEntregado)) {
-                    // Si el trigger de stock rechaza el cambio, se actualiza sin ítems y luego se restauran (el panel descuenta el stock).
-                    console.warn("Reintentando el cambio de estado sin el trigger de stock:", error.message);
-                    const itemsOriginales = Array.isArray(pedido.items) ? pedido.items : [];
-                    if (pasaAEntregado) {
-                        const r1 = await sb().from("store_orders").update({ status: nuevoEstado, items: [] }).eq("id", pedidoId).select("id");
-                        if (!r1.error && r1.data?.length) {
-                            remotoOk = true;
-                            if (itemsOriginales.length) await sb().from("store_orders").update({ items: itemsOriginales }).eq("id", pedidoId);
-                        }
-                    } else {
-                        const r1 = await sb().from("store_orders").update({ items: [] }).eq("id", pedidoId).select("id");
-                        if (!r1.error && r1.data?.length) {
-                            const r2 = await sb().from("store_orders").update({ status: nuevoEstado, items: itemsOriginales }).eq("id", pedidoId).select("id");
-                            remotoOk = !r2.error && Boolean(r2.data?.length);
-                        }
-                    }
-                } else if (error) {
-                    console.warn("Supabase rechazó el cambio de estado:", error.message);
-                }
+                // Se exige el estado anterior: si otra pantalla ya lo cambió, no se aplica dos veces.
+                const consulta = sb().from("store_orders").update({ status: nuevoEstado }).eq("id", pedidoId);
+                const { data, error } = await (pedido.status ? consulta.eq("status", pedido.status) : consulta.is("status", null)).select();
+                if (error) motivo = error.message;
+                else guardado = data?.[0] || null;
             } catch (err) {
-                console.warn("No se pudo sincronizar el cambio de estado:", err);
+                motivo = err.message || "sin conexión";
             }
 
-            const overrides = leerMapa(LOCAL_ORDER_STATUS_KEY);
-            if (remotoOk) delete overrides[String(pedidoId)];
-            else overrides[String(pedidoId)] = { status: nuevoEstado, updated_at: Date.now() };
-            escribirMapa(LOCAL_ORDER_STATUS_KEY, overrides);
+            if (!guardado) {
+                // Se muestra lo que realmente quedó en Supabase, nunca un estado solo de este dispositivo.
+                await cargarPedidos();
+                const actual = pedidos.find(p => String(p.id) === String(pedidoId));
+                if (actual && estadoDe(actual) !== anterior) mostrarToast(`Otra pantalla ya pasó este pedido a "${ESTADOS[estadoDe(actual)]?.label || estadoDe(actual)}".`);
+                else mostrarToast(`Supabase no aceptó el cambio a "${ESTADOS[nuevoEstado]?.label || nuevoEstado}". ${motivo || "Revisá los permisos de store_orders."}`, "warn");
+                if (motivo) console.warn("Supabase rechazó el cambio de estado:", motivo);
+                renderizarPedidos(true);
+                return;
+            }
 
-            const entregas = leerMapa(LOCAL_DELIVERED_AT_KEY);
-            if (pasaAEntregado) entregas[String(pedidoId)] = new Date().toISOString();
-            if (saleDeEntregado) delete entregas[String(pedidoId)];
-            escribirMapa(LOCAL_DELIVERED_AT_KEY, entregas);
-
-            pedido.status = nuevoEstado;
-            pedido._soloLocal = !remotoOk;
+            Object.assign(pedido, guardado);
+            const stockLoHizoLaBase = stockTriggerActivo && (pasaAEntregado || saleDeEntregado);
 
             // Stock
             if (pasaAEntregado || saleDeEntregado) {
@@ -998,11 +965,9 @@
             renderizarPedidos(true);
             actualizarStockUI();
             if (finCargado) pintarFinanzas();
-            if (vistaActual === "finanzas") cargarFinanzas({ silencioso: true });
+            cargarFinanzas({ silencioso: true });
 
-            const label = ESTADOS[nuevoEstado]?.label || nuevoEstado;
-            if (remotoOk) mostrarToast(`${pedido.customer_name || "Pedido"} → ${label}`);
-            else mostrarToast(`Guardado solo en este dispositivo: Supabase no aceptó el cambio a "${label}". Revisá los permisos de store_orders.`, "warn");
+            mostrarToast(`${pedido.customer_name || "Pedido"} → ${ESTADOS[nuevoEstado]?.label || nuevoEstado}`);
         }
 
         /* =========================================================
