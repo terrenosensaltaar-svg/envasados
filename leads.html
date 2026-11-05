@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Leads Zona Norte | Envasados al Vacío Gourmet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&display=swap">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="supabase-config.js" defer></script>
+    <style>
+        :root {
+            --ink: #1c1c1c; --ink-soft: #5c5c5c; --muted: #9a9a9a;
+            --bg: #faf7f3; --card: #ffffff; --line: #ece6de;
+            --orange: #d2570a; --orange-dark: #b84a07; --orange-soft: #fdf1e6; --orange-line: #f6d7bd;
+            --green: #2f5a23; --green-soft: #eef3ea; --green-line: #d5e0cf;
+            --wa: #1f9d55; --wa-dark: #17804a;
+            --mostaza: #9a6a00; --mostaza-soft: #fcf4e3; --mostaza-line: #f0dcb0;
+            --blue: #35557f; --blue-soft: #eef2f8; --blue-line: #d3deec;
+            --red: #a33a2a; --red-soft: #fbeeec; --red-line: #f0d0ca;
+            --radius: 14px;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: "Poppins", system-ui, sans-serif; color: var(--ink); background: var(--bg); font-size: 15px; }
+        h1, h2 { font-family: "Playfair Display", Georgia, serif; margin: 0; }
+        button, input, select, textarea { font: inherit; color: inherit; }
+        [hidden] { display: none !important; }
+
+        /* Acceso */
+        .auth-gate { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+        .auth-card { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 32px 28px; display: grid; gap: 14px; box-shadow: 0 10px 30px rgba(60,40,20,.06); }
+        .auth-card img { height: 44px; width: auto; }
+        .eyebrow { color: var(--orange); font-weight: 600; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+        .auth-card p { margin: 0; color: var(--ink-soft); }
+        .field { display: grid; gap: 6px; }
+        .field label { font-size: 13px; font-weight: 500; color: var(--ink-soft); }
+        input, select, textarea { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: #fff; width: 100%; }
+        input:focus, select:focus, textarea:focus { outline: 2px solid var(--orange-line); border-color: var(--orange); }
+        .auth-error { color: var(--red); font-size: 14px; min-height: 1em; }
+
+        .btn { border: 1px solid transparent; border-radius: 10px; padding: 9px 14px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; font-size: 14px; white-space: nowrap; }
+        .btn:disabled { opacity: .6; cursor: default; }
+        .btn-primary { background: var(--orange); color: #fff; }
+        .btn-primary:hover { background: var(--orange-dark); }
+        .btn-wa { background: var(--wa); color: #fff; }
+        .btn-wa:hover { background: var(--wa-dark); }
+        .btn-ghost { background: #fff; border-color: var(--line); color: var(--ink); }
+        .btn-ghost:hover { border-color: var(--orange-line); background: var(--orange-soft); }
+        .btn-sm { padding: 6px 10px; font-size: 13px; }
+
+        /* Cabecera */
+        .topbar { position: sticky; top: 0; z-index: 10; background: rgba(250,247,243,.95); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+        .topbar-in { max-width: 1200px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 14px; }
+        .topbar img { height: 36px; }
+        .topbar h1 { font-size: 20px; flex: 1; }
+        .topbar nav { display: flex; gap: 8px; }
+
+        main { max-width: 1200px; margin: 0 auto; padding: 20px; display: grid; gap: 18px; }
+
+        /* Embudo */
+        .funnel { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .stage { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; text-align: left; cursor: pointer; }
+        .stage b { display: block; font-size: 22px; line-height: 1.1; }
+        .stage span { font-size: 12px; color: var(--ink-soft); }
+        .stage.is-active { border-color: var(--orange); background: var(--orange-soft); }
+
+        /* Panel de herramientas */
+        .tools { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; }
+        .box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 10px; align-content: start; }
+        .box h2 { font-size: 17px; }
+        .box small { color: var(--muted); }
+        .filters { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+        .filters .full { grid-column: 1 / -1; }
+        .tpl-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .tpl-tabs button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer; }
+        .tpl-tabs button.is-active { background: var(--green); border-color: var(--green); color: #fff; }
+        textarea { resize: vertical; min-height: 110px; }
+
+        .resultbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; color: var(--ink-soft); font-size: 14px; }
+
+        /* Tarjetas */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
+        .lead { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 10px; }
+        .lead[data-estado="contactado"] { border-left-color: var(--blue); }
+        .lead[data-estado="interesado"] { border-left-color: var(--mostaza); }
+        .lead[data-estado="muestra"] { border-left-color: var(--orange); }
+        .lead[data-estado="cliente"] { border-left-color: var(--green); }
+        .lead[data-estado="no_interesado"] { border-left-color: var(--red); opacity: .75; }
+        .lead-head { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+        .lead h3 { margin: 0; font-size: 16px; line-height: 1.3; }
+        .meta { font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+        .pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+        .pill.probable { color: var(--green); background: var(--green-soft); border-color: var(--green-line); }
+        .pill.verificar { color: var(--mostaza); background: var(--mostaza-soft); border-color: var(--mostaza-line); }
+        .pill.confirmado { color: #fff; background: var(--wa); border-color: var(--wa); }
+        .pill.sin_whatsapp { color: var(--red); background: var(--red-soft); border-color: var(--red-line); }
+        .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .row2 { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; }
+        .row2 select { padding: 7px 10px; font-size: 13px; }
+        .lead textarea { min-height: 54px; font-size: 13px; padding: 8px 10px; }
+        .last { font-size: 12px; color: var(--muted); }
+        .empty { text-align: center; color: var(--ink-soft); padding: 40px; background: var(--card); border: 1px dashed var(--line); border-radius: var(--radius); }
+
+        /* Alta */
+        dialog { border: none; border-radius: 18px; padding: 0; width: min(520px, 94vw); }
+        dialog::backdrop { background: rgba(0,0,0,.35); }
+        dialog form { padding: 22px; display: grid; gap: 10px; }
+        .form2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 10px; font-size: 14px; z-index: 50; }
+
+        @media (max-width: 900px) {
+            .tools { grid-template-columns: 1fr; }
+            .funnel { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 560px) {
+            .topbar h1 { font-size: 16px; }
+            .topbar .hide-sm { display: none; }
+            .filters { grid-template-columns: 1fr 1fr; }
+            .filters .full, .filters .search { grid-column: 1 / -1; }
+            .funnel { grid-template-columns: repeat(3, 1fr); }
+            .grid { grid-template-columns: 1fr; }
+            .form2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<section class="auth-gate" id="auth-gate">
+    <form class="auth-card" id="auth-form">
+        <img src="logo.png" alt="Envasados al Vacío" width="128" height="44">
+        <span class="eyebrow">Prospección comercial</span>
+        <h1>Leads Zona Norte</h1>
+        <p>Ingresá con el mismo usuario del panel.</p>
+        <div class="field">
+            <label for="auth-email">Usuario o correo electrónico</label>
+            <input id="auth-email" type="text" autocomplete="username" required>
+        </div>
+        <div class="field">
+            <label for="auth-password">Contraseña</label>
+            <input id="auth-password" type="password" autocomplete="current-password" required>
+        </div>
+        <p class="auth-error" id="auth-error" role="alert"></p>
+        <button class="btn btn-primary" type="submit" id="auth-submit">Ingresar</button>
+    </form>
+</section>
+
+<header class="topbar" id="app-header" hidden>
+    <div class="topbar-in">
+        <img src="logo.png" alt="Envasados al Vacío">
+        <h1>Leads · Zona Norte</h1>
+        <nav>
+            <button class="btn btn-primary btn-sm" id="btn-add" type="button">+ Agregar</button>
+            <button class="btn btn-ghost btn-sm hide-sm" id="btn-csv" type="button">Exportar CSV</button>
+            <a class="btn btn-ghost btn-sm hide-sm" href="panel.html">Panel</a>
+            <button class="btn btn-ghost btn-sm" id="btn-logout" type="button">Salir</button>
+        </nav>
+    </div>
+</header>
+
+<main id="app" hidden>
+    <section class="funnel" id="funnel" aria-label="Embudo de ventas"></section>
+
+    <section class="tools">
+        <div class="box">
+            <h2>Filtrar</h2>
+            <div class="filters">
+                <input class="search" id="f-q" type="search" placeholder="Buscar nombre, dirección o teléfono">
+                <select id="f-zona"><option value="">Todas las zonas</option></select>
+                <select id="f-rubro"><option value="">Todos los rubros</option></select>
+                <select id="f-wa">
+                    <option value="">WhatsApp: todos</option>
+                    <option value="ok">Con WhatsApp (probable o confirmado)</option>
+                    <option value="probable">Probable</option>
+                    <option value="verificar">A verificar</option>
+                    <option value="confirmado">Confirmado</option>
+                    <option value="sin_whatsapp">Sin WhatsApp</option>
+                </select>
+                <select id="f-orden">
+                    <option value="prioridad">Orden: más reseñas primero</option>
+                    <option value="nombre">Orden: nombre A-Z</option>
+                    <option value="zona">Orden: zona</option>
+                    <option value="contacto">Orden: contacto más viejo</option>
+                </select>
+                <button class="btn btn-ghost" id="f-reset" type="button">Limpiar filtros</button>
+            </div>
+            <small>Tip: empezá por “Con WhatsApp” + “Nuevo” y escribile a 10 comercios por día.</small>
+        </div>
+
+        <div class="box">
+            <h2>Mensaje de WhatsApp</h2>
+            <div class="tpl-tabs" id="tpl-tabs"></div>
+            <textarea id="tpl-text" aria-label="Texto del mensaje"></textarea>
+            <small>Usá <b>{nombre}</b> y se reemplaza por el nombre del comercio. Los cambios se guardan en este dispositivo.</small>
+        </div>
+    </section>
+
+    <div class="resultbar">
+        <span id="count"></span>
+        <span id="sync"></span>
+    </div>
+
+    <section class="grid" id="grid"></section>
+</main>
+
+<dialog id="dlg">
+    <form id="add-form" method="dialog">
+        <h2>Agregar comercio</h2>
+        <div class="field"><label for="a-nombre">Nombre *</label><input id="a-nombre" required></div>
+        <div class="form2">
+            <div class="field"><label for="a-tel">Teléfono / WhatsApp *</label><input id="a-tel" placeholder="387 512-3456" required></div>
+            <div class="field"><label for="a-rubro">Rubro</label><input id="a-rubro" list="dl-rubros" placeholder="Despensa"></div>
+        </div>
+        <div class="form2">
+            <div class="field"><label for="a-zona">Zona</label><input id="a-zona" list="dl-zonas"></div>
+            <div class="field"><label for="a-dir">Dirección</label><input id="a-dir"></div>
+        </div>
+        <div class="field"><label for="a-notas">Notas</label><textarea id="a-notas" style="min-height:60px"></textarea></div>
+        <p class="auth-error" id="a-error"></p>
+        <div class="actions" style="justify-content:flex-end">
+            <button class="btn btn-ghost" value="cancel" formnovalidate>Cancelar</button>
+            <button class="btn btn-primary" id="a-save" value="save">Guardar</button>
+        </div>
+    </form>
+</dialog>
+<datalist id="dl-rubros"></datalist>
+<datalist id="dl-zonas"></datalist>
+
+<script>
+const $ = id => document.getElementById(id);
+const sb = () => window.supabaseClient;
+
+const ESTADOS = [
+    ["nuevo", "Nuevo"], ["contactado", "Contactado"], ["interesado", "Interesado"],
+    ["muestra", "Muestra enviada"], ["cliente", "Cliente"], ["no_interesado", "No interesado"]
+];
+const WA_LABEL = { probable: "WhatsApp probable", verificar: "Verificar WhatsApp", confirmado: "WhatsApp ✓", sin_whatsapp: "Sin WhatsApp" };
+
+const PLANTILLAS = {
+    presentacion: { titulo: "Presentación", texto:
+`¡Hola {nombre}! 👋 ¿Cómo andan?
+Somos *Envasados al Vacío Gourmet*, de Salta. Hacemos comidas caseras listas envasadas al vacío (pollo, carnes, pastas, empanadas y la línea Pollita Lu) 🍗🥟
+
+Buscamos despensas de la zona norte para revender nuestros productos, con *precio mayorista* y entrega en el local.
+¿Te paso la lista de precios? 😊` },
+    seguimiento: { titulo: "Seguimiento", texto:
+`¡Hola {nombre}! 😊 Te escribo de *Envasados al Vacío Gourmet*.
+¿Pudiste ver la propuesta? Si querés te acercamos unas *muestras sin cargo* para que las pruebes en el local 🙌` },
+    lista: { titulo: "Lista de precios", texto:
+`¡Genial {nombre}! 🙌 Te paso la lista mayorista de *Envasados al Vacío Gourmet*.
+Mirá el catálogo completo acá 👉 https://envasadosalvacio.com.ar
+Pedido mínimo y entrega sin cargo en zona norte. ¿Qué día te queda bien que pasemos?` }
+};
+
+let leads = [];
+let filtroEstado = "";
+let tplActual = localStorage.getItem("leads_tpl_sel") || "presentacion";
+
+document.addEventListener("DOMContentLoaded", async () => {
+    $("auth-form").addEventListener("submit", ingresar);
+    $("btn-logout").addEventListener("click", async () => { await sb().auth.signOut({ scope: "local" }); location.reload(); });
+    $("btn-add").addEventListener("click", () => { $("add-form").reset(); $("a-error").textContent = ""; $("dlg").showModal(); });
+    $("add-form").addEventListener("submit", agregarLead);
+    $("btn-csv").addEventListener("click", exportarCSV);
+    ["f-q", "f-zona", "f-rubro", "f-wa", "f-orden"].forEach(id => $(id).addEventListener("input", render));
+    $("f-reset").addEventListener("click", () => {
+        ["f-q", "f-zona", "f-rubro", "f-wa"].forEach(id => $(id).value = "");
+        filtroEstado = ""; render();
+    });
+    $("funnel").addEventListener("click", e => {
+        const b = e.target.closest("[data-estado]"); if (!b) return;
+        filtroEstado = filtroEstado === b.dataset.estado ? "" : b.dataset.estado; render();
+    });
+    $("grid").addEventListener("click", accionTarjeta);
+    $("grid").addEventListener("change", e => {
+        const card = e.target.closest(".lead"); if (!card) return;
+        if (e.target.matches("[data-f=estado]")) actualizar(+card.dataset.id, { estado: e.target.value });
+        if (e.target.matches("[data-f=notas]")) actualizar(+card.dataset.id, { notas: e.target.value.trim() || null });
+    });
+    iniciarPlantillas();
+
+    if (!sb()) { $("auth-error").textContent = "No se cargó Supabase. Revisá la conexión."; return; }
+    const { data } = await sb().auth.getSession();
+    if (data.session) habilitar(data.session);
+});
+
+async function ingresar(e) {
+    e.preventDefault();
+    const id = $("auth-email").value.trim();
+    const email = id.toLowerCase() === "luciana" ? "envasados.salta@gmail.com" : id;
+    const btn = $("auth-submit");
+    btn.disabled = true; btn.textContent = "Ingresando…"; $("auth-error").textContent = "";
+    try {
+        const { data, error } = await sb().auth.signInWithPassword({ email, password: $("auth-password").value });
+        if (error) { $("auth-error").textContent = "No se pudo ingresar. Revisá usuario y contraseña."; return; }
+        await habilitar(data.session);
+    } finally { btn.disabled = false; btn.textContent = "Ingresar"; }
+}
+
+async function habilitar(session) {
+    const { data } = await sb().from("panel_admins").select("user_id").eq("user_id", session.user.id).maybeSingle();
+    if (!data) { await sb().auth.signOut({ scope: "local" }); $("auth-error").textContent = "Esta cuenta no tiene permiso."; return; }
+    $("auth-gate").hidden = true; $("app-header").hidden = false; $("app").hidden = false;
+    await cargar();
+}
+
+async function cargar() {
+    $("sync").textContent = "Cargando…";
+    const { data, error } = await sb().from("leads_comercios").select("*").order("id");
+    if (error) { $("sync").textContent = "Error al cargar. Recargá la página."; return; }
+    leads = data;
+    llenarSelects();
+    render();
+    $("sync").textContent = "Guardado en la nube ✓";
+}
+
+function llenarSelects() {
+    const uniq = k => [...new Set(leads.map(l => l[k]).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+    for (const [sel, dl, k] of [["f-zona", "dl-zonas", "zona"], ["f-rubro", "dl-rubros", "rubro"]]) {
+        const actual = $(sel).value;
+        const vals = uniq(k);
+        $(sel).innerHTML = $(sel).options[0].outerHTML + vals.map(v => `<option>${esc(v)}</option>`).join("");
+        $(sel).value = actual;
+        $(dl).innerHTML = vals.map(v => `<option value="${esc(v)}">`).join("");
+    }
+}
+
+function filtrados() {
+    const q = norm($("f-q").value), zona = $("f-zona").value, rubro = $("f-rubro").value, wa = $("f-wa").value;
+    let r = leads.filter(l =>
+        (!filtroEstado || l.estado === filtroEstado) &&
+        (!zona || l.zona === zona) &&
+        (!rubro || l.rubro === rubro) &&
+        (!wa || (wa === "ok" ? ["probable", "confirmado"].includes(l.wa_estado) : l.wa_estado === wa)) &&
+        (!q || norm([l.nombre, l.direccion, l.telefono, l.rubro, l.notas].join(" ")).includes(q)));
+    const orden = $("f-orden").value;
+    const cmp = {
+        prioridad: (a, b) => (b.resenas || 0) - (a.resenas || 0),
+        nombre: (a, b) => a.nombre.localeCompare(b.nombre, "es"),
+        zona: (a, b) => (a.zona || "").localeCompare(b.zona || "", "es") || a.nombre.localeCompare(b.nombre, "es"),
+        contacto: (a, b) => (a.ultimo_contacto || "").localeCompare(b.ultimo_contacto || "")
+    }[orden];
+    return r.sort(cmp);
+}
+
+function render() {
+    $("funnel").innerHTML = [["", "Todos", leads.length], ...ESTADOS.map(([k, t]) => [k, t, leads.filter(l => l.estado === k).length])]
+        .map(([k, t, n]) => `<button class="stage ${filtroEstado === k ? "is-active" : ""}" data-estado="${k}" type="button"><b>${n}</b><span>${t}</span></button>`).join("");
+
+    const lista = filtrados();
+    $("count").textContent = `${lista.length} de ${leads.length} comercios`;
+    $("grid").innerHTML = lista.length ? lista.map(tarjeta).join("") :
+        `<div class="empty">No hay comercios con esos filtros.</div>`;
+}
+
+function tarjeta(l) {
+    const rating = l.rating ? `⭐ ${l.rating} (${l.resenas || 0})` : "Sin reseñas";
+    const ultimo = l.ultimo_contacto ? `Último contacto: ${new Date(l.ultimo_contacto).toLocaleDateString("es-AR", { day: "2-digit", month: "short" })}` : "Sin contactar";
+    const mapa = l.lat ? `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(l.nombre + " Salta")}`;
+    return `<article class="lead" data-id="${l.id}" data-estado="${l.estado}">
+        <div class="lead-head">
+            <div>
+                <h3>${esc(l.nombre)}</h3>
+                <div class="meta">${esc(l.rubro || "Comercio")} · ${esc(l.zona || "—")}<br>${esc(l.direccion || "Sin dirección")}<br>📞 ${esc(l.telefono || "—")} · ${rating}</div>
+            </div>
+            <span class="pill ${l.wa_estado}">${WA_LABEL[l.wa_estado]}</span>
+        </div>
+        <div class="actions">
+            <button class="btn btn-wa btn-sm" data-a="wa" type="button" ${l.wa_estado === "sin_whatsapp" ? "disabled" : ""}>💬 WhatsApp</button>
+            <a class="btn btn-ghost btn-sm" href="tel:+${l.whatsapp || ""}">📞 Llamar</a>
+            <a class="btn btn-ghost btn-sm" href="${mapa}" target="_blank" rel="noopener">📍 Mapa</a>
+        </div>
+        <div class="row2">
+            <select data-f="estado" aria-label="Estado">${ESTADOS.map(([k, t]) => `<option value="${k}" ${k === l.estado ? "selected" : ""}>${t}</option>`).join("")}</select>
+            <button class="btn btn-ghost btn-sm" data-a="wa-si" type="button" title="Confirmar que tiene WhatsApp">✓ Tiene WA</button>
+            <button class="btn btn-ghost btn-sm" data-a="wa-no" type="button" title="Marcar que no tiene WhatsApp">✗ No</button>
+        </div>
+        <textarea data-f="notas" placeholder="Notas: con quién hablaste, qué pidió, cuándo volver a escribir…">${esc(l.notas || "")}</textarea>
+        <div class="last">${ultimo}</div>
+    </article>`;
+}
+
+function accionTarjeta(e) {
+    const btn = e.target.closest("[data-a]"); if (!btn) return;
+    const id = +btn.closest(".lead").dataset.id;
+    const l = leads.find(x => x.id === id);
+    if (btn.dataset.a === "wa") {
+        const texto = $("tpl-text").value.replaceAll("{nombre}", l.nombre);
+        window.open(`https://wa.me/${l.whatsapp}?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+        const cambios = { ultimo_contacto: new Date().toISOString() };
+        if (l.estado === "nuevo") cambios.estado = "contactado";
+        actualizar(id, cambios);
+    }
+    if (btn.dataset.a === "wa-si") actualizar(id, { wa_estado: "confirmado" });
+    if (btn.dataset.a === "wa-no") actualizar(id, { wa_estado: "sin_whatsapp" });
+}
+
+async function actualizar(id, cambios) {
+    const l = leads.find(x => x.id === id);
+    const previo = { ...l };
+    Object.assign(l, cambios);
+    render();
+    $("sync").textContent = "Guardando…";
+    const { error } = await sb().from("leads_comercios").update(cambios).eq("id", id);
+    if (error) { Object.assign(l, previo); render(); toast("No se pudo guardar. Revisá la conexión."); $("sync").textContent = "Error al guardar"; return; }
+    $("sync").textContent = "Guardado en la nube ✓";
+}
+
+async function agregarLead(e) {
+    if (e.submitter?.value !== "save") return;
+    e.preventDefault();
+    let dig = $("a-tel").value.replace(/\D/g, "").replace(/^0/, "").replace(/^54/, "").replace(/^9/, "");
+    dig = dig.replace(/^(387)15/, "$1");
+    if (dig.length === 7) dig = "387" + dig;
+    if (dig.length !== 10) { $("a-error").textContent = "El teléfono debe tener código de área (ej: 387 512-3456)."; return; }
+    const nuevo = {
+        nombre: $("a-nombre").value.trim(), telefono: $("a-tel").value.trim(), whatsapp: "549" + dig,
+        rubro: $("a-rubro").value.trim() || null, zona: $("a-zona").value.trim() || null,
+        direccion: $("a-dir").value.trim() || null, notas: $("a-notas").value.trim() || null,
+        wa_estado: "verificar", fuente: "Carga manual"
+    };
+    $("a-save").disabled = true;
+    const { data, error } = await sb().from("leads_comercios").insert(nuevo).select().single();
+    $("a-save").disabled = false;
+    if (error) { $("a-error").textContent = error.code === "23505" ? "Ese número ya está en la lista." : "No se pudo guardar."; return; }
+    leads.push(data); llenarSelects(); render(); $("dlg").close(); toast("Comercio agregado ✓");
+}
+
+function iniciarPlantillas() {
+    const guardadas = JSON.parse(localStorage.getItem("leads_tpls") || "{}");
+    for (const k in guardadas) if (PLANTILLAS[k]) PLANTILLAS[k].texto = guardadas[k];
+    const pintar = () => {
+        $("tpl-tabs").innerHTML = Object.entries(PLANTILLAS).map(([k, p]) =>
+            `<button type="button" data-k="${k}" class="${k === tplActual ? "is-active" : ""}">${p.titulo}</button>`).join("");
+        $("tpl-text").value = PLANTILLAS[tplActual].texto;
+    };
+    $("tpl-tabs").addEventListener("click", e => {
+        const b = e.target.closest("[data-k]"); if (!b) return;
+        tplActual = b.dataset.k; localStorage.setItem("leads_tpl_sel", tplActual); pintar();
+    });
+    $("tpl-text").addEventListener("input", () => {
+        PLANTILLAS[tplActual].texto = $("tpl-text").value;
+        const g = Object.fromEntries(Object.entries(PLANTILLAS).map(([k, p]) => [k, p.texto]));
+        localStorage.setItem("leads_tpls", JSON.stringify(g));
+    });
+    pintar();
+}
+
+function exportarCSV() {
+    const cols = ["nombre", "rubro", "zona", "direccion", "telefono", "whatsapp", "wa_estado", "estado", "notas", "ultimo_contacto", "rating", "resenas"];
+    const filas = [cols.join(";"), ...filtrados().map(l => cols.map(c => `"${String(l[c] ?? "").replaceAll('"', '""')}"`).join(";"))];
+    const blob = new Blob(["﻿" + filas.join("\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = `leads-zona-norte-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+}
+
+function toast(msg) {
+    const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+    document.body.appendChild(t); setTimeout(() => t.remove(), 2600);
+}
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+</script>
+</body>
+</html>
