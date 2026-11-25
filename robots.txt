@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /panel.html
+Disallow: /leads.html
+Disallow: /_backup_fullres/
+Disallow: /_backup_pre_optimizacion/
+Disallow: /_secciones-guardadas/
+
+Sitemap: https://envasadosalvacio.com.ar/sitemap.xml
