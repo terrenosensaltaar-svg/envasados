@@ -2,10 +2,10 @@
  * App para Envasados al Vacío Gourmet & Caseros - Sé tu propio Chef
  */
 
-// Teléfono fijo inmutable (Salta, Argentina: +54 387 228 3546)
+// Teléfono fijo inmutable (Salta, Argentina: +54 387 623 0313)
 const STORE_CONFIG = Object.freeze({
     storeName: "Envasados al Vacío Gourmet",
-    whatsappPhone: "543872283546",
+    whatsappPhone: "543876230313",
     deliveryFee: 2500,
     freeDeliveryThreshold: 25000
 });
